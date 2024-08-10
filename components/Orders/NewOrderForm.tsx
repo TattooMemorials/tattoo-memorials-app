@@ -30,6 +30,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
     // Form Section Three
     const [replicationSelection, setReplicationSelection] = useState<string>();
+    const [isAlteredSelected, setIsAlteredSelected] = useState<boolean>(false);
 
     // -----------------------------------------------------
 
@@ -73,10 +74,11 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
     const handleReplicationSelection = (option: string) => {
         setReplicationSelection(option);
+        setIsAlteredSelected(option === "altered");
     };
 
     const isReplicationChecked = (option: string) =>
-        replicationSelection && replicationSelection.includes(option);
+        replicationSelection === option;
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -333,6 +335,9 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                             </span>
                         )}
                     </div>
+                    {isAlteredSelected && (
+                        <h2>what would you like to change?</h2>
+                    )}
                 </div>
             )}
 
