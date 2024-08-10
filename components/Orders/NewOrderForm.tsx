@@ -29,6 +29,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
     );
 
     // Form Section Three
+    const [replicationSelection, setReplicationSelection] = useState<string>();
 
     // -----------------------------------------------------
 
@@ -67,7 +68,15 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
         );
     };
 
-    const isChecked = (option: string) => checkedMediumOptions.includes(option);
+    const isMediumChecked = (option: string) =>
+        checkedMediumOptions.includes(option);
+
+    const handleReplicationSelection = (option: string) => {
+        setReplicationSelection(option);
+    };
+
+    const isReplicationChecked = (option: string) =>
+        replicationSelection && replicationSelection.includes(option);
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -188,7 +197,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isChecked("syntheticSkin")
+                            isMediumChecked("syntheticSkin")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
@@ -197,7 +206,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                         }
                     >
                         <span>Synthetic Skin</span>
-                        {isChecked("syntheticSkin") && (
+                        {isMediumChecked("syntheticSkin") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -206,14 +215,14 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isChecked("ink")
+                            isMediumChecked("ink")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
                         onClick={() => handleMediumsCheckboxChange("ink")}
                     >
                         <span>Ink</span>
-                        {isChecked("ink") && (
+                        {isMediumChecked("ink") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -222,14 +231,14 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isChecked("pencil")
+                            isMediumChecked("pencil")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
                         onClick={() => handleMediumsCheckboxChange("pencil")}
                     >
                         <span>Pencil</span>
-                        {isChecked("pencil") && (
+                        {isMediumChecked("pencil") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -238,14 +247,14 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isChecked("pastel")
+                            isMediumChecked("pastel")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
                         onClick={() => handleMediumsCheckboxChange("pastel")}
                     >
                         <span>Pastel</span>
-                        {isChecked("pastel") && (
+                        {isMediumChecked("pastel") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -256,7 +265,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isChecked("watercolor")
+                            isMediumChecked("watercolor")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
@@ -265,7 +274,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                         }
                     >
                         <span>Watercolor</span>
-                        {isChecked("watercolor") && (
+                        {isMediumChecked("watercolor") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -274,14 +283,14 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isChecked("oilPaint")
+                            isMediumChecked("oilPaint")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
                         onClick={() => handleMediumsCheckboxChange("oilPaint")}
                     >
                         <span>Oil Paint</span>
-                        {isChecked("oilPaint") && (
+                        {isMediumChecked("oilPaint") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -290,163 +299,40 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
                     {/* Add more as needed */}
                 </div>
-
-                // <div className="flex flex-col">
-                //     <label className="text-md mb-2">
-                //         What mediums are you interested in?
-                //     </label>
-                //     <div className="flex flex-col">
-                //         <label className="inline-flex items-center">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="syntheticSkin"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "syntheticSkin"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("syntheticSkin")
-                //                 }
-                //             />
-                //             <span className="ml-2">Synthetic Skin</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="ink"
-                //                 checked={checkedMediumOptions.includes("ink")}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("ink")
-                //                 }
-                //             />
-                //             <span className="ml-2">Ink</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="pencil"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "pencil"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("pencil")
-                //                 }
-                //             />
-                //             <span className="ml-2">Pencil</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="pastel"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "pastel"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("pastel")
-                //                 }
-                //             />
-                //             <span className="ml-2">Pastel</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="watercolor"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "watercolor"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("watercolor")
-                //                 }
-                //             />
-                //             <span className="ml-2">Watercolor</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="oilPaint"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "oilPaint"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("oilPaint")
-                //                 }
-                //             />
-                //             <span className="ml-2">Oil Paint</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="acrylic"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "acrylic"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("acrylic")
-                //                 }
-                //             />
-                //             <span className="ml-2">Acrylic</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="charcoal"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "charcoal"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("charcoal")
-                //                 }
-                //             />
-                //             <span className="ml-2">Charcoal</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="digital"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "digital"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange("digital")
-                //                 }
-                //             />
-                //             <span className="ml-2">Digital</span>
-                //         </label>
-                //         <label className="inline-flex items-center mt-2">
-                //             <input
-                //                 type="checkbox"
-                //                 className="form-checkbox"
-                //                 name="digitalTattooStencil"
-                //                 checked={checkedMediumOptions.includes(
-                //                     "digitalTattooStencil"
-                //                 )}
-                //                 onChange={() =>
-                //                     handleMediumsCheckboxChange(
-                //                         "digitalTattooStencil"
-                //                     )
-                //                 }
-                //             />
-                //             <span className="ml-2">Digital Tattoo Stencil</span>
-                //         </label>
-                //     </div>
-                // </div>
             )}
 
             {step === 3 && (
-                <div className="flex flex-col">
-                    <label className="text-md mb-2">
-                        Would you like the tattoo artwork replicated "as is" or
-                        altered?
-                    </label>
-                    <div className="flex flex-col"></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div
+                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                            isReplicationChecked("asIs")
+                                ? "bg-blue-500 text-white"
+                                : "bg-white text-black"
+                        }`}
+                        onClick={() => handleReplicationSelection("asIs")}
+                    >
+                        <span>As Is</span>
+                        {isReplicationChecked("asIs") && (
+                            <span className="absolute top-2 right-2 text-xl">
+                                ✓
+                            </span>
+                        )}
+                    </div>
+                    <div
+                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                            isReplicationChecked("altered")
+                                ? "bg-blue-500 text-white"
+                                : "bg-white text-black"
+                        }`}
+                        onClick={() => handleReplicationSelection("altered")}
+                    >
+                        <span>Altered</span>
+                        {isReplicationChecked("altered") && (
+                            <span className="absolute top-2 right-2 text-xl">
+                                ✓
+                            </span>
+                        )}
+                    </div>
                 </div>
             )}
 
