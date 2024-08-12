@@ -32,11 +32,11 @@ interface SubmissionResult {
     error?: string;
 }
 
-const supabase = createClient();
-
+// Move Supabase client initialization inside the request handler
 async function submitLivingForm(
     formData: FormData,
-    filePaths: string[]
+    filePaths: string[],
+    supabase: any
 ): Promise<SubmissionResult> {
     let orderData: { id: string } | null = null;
 
@@ -95,7 +95,7 @@ async function submitLivingForm(
             ]);
         if (mediumsError) throw mediumsError;
 
-        // 4. Insert Supabase Storage paths into order_images table (they've already been uploaded to Storage)
+        // 4. Insert into order_images table
         const { error: imagesError } = await supabase
             .from("order_images")
             .insert(
@@ -119,11 +119,14 @@ async function submitLivingForm(
 
 export async function POST(request: Request) {
     try {
+        // Initialize Supabase client inside the request handler
+        const supabase = createClient();
+
         const { formData, filePaths } = await request.json();
 
         // Validate formData and filePaths here
 
-        const result = await submitLivingForm(formData, filePaths);
+        const result = await submitLivingForm(formData, filePaths, supabase);
 
         if (result.success) {
             return NextResponse.json(result, { status: 201 });

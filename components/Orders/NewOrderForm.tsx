@@ -101,8 +101,6 @@ const NewOrderForm: React.FC = () => {
     return (
         <div
             className="flex flex-col w-full gap-4 text-foreground"
-            // onSubmit={handleSubmit} // TODO: merge handleSubmit with handleUploadClick
-            // onSubmit={handleUploadClick}
             data-step={step}
         >
             {step === 1 && (
