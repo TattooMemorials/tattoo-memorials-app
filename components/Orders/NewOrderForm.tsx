@@ -31,6 +31,8 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
     // Form Section Three
     const [replicationSelection, setReplicationSelection] = useState<string>();
     const [isAlteredSelected, setIsAlteredSelected] = useState<boolean>(false);
+    const [alterationDetails, setAlterationDetails] = useState<string>("");
+    const [alterationExamples, setAlterationExamples] = useState<string>("");
 
     // -----------------------------------------------------
 
@@ -79,6 +81,18 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
     const isReplicationChecked = (option: string) =>
         replicationSelection === option;
+
+    const handleAlterationDetailsChange = (
+        e: React.ChangeEvent<HTMLTextAreaElement>
+    ) => {
+        setAlterationDetails(e.target.value);
+    };
+
+    const handleAlterationExamplesChange = (
+        e: React.ChangeEvent<HTMLTextAreaElement>
+    ) => {
+        setAlterationExamples(e.target.value);
+    };
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -306,39 +320,91 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
             {step === 3 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-gray-300 rounded-md p-4 h-32 cursor-pointer transition ${
                             isReplicationChecked("asIs")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
                         onClick={() => handleReplicationSelection("asIs")}
                     >
-                        <span>As Is</span>
+                        <div>
+                            <span className="font-bold text-lg">As Is</span>
+                            <p className="text-sm mt-2">
+                                The artwork created will be the same size and
+                                color as the original with no augmentation.
+                            </p>
+                        </div>
                         {isReplicationChecked("asIs") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
                         )}
                     </div>
+
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-gray-300 rounded-md p-4 h-32 cursor-pointer transition ${
                             isReplicationChecked("altered")
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
                         onClick={() => handleReplicationSelection("altered")}
                     >
-                        <span>Altered</span>
+                        <div>
+                            <span className="font-bold text-lg">Altered</span>
+                            <p className="text-sm mt-2">
+                                The artwork created can be altered in size,
+                                color, and with any additional augmentations
+                                specified below.
+                            </p>
+                        </div>
                         {isReplicationChecked("altered") && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
                         )}
                     </div>
+
                     {isAlteredSelected && (
-                        <h2>what would you like to change?</h2>
+                        <div className="col-span-1 sm:col-span-2 mt-6 p-4 border border-gray-300 rounded-md bg-gray-900 text-white">
+                            <h2 className="text-lg font-semibold mb-4 text-white">
+                                Please describe the augmentations below. Be sure
+                                to include the dimensions in inches for size
+                                alterations.
+                            </h2>
+
+                            <h3 className="text-md font-medium mb-2 text-white">
+                                What would you like to change?
+                            </h3>
+                            <textarea
+                                className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+                                placeholder="Describe the changes you would like..."
+                                value={alterationDetails}
+                                onChange={handleAlterationDetailsChange}
+                            />
+
+                            <h2 className="text-lg font-semibold mb-4 text-white">
+                                Do you have any examples or inspiration you can
+                                share with us that will help us better
+                                understand the direction you wish us to take for
+                                your artistic representation?
+                            </h2>
+
+                            <h3 className="text-md font-medium mb-2 text-white">
+                                Pinterest, YouTube, URL, etc.
+                            </h3>
+                            <textarea
+                                className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+                                placeholder="Provide links or descriptions..."
+                                value={alterationExamples}
+                                onChange={handleAlterationExamplesChange}
+                            />
+                        </div>
                     )}
                 </div>
+            )}
+
+            {step === 4 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">hey</div>
             )}
 
             <div className="flex justify-between mt-4">
@@ -351,7 +417,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                         Previous
                     </button>
                 )}
-                {step < 3 ? (
+                {step < 4 ? (
                     <button
                         type="button"
                         className="bg-blue-600 rounded-md px-4 py-2 text-foreground"
