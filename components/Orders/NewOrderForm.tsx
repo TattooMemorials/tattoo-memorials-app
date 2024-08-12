@@ -414,7 +414,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                 {step > 1 && (
                     <button
                         type="button"
-                        className="bg-gray-600 rounded-md px-4 py-2 text-foreground"
+                        className="bg-gray-600 rounded-md px-4 py-2 text-foreground text-white"
                         onClick={handlePrevious}
                     >
                         Previous
@@ -423,15 +423,15 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                 {step < 4 ? (
                     <button
                         type="button"
-                        className="bg-blue-600 rounded-md px-4 py-2 text-foreground"
+                        className="bg-blue-600 rounded-md px-4 py-2 text-foreground text-white"
                         onClick={handleNext}
                     >
-                        Next
+                        Continue
                     </button>
                 ) : (
                     <SubmitButton
                         formAction={onSubmit}
-                        className="bg-green-700 rounded-md px-4 py-2 text-foreground"
+                        className="bg-green-700 rounded-md px-4 py-2 text-foreground text-white"
                         pendingText="Submitting Request..."
                     >
                         Submit Request
