@@ -93,6 +93,8 @@ const NewOrderForm: React.FC = () => {
     };
 
     const handleSubmit = () => {
+        // TODO: refactor this so we're not using a ref to trigger the upload
+        // lets just handle the upload in this component.
         if (dragDropRef.current) {
             dragDropRef.current.triggerUpload(); // Trigger the upload in DragDrop component
         }
