@@ -11,11 +11,10 @@ interface DragDropProps {
 const DragDrop: React.FC<DragDropProps> = ({ orderId }) => {
     const supabase = createClient();
     const bucket = "order-images";
-    const [files, setFiles] = useState<File[]>([]); // Ensure files is always an array
+    const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
 
     const handleChange = (selectedFiles: FileList) => {
-        // Convert FileList to an array and update state
         const fileArray = Array.from(selectedFiles);
         setFiles(fileArray);
     };
@@ -50,19 +49,37 @@ const DragDrop: React.FC<DragDropProps> = ({ orderId }) => {
     };
 
     return (
-        <div>
-            <FileUploader
-                handleChange={(fileList: FileList) => handleChange(fileList)}
-                name="files"
-                types={fileTypes}
-                multiple={true} // Enable multiple file selection
-            />
-            <div>
+        <div className="flex flex-col items-center p-6 bg-gray-100 rounded-lg w-full max-w-md mx-auto">
+            <div className="w-full mb-4">
+                <FileUploader
+                    handleChange={(fileList: FileList) =>
+                        handleChange(fileList)
+                    }
+                    name="files"
+                    types={fileTypes}
+                    multiple={true}
+                    classes="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center"
+                />
+            </div>
+            <div className="w-full max-h-40 overflow-y-auto mb-4 p-3 border border-gray-300 rounded-lg bg-white">
                 {files.map((file) => (
-                    <p key={file.name}>{file.name}</p>
+                    <p
+                        key={file.name}
+                        className="text-sm text-gray-700 border-b border-gray-200 pb-2 last:border-none"
+                    >
+                        {file.name}
+                    </p>
                 ))}
             </div>
-            <button onClick={handleUpload} disabled={uploading}>
+            <button
+                onClick={handleUpload}
+                disabled={uploading}
+                className={`w-full py-2 text-white rounded-lg ${
+                    uploading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
+                }`}
+            >
                 {uploading ? "Uploading..." : "Upload"}
             </button>
         </div>
