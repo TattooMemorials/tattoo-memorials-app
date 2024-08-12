@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SubmitButton } from "@/app/login/submit-button";
+import DragDrop from "../DragDrop";
 
 interface OrderFormProps {
     onSubmit: (formData: FormData) => Promise<void>;
@@ -9,9 +10,9 @@ interface OrderFormProps {
 
 const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
     const [step, setStep] = useState(1);
+    const [orderId, setOrderId] = useState("9991101206");
 
     // ------ State variables for each input field --------
-
     // Form Section One
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -404,7 +405,9 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
             )}
 
             {step === 4 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">hey</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <DragDrop orderId={orderId} />
+                </div>
             )}
 
             <div className="flex justify-between mt-4">
