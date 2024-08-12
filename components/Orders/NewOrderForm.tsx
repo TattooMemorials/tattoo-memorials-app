@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SubmitButton } from "@/app/login/submit-button";
 import DragDrop from "../DragDrop";
 
@@ -9,8 +9,10 @@ interface OrderFormProps {
 }
 
 const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
+    const dragDropRef = useRef<any>(null);
+
     const [step, setStep] = useState(1);
-    const [orderId, setOrderId] = useState("9991101206");
+    const [orderId, setOrderId] = useState("dan");
 
     // ------ State variables for each input field --------
     // Form Section One
@@ -95,16 +97,23 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
         setAlterationExamples(e.target.value);
     };
 
-    const handleSubmit = (event: React.FormEvent) => {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget as HTMLFormElement);
-        onSubmit(formData);
+    // const handleSubmit = (event: React.FormEvent) => {
+    //     event.preventDefault();
+    //     const formData = new FormData(event.currentTarget as HTMLFormElement);
+    //     onSubmit(formData);
+    // };
+
+    const handleUploadClick = () => {
+        if (dragDropRef.current) {
+            dragDropRef.current.triggerUpload(); // Trigger the upload in DragDrop component
+        }
     };
 
     return (
         <form
             className="flex flex-col w-full gap-4 text-foreground"
-            onSubmit={handleSubmit}
+            // onSubmit={handleSubmit} // TODO: merge handleSubmit with handleUploadClick
+            onSubmit={handleUploadClick}
             data-step={step}
         >
             {step === 1 && (
@@ -406,7 +415,7 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
 
             {step === 4 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DragDrop orderId={orderId} />
+                    <DragDrop ref={dragDropRef} orderId={orderId} />
                 </div>
             )}
 
