@@ -1,8 +1,4 @@
-import AuthButton from "../components/AuthButton";
 import { createClient } from "@/utils/supabase/server";
-import Header from "@/components/Header";
-import { SubmitButton } from "./login/submit-button";
-import { redirect } from "next/navigation";
 import NewOrderForm from "@/components/Orders/NewOrderForm";
 
 export default async function Index() {
@@ -17,30 +13,6 @@ export default async function Index() {
         }
     };
 
-    const isSupabaseConnected = canInitSupabaseClient();
-
-    const submitRequestForm = async (formData: FormData) => {
-        "use server";
-
-        // const email = formData.get("email") as string;
-        // const password = formData.get("password") as string;
-        // const supabase = createClient();
-
-        // const { error } = await supabase.auth.signInWithPassword({
-        //     email,
-        //     password,
-        // });
-
-        // if (error) {
-        //     console.log("Auth Error: ", error);
-        //     return redirect("/login?message=Could not authenticate user");
-        // }
-
-        console.log("FormData: ", formData);
-
-        return redirect("/");
-    };
-
     return (
         <div className="flex-1 w-full flex flex-col gap-10 items-center p-4">
             <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
@@ -52,7 +24,7 @@ export default async function Index() {
             <div className="flex-1 flex flex-col gap-10 w-full max-w-4xl">
                 <main className="flex-1 flex flex-col gap-6 w-full">
                     <h2 className="font-bold text-4xl mb-4">Order Form</h2>
-                    <NewOrderForm onSubmit={submitRequestForm} />
+                    <NewOrderForm />
                 </main>
             </div>
 

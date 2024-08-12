@@ -1,14 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { SubmitButton } from "@/app/login/submit-button";
 import DragDrop from "../DragDrop";
 
-interface OrderFormProps {
-    onSubmit: (formData: FormData) => Promise<void>;
-}
-
-const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
+const NewOrderForm: React.FC = () => {
     const dragDropRef = useRef<any>(null);
 
     const [step, setStep] = useState(1);
@@ -97,23 +92,17 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
         setAlterationExamples(e.target.value);
     };
 
-    // const handleSubmit = (event: React.FormEvent) => {
-    //     event.preventDefault();
-    //     const formData = new FormData(event.currentTarget as HTMLFormElement);
-    //     onSubmit(formData);
-    // };
-
-    const handleUploadClick = () => {
+    const handleSubmit = () => {
         if (dragDropRef.current) {
             dragDropRef.current.triggerUpload(); // Trigger the upload in DragDrop component
         }
     };
 
     return (
-        <form
+        <div
             className="flex flex-col w-full gap-4 text-foreground"
             // onSubmit={handleSubmit} // TODO: merge handleSubmit with handleUploadClick
-            onSubmit={handleUploadClick}
+            // onSubmit={handleUploadClick}
             data-step={step}
         >
             {step === 1 && (
@@ -438,16 +427,17 @@ const NewOrderForm: React.FC<OrderFormProps> = ({ onSubmit }) => {
                         Continue
                     </button>
                 ) : (
-                    <SubmitButton
-                        formAction={onSubmit}
-                        className="bg-green-700 rounded-md px-4 py-2 text-foreground text-white"
-                        pendingText="Submitting Request..."
-                    >
-                        Submit Request
-                    </SubmitButton>
+                    // <SubmitButton
+                    //     formAction={onSubmit}
+                    //     className="bg-green-700 rounded-md px-4 py-2 text-foreground text-white"
+                    //     pendingText="Submitting Request..."
+                    // >
+                    //     Submit Request
+                    // </SubmitButton>
+                    <button onClick={handleSubmit}>Submit</button>
                 )}
             </div>
-        </form>
+        </div>
     );
 };
 
