@@ -34,9 +34,6 @@ const NewOrderForm: React.FC = () => {
     const supabase = createClient();
 
     const [step, setStep] = useState(1);
-    const [orderId, setOrderId] = useState(
-        Math.floor(Math.random() * (10000 - 1 + 1)) + 1
-    );
     const bucket = "order-images";
     const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -129,21 +126,13 @@ const NewOrderForm: React.FC = () => {
     };
 
     const uploadFiles = async () => {
-        //TODO: get the actual file paths from the upload
-        const filePaths = [
-            "/dan/image1.jpg",
-            "/dan/image2.png",
-            "/dan/image3.gif",
-        ];
-
         try {
-            // 1. POST form data and file paths to /api/living-form API route
+            // 1. POST form data to /api/living-form API route
             const response = await fetch("/api/living-form", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     formData,
-                    filePaths,
                 }),
             });
 
@@ -151,35 +140,28 @@ const NewOrderForm: React.FC = () => {
 
             const result = await response.json();
             console.log("Form submitted successfully:", result);
+
+            // 2. Uppload files to Storage with result.orderId as the folder
+            for (const file of files) {
+                try {
+                    const { error } = await supabase.storage
+                        .from(bucket)
+                        .upload(`${result.orderId}/${file.name}`, file);
+
+                    if (error) {
+                        alert(`Error uploading file ${file.name}.`);
+                    } else {
+                        alert(`File ${file.name} uploaded successfully!`);
+                    }
+                } catch (error) {
+                    alert(
+                        `An unexpected error occurred while uploading ${file.name}.`
+                    );
+                }
+            }
         } catch (error) {
             console.error("Error submitting form:", error);
         }
-
-        if (files.length === 0) {
-            alert("Please select at least one file.");
-            return;
-        }
-
-        setUploading(true);
-
-        for (const file of files) {
-            try {
-                const { error } = await supabase.storage
-                    .from(bucket)
-                    .upload(`${orderId}/${file.name}`, file);
-
-                if (error) {
-                    alert(`Error uploading file ${file.name}.`);
-                } else {
-                    alert(`File ${file.name} uploaded successfully!`);
-                }
-            } catch (error) {
-                alert(
-                    `An unexpected error occurred while uploading ${file.name}.`
-                );
-            }
-        }
-
         setUploading(false);
     };
 

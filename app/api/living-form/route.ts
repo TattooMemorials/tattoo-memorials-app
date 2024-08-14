@@ -14,7 +14,6 @@ function formatPhoneNumber(phone: string): string {
 
 async function submitLivingForm(
     formData: LivingFormData,
-    filePaths: string[],
     supabase: any
 ): Promise<SubmissionResult> {
     let orderData: { id: string } | null = null;
@@ -75,17 +74,6 @@ async function submitLivingForm(
             ]);
         if (mediumsError) throw mediumsError;
 
-        // 4. Insert into order_images table
-        const { error: imagesError } = await supabase
-            .from("order_images")
-            .insert(
-                filePaths.map((path) => ({
-                    order_id: orderData!.id,
-                    image_path: path,
-                }))
-            );
-        if (imagesError) throw imagesError;
-
         return { success: true, orderId: orderData?.id };
     } catch (error) {
         console.error("Error submitting living form:", error);
@@ -102,11 +90,11 @@ export async function POST(request: Request) {
         // Initialize Supabase client inside the request handler
         const supabase = createClient();
 
-        const { formData, filePaths } = await request.json();
+        const { formData } = await request.json();
 
-        // Validate formData and filePaths here
+        // TODO: Validate formData here
 
-        const result = await submitLivingForm(formData, filePaths, supabase);
+        const result = await submitLivingForm(formData, supabase);
 
         if (result.success) {
             return NextResponse.json(result, { status: 201 });
