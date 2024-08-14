@@ -1,103 +1,159 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
 
+interface FormData {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    streetAddress: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    checkedMediumOptions: string[];
+    replicationSelection?: string;
+    isAlteredSelected: boolean;
+    alterationDetails: string;
+    alterationExamples: string;
+}
+
 const NewOrderForm: React.FC = () => {
-    const dragDropRef = useRef<any>(null);
+    const supabase = createClient();
 
     const [step, setStep] = useState(1);
-    const [orderId, setOrderId] = useState("dan");
-
-    // ------ State variables for each input field --------
-    // Form Section One
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
-    const [streetAddress, setStreetAddress] = useState("");
-    const [city, setCity] = useState("");
-    const [state, setState] = useState("");
-    const [postalCode, setPostalCode] = useState("");
-    const [country, setCountry] = useState("");
-
-    // Form Section Two
-    const [checkedMediumOptions, setCheckedMediumOptions] = useState<string[]>(
-        []
+    const [orderId, setOrderId] = useState(
+        Math.floor(Math.random() * (10000 - 1 + 1)) + 1
     );
+    const bucket = "order-images";
+    const [files, setFiles] = useState<File[]>([]);
+    const [uploading, setUploading] = useState(false);
 
-    // Form Section Three
-    const [replicationSelection, setReplicationSelection] = useState<string>();
-    const [isAlteredSelected, setIsAlteredSelected] = useState<boolean>(false);
-    const [alterationDetails, setAlterationDetails] = useState<string>("");
-    const [alterationExamples, setAlterationExamples] = useState<string>("");
+    const [formData, setFormData] = useState<FormData>({
+        firstName: "",
+        lastName: "",
+        phone: "",
+        email: "",
+        streetAddress: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "",
+        checkedMediumOptions: [],
+        replicationSelection: undefined,
+        isAlteredSelected: false,
+        alterationDetails: "",
+        alterationExamples: "",
+    });
 
-    // -----------------------------------------------------
+    // Helper function to update form data
+    const updateFormData = <K extends keyof FormData>(
+        key: K,
+        value: FormData[K]
+    ) => {
+        setFormData((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
 
     const validateCurrentStep = () => {
-        const currentForm = document.querySelector(
-            `form[data-step="${step}"]`
-        ) as HTMLFormElement;
-        if (currentForm) {
-            return currentForm.checkValidity();
+        const currentDiv = document.querySelector(`div[data-step="${step}"]`);
+        if (currentDiv) {
+            const inputs = Array.from(
+                currentDiv.querySelectorAll<
+                    HTMLInputElement | HTMLTextAreaElement
+                >("input, textarea")
+            );
+            for (let input of inputs) {
+                if (!input.checkValidity()) {
+                    input.reportValidity();
+                    return false;
+                }
+            }
         }
-        return false;
+        return true;
     };
 
     const handleNext = () => {
-        setStep(step + 1);
-        // TODO: uncomment
-        // if (validateCurrentStep()) {
-        //     setStep(step + 1);
-        // } else {
-        //     const currentForm = document.querySelector(
-        //         `form[data-step="${step}"]`
-        //     ) as HTMLFormElement;
-        //     currentForm.reportValidity();
-        // }
+        if (validateCurrentStep()) {
+            setStep((prevStep) => prevStep + 1);
+        } else {
+            const currentDiv = document.querySelector(
+                `div[data-step="${step}"]`
+            );
+            if (currentDiv) {
+                const inputs = Array.from(
+                    currentDiv.querySelectorAll<
+                        HTMLInputElement | HTMLTextAreaElement
+                    >("input, textarea")
+                );
+                for (let input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        break; // Stop at the first invalid input to show its error message.
+                    }
+                }
+            }
+        }
     };
 
-    const handlePrevious = () => {
-        setStep(step - 1);
-    };
+    const handlePrevious = () => setStep(step - 1);
 
     const handleMediumsCheckboxChange = (option: string) => {
-        setCheckedMediumOptions((prev) =>
-            prev.includes(option)
-                ? prev.filter((item) => item !== option)
-                : [...prev, option]
+        updateFormData(
+            "checkedMediumOptions",
+            formData.checkedMediumOptions.includes(option)
+                ? formData.checkedMediumOptions.filter(
+                      (item) => item !== option
+                  )
+                : [...formData.checkedMediumOptions, option]
         );
     };
 
     const isMediumChecked = (option: string) =>
-        checkedMediumOptions.includes(option);
+        formData.checkedMediumOptions.includes(option);
 
     const handleReplicationSelection = (option: string) => {
-        setReplicationSelection(option);
-        setIsAlteredSelected(option === "altered");
+        updateFormData("replicationSelection", option);
+        updateFormData("isAlteredSelected", option === "altered");
     };
 
     const isReplicationChecked = (option: string) =>
-        replicationSelection === option;
+        formData.replicationSelection === option;
 
-    const handleAlterationDetailsChange = (
-        e: React.ChangeEvent<HTMLTextAreaElement>
-    ) => {
-        setAlterationDetails(e.target.value);
-    };
+    const uploadFiles = async () => {
+        console.log("formData on Submit: ", formData);
 
-    const handleAlterationExamplesChange = (
-        e: React.ChangeEvent<HTMLTextAreaElement>
-    ) => {
-        setAlterationExamples(e.target.value);
-    };
-
-    const handleSubmit = () => {
-        // TODO: refactor this so we're not using a ref to trigger the upload
-        // lets just handle the upload in this component.
-        if (dragDropRef.current) {
-            dragDropRef.current.triggerUpload(); // Trigger the upload in DragDrop component
+        if (files.length === 0) {
+            alert("Please select at least one file.");
+            return;
         }
+
+        setUploading(true);
+
+        for (const file of files) {
+            try {
+                const { error } = await supabase.storage
+                    .from(bucket)
+                    .upload(`${orderId}/${file.name}`, file);
+
+                if (error) {
+                    alert(`Error uploading file ${file.name}.`);
+                } else {
+                    alert(`File ${file.name} uploaded successfully!`);
+                }
+            } catch (error) {
+                alert(
+                    `An unexpected error occurred while uploading ${file.name}.`
+                );
+            }
+        }
+
+        setUploading(false);
     };
 
     return (
@@ -118,8 +174,10 @@ const NewOrderForm: React.FC = () => {
                             required
                             autoComplete="off"
                             data-lpignore="true"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
+                            value={formData.firstName}
+                            onChange={(e) =>
+                                updateFormData("firstName", e.target.value)
+                            }
                         />
                         <input
                             className="rounded-md px-4 py-2 bg-inherit border"
@@ -128,8 +186,10 @@ const NewOrderForm: React.FC = () => {
                             required
                             autoComplete="off"
                             data-lpignore="true"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
+                            value={formData.lastName}
+                            onChange={(e) =>
+                                updateFormData("lastName", e.target.value)
+                            }
                         />
                     </div>
                     <label className="text-md mb-2 mt-4" htmlFor="phone">
@@ -143,8 +203,10 @@ const NewOrderForm: React.FC = () => {
                         required
                         autoComplete="off"
                         data-lpignore="true"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        value={formData.phone}
+                        onChange={(e) =>
+                            updateFormData("phone", e.target.value)
+                        }
                     />
                     <label className="text-md mb-2 mt-4" htmlFor="email">
                         Email
@@ -157,8 +219,10 @@ const NewOrderForm: React.FC = () => {
                         required
                         autoComplete="off"
                         data-lpignore="true"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={formData.email}
+                        onChange={(e) =>
+                            updateFormData("email", e.target.value)
+                        }
                     />
                     <label className="text-md mb-2 mt-4" htmlFor="address">
                         Mailing Address
@@ -168,8 +232,10 @@ const NewOrderForm: React.FC = () => {
                         name="street_address"
                         placeholder="Street Address"
                         required
-                        value={streetAddress}
-                        onChange={(e) => setStreetAddress(e.target.value)}
+                        value={formData.streetAddress}
+                        onChange={(e) =>
+                            updateFormData("streetAddress", e.target.value)
+                        }
                     />
                     <div className="flex flex-col sm:flex-row sm:space-x-4 mt-4">
                         <input
@@ -177,24 +243,30 @@ const NewOrderForm: React.FC = () => {
                             name="city"
                             placeholder="City"
                             required
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
+                            value={formData.city}
+                            onChange={(e) =>
+                                updateFormData("city", e.target.value)
+                            }
                         />
                         <input
                             className="rounded-md px-4 py-2 bg-inherit border mb-2 sm:mb-0 sm:w-1/4"
                             name="state"
                             placeholder="State"
                             required
-                            value={state}
-                            onChange={(e) => setState(e.target.value)}
+                            value={formData.state}
+                            onChange={(e) =>
+                                updateFormData("state", e.target.value)
+                            }
                         />
                         <input
                             className="rounded-md px-4 py-2 bg-inherit border sm:w-1/4"
                             name="postal_code"
                             placeholder="Postal Code"
                             required
-                            value={postalCode}
-                            onChange={(e) => setPostalCode(e.target.value)}
+                            value={formData.postalCode}
+                            onChange={(e) =>
+                                updateFormData("postalCode", e.target.value)
+                            }
                         />
                     </div>
                     <input
@@ -202,8 +274,10 @@ const NewOrderForm: React.FC = () => {
                         name="country"
                         placeholder="Country"
                         required
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
+                        value={formData.country}
+                        onChange={(e) =>
+                            updateFormData("country", e.target.value)
+                        }
                     />
                 </div>
             )}
@@ -227,7 +301,6 @@ const NewOrderForm: React.FC = () => {
                             </span>
                         )}
                     </div>
-
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
                             isMediumChecked("ink")
@@ -363,7 +436,7 @@ const NewOrderForm: React.FC = () => {
                         )}
                     </div>
 
-                    {isAlteredSelected && (
+                    {formData.isAlteredSelected && (
                         <div className="col-span-1 sm:col-span-2 mt-6 p-4 border border-gray-300 rounded-md bg-gray-900 text-white">
                             <h2 className="text-lg font-semibold mb-4 text-white">
                                 Please describe the augmentations below. Be sure
@@ -377,8 +450,13 @@ const NewOrderForm: React.FC = () => {
                             <textarea
                                 className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
                                 placeholder="Describe the changes you would like..."
-                                value={alterationDetails}
-                                onChange={handleAlterationDetailsChange}
+                                value={formData.alterationDetails}
+                                onChange={(e) =>
+                                    updateFormData(
+                                        "alterationDetails",
+                                        e.target.value
+                                    )
+                                }
                             />
 
                             <h2 className="text-lg font-semibold mb-4 text-white">
@@ -394,8 +472,13 @@ const NewOrderForm: React.FC = () => {
                             <textarea
                                 className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
                                 placeholder="Provide links or descriptions..."
-                                value={alterationExamples}
-                                onChange={handleAlterationExamplesChange}
+                                value={formData.alterationExamples}
+                                onChange={(e) =>
+                                    updateFormData(
+                                        "alterationExamples",
+                                        e.target.value
+                                    )
+                                }
                             />
                         </div>
                     )}
@@ -404,7 +487,11 @@ const NewOrderForm: React.FC = () => {
 
             {step === 4 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DragDrop ref={dragDropRef} orderId={orderId} />
+                    <DragDrop
+                        files={files}
+                        setFiles={setFiles}
+                        uploading={uploading}
+                    />
                 </div>
             )}
 
@@ -427,14 +514,13 @@ const NewOrderForm: React.FC = () => {
                         Continue
                     </button>
                 ) : (
-                    // <SubmitButton
-                    //     formAction={onSubmit}
-                    //     className="bg-green-700 rounded-md px-4 py-2 text-foreground text-white"
-                    //     pendingText="Submitting Request..."
-                    // >
-                    //     Submit Request
-                    // </SubmitButton>
-                    <button onClick={handleSubmit}>Submit</button>
+                    <button
+                        type="button"
+                        className="bg-green-600 rounded-md px-4 py-2 text-foreground text-white"
+                        onClick={uploadFiles}
+                    >
+                        Submit
+                    </button>
                 )}
             </div>
         </div>
