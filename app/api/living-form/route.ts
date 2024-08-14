@@ -1,30 +1,6 @@
+import { LivingFormData } from "@/components/Orders/NewOrderForm";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
-
-interface FormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address1: string;
-    address2?: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    asIs: boolean;
-    asIsNotes?: string | null;
-    inspireNotes?: string;
-    acrylic: boolean;
-    charcoal: boolean;
-    digital: boolean;
-    ink: boolean;
-    oil: boolean;
-    pastel: boolean;
-    pencil: boolean;
-    stencil: boolean;
-    synthetic: boolean;
-    water: boolean;
-}
 
 interface SubmissionResult {
     success: boolean;
@@ -32,9 +8,12 @@ interface SubmissionResult {
     error?: string;
 }
 
-// Move Supabase client initialization inside the request handler
+function formatPhoneNumber(phone: string): string {
+    return phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+}
+
 async function submitLivingForm(
-    formData: FormData,
+    formData: LivingFormData,
     filePaths: string[],
     supabase: any
 ): Promise<SubmissionResult> {
@@ -49,15 +28,16 @@ async function submitLivingForm(
                     first_name: formData.firstName,
                     last_name: formData.lastName,
                     email: formData.email,
-                    phone: formData.phone,
-                    mailing_address_1: formData.address1,
-                    mailing_address_2: formData.address2,
+                    phone: formatPhoneNumber(formData.phone),
+                    street_address: formData.streetAddress,
+                    street_address2: formData.streetAddress2,
                     city: formData.city,
                     state: formData.state,
-                    zip_code: formData.zipCode,
+                    postal_code: formData.postalCode,
                     as_is: formData.asIs,
-                    as_is_notes: formData.asIsNotes,
-                    inspire_notes: formData.inspireNotes,
+                    altered: formData.altered,
+                    alteration_notes: formData.alterationNotes,
+                    inspiration_notes: formData.inspirationNotes,
                     order_type: "Living",
                 },
             ])
@@ -83,14 +63,14 @@ async function submitLivingForm(
                     id: orderData?.id,
                     acrylic: formData.acrylic,
                     charcoal: formData.charcoal,
-                    digital: formData.digital,
+                    digital_tattoo_stencil: formData.digitalTattooStencil,
                     ink: formData.ink,
-                    oil: formData.oil,
+                    oil_paint: formData.oilPaint,
                     pastel: formData.pastel,
                     pencil: formData.pencil,
                     stencil: formData.stencil,
-                    synthetic: formData.synthetic,
-                    water: formData.water,
+                    synthetic_skin: formData.syntheticSkin,
+                    watercolor: formData.watercolor,
                 },
             ]);
         if (mediumsError) throw mediumsError;

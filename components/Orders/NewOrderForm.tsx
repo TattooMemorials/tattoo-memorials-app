@@ -4,21 +4,30 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
 
-interface FormData {
+export interface LivingFormData {
     firstName: string;
     lastName: string;
-    phone: string;
     email: string;
+    phone: string;
     streetAddress: string;
+    streetAddress2?: string;
     city: string;
     state: string;
     postalCode: string;
-    country: string;
-    checkedMediumOptions: string[];
-    replicationSelection?: string;
-    isAlteredSelected: boolean;
-    alterationDetails: string;
-    alterationExamples: string;
+    asIs: boolean;
+    altered: boolean;
+    alterationNotes?: string | null;
+    inspirationNotes?: string;
+    acrylic: boolean;
+    charcoal: boolean;
+    digitalTattooStencil: boolean;
+    ink: boolean;
+    oilPaint: boolean;
+    pastel: boolean;
+    pencil: boolean;
+    stencil: boolean;
+    syntheticSkin: boolean;
+    watercolor: boolean;
 }
 
 const NewOrderForm: React.FC = () => {
@@ -32,27 +41,36 @@ const NewOrderForm: React.FC = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
 
-    const [formData, setFormData] = useState<FormData>({
+    const [formData, setFormData] = useState<LivingFormData>({
         firstName: "",
         lastName: "",
-        phone: "",
         email: "",
+        phone: "",
         streetAddress: "",
+        streetAddress2: "",
         city: "",
         state: "",
         postalCode: "",
-        country: "",
-        checkedMediumOptions: [],
-        replicationSelection: undefined,
-        isAlteredSelected: false,
-        alterationDetails: "",
-        alterationExamples: "",
+        asIs: false,
+        altered: false,
+        alterationNotes: "",
+        inspirationNotes: "",
+        acrylic: false,
+        charcoal: false,
+        digitalTattooStencil: false,
+        ink: false,
+        oilPaint: false,
+        pastel: false,
+        pencil: false,
+        stencil: false,
+        syntheticSkin: false,
+        watercolor: false,
     });
 
     // Helper function to update form data
-    const updateFormData = <K extends keyof FormData>(
+    const updateFormData = <K extends keyof LivingFormData>(
         key: K,
-        value: FormData[K]
+        value: LivingFormData[K]
     ) => {
         setFormData((prev) => ({
             ...prev,
@@ -103,30 +121,39 @@ const NewOrderForm: React.FC = () => {
 
     const handlePrevious = () => setStep(step - 1);
 
-    const handleMediumsCheckboxChange = (option: string) => {
-        updateFormData(
-            "checkedMediumOptions",
-            formData.checkedMediumOptions.includes(option)
-                ? formData.checkedMediumOptions.filter(
-                      (item) => item !== option
-                  )
-                : [...formData.checkedMediumOptions, option]
-        );
+    const toggleCheckbox = (key: keyof LivingFormData) => {
+        setFormData((prev) => ({
+            ...prev,
+            [key]: !prev[key] as boolean, // toggle the boolean value
+        }));
     };
-
-    const isMediumChecked = (option: string) =>
-        formData.checkedMediumOptions.includes(option);
-
-    const handleReplicationSelection = (option: string) => {
-        updateFormData("replicationSelection", option);
-        updateFormData("isAlteredSelected", option === "altered");
-    };
-
-    const isReplicationChecked = (option: string) =>
-        formData.replicationSelection === option;
 
     const uploadFiles = async () => {
-        console.log("formData on Submit: ", formData);
+        //TODO: get the actual file paths from the upload
+        const filePaths = [
+            "/dan/image1.jpg",
+            "/dan/image2.png",
+            "/dan/image3.gif",
+        ];
+
+        try {
+            // 1. POST form data and file paths to /api/living-form API route
+            const response = await fetch("/api/living-form", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    formData,
+                    filePaths,
+                }),
+            });
+
+            if (!response.ok) throw new Error("Failed to submit form");
+
+            const result = await response.json();
+            console.log("Form submitted successfully:", result);
+        } catch (error) {
+            console.error("Error submitting form:", error);
+        }
 
         if (files.length === 0) {
             alert("Please select at least one file.");
@@ -237,6 +264,15 @@ const NewOrderForm: React.FC = () => {
                             updateFormData("streetAddress", e.target.value)
                         }
                     />
+                    <input
+                        className="rounded-md px-4 py-2 bg-inherit border mt-2"
+                        name="street_address_2"
+                        placeholder="Street Address Line 2 (Optional)"
+                        value={formData.streetAddress2}
+                        onChange={(e) =>
+                            updateFormData("streetAddress2", e.target.value)
+                        }
+                    />
                     <div className="flex flex-col sm:flex-row sm:space-x-4 mt-4">
                         <input
                             className="rounded-md px-4 py-2 bg-inherit border mb-2 sm:mb-0 sm:w-1/2"
@@ -269,16 +305,6 @@ const NewOrderForm: React.FC = () => {
                             }
                         />
                     </div>
-                    <input
-                        className="rounded-md px-4 py-2 bg-inherit border mt-4"
-                        name="country"
-                        placeholder="Country"
-                        required
-                        value={formData.country}
-                        onChange={(e) =>
-                            updateFormData("country", e.target.value)
-                        }
-                    />
                 </div>
             )}
 
@@ -286,16 +312,14 @@ const NewOrderForm: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isMediumChecked("syntheticSkin")
+                            formData.syntheticSkin
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() =>
-                            handleMediumsCheckboxChange("syntheticSkin")
-                        }
+                        onClick={() => toggleCheckbox("syntheticSkin")}
                     >
                         <span>Synthetic Skin</span>
-                        {isMediumChecked("syntheticSkin") && (
+                        {formData.syntheticSkin && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -303,14 +327,14 @@ const NewOrderForm: React.FC = () => {
                     </div>
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isMediumChecked("ink")
+                            formData.ink
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() => handleMediumsCheckboxChange("ink")}
+                        onClick={() => toggleCheckbox("ink")}
                     >
                         <span>Ink</span>
-                        {isMediumChecked("ink") && (
+                        {formData.ink && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -319,14 +343,14 @@ const NewOrderForm: React.FC = () => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isMediumChecked("pencil")
+                            formData.pencil
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() => handleMediumsCheckboxChange("pencil")}
+                        onClick={() => toggleCheckbox("pencil")}
                     >
                         <span>Pencil</span>
-                        {isMediumChecked("pencil") && (
+                        {formData.pencil && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -335,34 +359,30 @@ const NewOrderForm: React.FC = () => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isMediumChecked("pastel")
+                            formData.pastel
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() => handleMediumsCheckboxChange("pastel")}
+                        onClick={() => toggleCheckbox("pastel")}
                     >
                         <span>Pastel</span>
-                        {isMediumChecked("pastel") && (
+                        {formData.pastel && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
                         )}
                     </div>
 
-                    {/* Repeat for the rest of the options... */}
-
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isMediumChecked("watercolor")
+                            formData.watercolor
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() =>
-                            handleMediumsCheckboxChange("watercolor")
-                        }
+                        onClick={() => toggleCheckbox("watercolor")}
                     >
                         <span>Watercolor</span>
-                        {isMediumChecked("watercolor") && (
+                        {formData.watercolor && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -371,14 +391,14 @@ const NewOrderForm: React.FC = () => {
 
                     <div
                         className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
-                            isMediumChecked("oilPaint")
+                            formData.oilPaint
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() => handleMediumsCheckboxChange("oilPaint")}
+                        onClick={() => toggleCheckbox("oilPaint")}
                     >
                         <span>Oil Paint</span>
-                        {isMediumChecked("oilPaint") && (
+                        {formData.oilPaint && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -393,11 +413,11 @@ const NewOrderForm: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
                         className={`relative flex flex-col justify-between border border-gray-300 rounded-md p-4 h-32 cursor-pointer transition ${
-                            isReplicationChecked("asIs")
+                            formData.asIs
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() => handleReplicationSelection("asIs")}
+                        onClick={() => toggleCheckbox("asIs")}
                     >
                         <div>
                             <span className="font-bold text-lg">As Is</span>
@@ -406,7 +426,7 @@ const NewOrderForm: React.FC = () => {
                                 color as the original with no augmentation.
                             </p>
                         </div>
-                        {isReplicationChecked("asIs") && (
+                        {formData.asIs && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
@@ -415,11 +435,11 @@ const NewOrderForm: React.FC = () => {
 
                     <div
                         className={`relative flex flex-col justify-between border border-gray-300 rounded-md p-4 h-32 cursor-pointer transition ${
-                            isReplicationChecked("altered")
+                            formData.altered
                                 ? "bg-blue-500 text-white"
                                 : "bg-white text-black"
                         }`}
-                        onClick={() => handleReplicationSelection("altered")}
+                        onClick={() => toggleCheckbox("altered")}
                     >
                         <div>
                             <span className="font-bold text-lg">Altered</span>
@@ -429,14 +449,14 @@ const NewOrderForm: React.FC = () => {
                                 specified below.
                             </p>
                         </div>
-                        {isReplicationChecked("altered") && (
+                        {formData.altered && (
                             <span className="absolute top-2 right-2 text-xl">
                                 ✓
                             </span>
                         )}
                     </div>
 
-                    {formData.isAlteredSelected && (
+                    {formData.altered && (
                         <div className="col-span-1 sm:col-span-2 mt-6 p-4 border border-gray-300 rounded-md bg-gray-900 text-white">
                             <h2 className="text-lg font-semibold mb-4 text-white">
                                 Please describe the augmentations below. Be sure
@@ -450,10 +470,10 @@ const NewOrderForm: React.FC = () => {
                             <textarea
                                 className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
                                 placeholder="Describe the changes you would like..."
-                                value={formData.alterationDetails}
+                                value={formData.alterationNotes || ""}
                                 onChange={(e) =>
                                     updateFormData(
-                                        "alterationDetails",
+                                        "alterationNotes",
                                         e.target.value
                                     )
                                 }
@@ -472,10 +492,10 @@ const NewOrderForm: React.FC = () => {
                             <textarea
                                 className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
                                 placeholder="Provide links or descriptions..."
-                                value={formData.alterationExamples}
+                                value={formData.inspirationNotes || ""}
                                 onChange={(e) =>
                                     updateFormData(
-                                        "alterationExamples",
+                                        "inspirationNotes",
                                         e.target.value
                                     )
                                 }
