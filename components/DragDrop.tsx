@@ -1,8 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { FileUploader } from "react-drag-drop-files";
-import FileUploadProgress, {
-    FileUploadStatus,
-} from "./Orders/FileUploadProgress";
 
 const fileTypes = ["JPG", "PNG", "GIF"];
 
