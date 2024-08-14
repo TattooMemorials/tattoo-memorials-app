@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
+import ConfirmationModal from "./ConfirmationModal";
+import { redirect } from "next/navigation";
 
 export interface LivingFormData {
     firstName: string;
@@ -33,12 +35,7 @@ export interface LivingFormData {
 const NewOrderForm: React.FC = () => {
     const supabase = createClient();
 
-    const [step, setStep] = useState(1);
-    const bucket = "order-images";
-    const [files, setFiles] = useState<File[]>([]);
-    const [uploading, setUploading] = useState(false);
-
-    const [formData, setFormData] = useState<LivingFormData>({
+    const initialFormState: LivingFormData = {
         firstName: "",
         lastName: "",
         email: "",
@@ -62,7 +59,23 @@ const NewOrderForm: React.FC = () => {
         stencil: false,
         syntheticSkin: false,
         watercolor: false,
-    });
+    };
+
+    const [step, setStep] = useState(1);
+    const bucket = "order-images";
+    const [files, setFiles] = useState<File[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [orderId, setOrderId] = useState<string | null>(null);
+
+    const [formData, setFormData] = useState<LivingFormData>(initialFormState);
+
+    const resetForm = () => {
+        setStep(1);
+        setFiles([]);
+        setFormData(initialFormState);
+        setOrderId(null);
+    };
 
     // Helper function to update form data
     const updateFormData = <K extends keyof LivingFormData>(
@@ -139,7 +152,7 @@ const NewOrderForm: React.FC = () => {
             if (!response.ok) throw new Error("Failed to submit form");
 
             const result = await response.json();
-            console.log("Form submitted successfully:", result);
+            setOrderId(result.orderId);
 
             // 2. Uppload files to Storage with result.orderId as the folder
             for (const file of files) {
@@ -159,10 +172,16 @@ const NewOrderForm: React.FC = () => {
                     );
                 }
             }
+            setIsModalOpen(true);
         } catch (error) {
             console.error("Error submitting form:", error);
         }
         setUploading(false);
+    };
+
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        resetForm();
     };
 
     return (
@@ -525,6 +544,12 @@ const NewOrderForm: React.FC = () => {
                     </button>
                 )}
             </div>
+            <ConfirmationModal
+                isOpen={isModalOpen}
+                onClose={handleModalClose}
+                formData={formData}
+                orderId={orderId}
+            />
         </div>
     );
 };
