@@ -251,14 +251,17 @@ const NewOrderForm: React.FC = () => {
                         className="rounded-md px-4 py-2 bg-inherit border"
                         type="phone"
                         name="phone"
-                        placeholder="### ### ####"
+                        placeholder="10-digit phone number"
                         required
                         autoComplete="off"
                         data-lpignore="true"
                         value={formData.phone}
-                        onChange={(e) =>
-                            updateFormData("phone", e.target.value)
-                        }
+                        onChange={(e) => {
+                            // Restrict input to 2 characters
+                            if (e.target.value.length <= 10) {
+                                updateFormData("phone", e.target.value);
+                            }
+                        }}
                     />
                     <label className="text-md mb-2 mt-4" htmlFor="email">
                         Email
@@ -312,22 +315,31 @@ const NewOrderForm: React.FC = () => {
                         <input
                             className="rounded-md px-4 py-2 bg-inherit border mb-2 sm:mb-0 sm:w-1/4"
                             name="state"
-                            placeholder="State"
+                            placeholder="State (XX)"
                             required
                             value={formData.state}
-                            onChange={(e) =>
-                                updateFormData("state", e.target.value)
-                            }
+                            onChange={(e) => {
+                                // Restrict input to 2 characters
+                                if (e.target.value.length <= 2) {
+                                    updateFormData("state", e.target.value);
+                                }
+                            }}
                         />
                         <input
                             className="rounded-md px-4 py-2 bg-inherit border sm:w-1/4"
                             name="postal_code"
-                            placeholder="Postal Code"
+                            placeholder="Postal Code (XXXXX)"
                             required
                             value={formData.postalCode}
-                            onChange={(e) =>
-                                updateFormData("postalCode", e.target.value)
-                            }
+                            onChange={(e) => {
+                                // Restrict input to 2 characters
+                                if (e.target.value.length <= 5) {
+                                    updateFormData(
+                                        "postalCode",
+                                        e.target.value
+                                    );
+                                }
+                            }}
                         />
                     </div>
                 </div>
