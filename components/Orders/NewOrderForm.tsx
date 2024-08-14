@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
 import ConfirmationModal from "./ConfirmationModal";
-import { redirect } from "next/navigation";
+import { FileUploadStatus } from "./FileUploadProgress";
 
 export interface LivingFormData {
     firstName: string;
@@ -69,6 +69,9 @@ const NewOrderForm: React.FC = () => {
     const [orderId, setOrderId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<LivingFormData>(initialFormState);
+    const [fileUploadStatus, setFileUploadStatus] = useState<
+        FileUploadStatus[]
+    >([]);
 
     const resetForm = () => {
         setStep(1);
@@ -140,6 +143,8 @@ const NewOrderForm: React.FC = () => {
 
     const uploadFiles = async () => {
         try {
+            setIsModalOpen(true);
+
             // 1. POST form data to /api/living-form API route
             const response = await fetch("/api/living-form", {
                 method: "POST",
@@ -154,25 +159,44 @@ const NewOrderForm: React.FC = () => {
             const result = await response.json();
             setOrderId(result.orderId);
 
+            // Initialize file upload status
+            setFileUploadStatus(
+                files.map((file) => ({ name: file.name, status: "pending" }))
+            );
+
             // 2. Uppload files to Storage with result.orderId as the folder
-            for (const file of files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
                 try {
                     const { error } = await supabase.storage
                         .from(bucket)
                         .upload(`${result.orderId}/${file.name}`, file);
 
                     if (error) {
-                        alert(`Error uploading file ${file.name}.`);
+                        setFileUploadStatus((prev) =>
+                            prev.map((item, index) =>
+                                index === i
+                                    ? { ...item, status: "error" }
+                                    : item
+                            )
+                        );
                     } else {
-                        alert(`File ${file.name} uploaded successfully!`);
+                        setFileUploadStatus((prev) =>
+                            prev.map((item, index) =>
+                                index === i
+                                    ? { ...item, status: "success" }
+                                    : item
+                            )
+                        );
                     }
                 } catch (error) {
-                    alert(
-                        `An unexpected error occurred while uploading ${file.name}.`
+                    setFileUploadStatus((prev) =>
+                        prev.map((item, index) =>
+                            index === i ? { ...item, status: "error" } : item
+                        )
                     );
                 }
             }
-            setIsModalOpen(true);
         } catch (error) {
             console.error("Error submitting form:", error);
         }
@@ -549,6 +573,7 @@ const NewOrderForm: React.FC = () => {
                 onClose={handleModalClose}
                 formData={formData}
                 orderId={orderId}
+                fileUploadStatus={fileUploadStatus}
             />
         </div>
     );
