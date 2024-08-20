@@ -221,17 +221,71 @@ const NewOrderForm: React.FC = () => {
                 }
             }
 
-            // const emailResponse = await fetch("/api/send-email", {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({
-            //         email: "communications@tattoomemorials.com",
-            //         subject: `${result.orderId}`,
-            //         message: `This email is for ${formData.firstName} ${formData.lastName}, at ${formData.email}.`,
-            //     }),
-            // });
+            const emailResponse = await fetch("/api/send-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: "dan@tinner.tech",
+                    subject: `New Order: ${result.orderId}`,
+                    message: `
+            New order received from Tattoo Memorials website.
+            
+            Order ID: ${result.orderId}
+            
+            Personal Information:
+            --------------------
+            Name: ${formData.firstName} ${formData.lastName}
+            Email: ${formData.email}
+            Phone: ${formData.phone}
+            
+            Mailing Address:
+            ---------------
+            ${formData.streetAddress}
+            ${formData.streetAddress2 ? formData.streetAddress2 + "\n" : ""}${
+                        formData.city
+                    }, ${formData.state} ${formData.postalCode}
+            
+            Order Details:
+            -------------
+            Medium: ${Object.entries(formData)
+                .filter(
+                    ([key, value]) =>
+                        [
+                            "syntheticSkin",
+                            "ink",
+                            "pencil",
+                            "pastel",
+                            "watercolor",
+                            "oilPaint",
+                        ].includes(key) && value
+                )
+                .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+                .join(", ")}
+            
+            Type: ${formData.asIs ? "As Is" : "Altered"}
+            ${
+                formData.altered
+                    ? `
+            Alteration Notes: ${formData.alterationNotes}
+            
+            Inspiration Notes: ${formData.inspirationNotes}
+            `
+                    : ""
+            }
+            
+            Files Uploaded: ${files.length}
+            ${files
+                .map((file, index) => `${index + 1}. ${file.name}`)
+                .join("\n")}
+            
+            
+            Thank you,
+            Tattoo Memorials
+                    `,
+                }),
+            });
         } catch (error) {
             console.error("Error submitting form:", error);
         }
