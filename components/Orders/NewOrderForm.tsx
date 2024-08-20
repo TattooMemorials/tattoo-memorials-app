@@ -221,17 +221,17 @@ const NewOrderForm: React.FC = () => {
                 }
             }
 
-            const emailResponse = await fetch("/api/send-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: "communications@tattoomemorials.com",
-                    subject: `${result.orderId}`,
-                    message: `This email is for ${formData.firstName} ${formData.lastName}, at ${formData.email}.`,
-                }),
-            });
+            // const emailResponse = await fetch("/api/send-email", {
+            //     method: "POST",
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //     },
+            //     body: JSON.stringify({
+            //         email: "communications@tattoomemorials.com",
+            //         subject: `${result.orderId}`,
+            //         message: `This email is for ${formData.firstName} ${formData.lastName}, at ${formData.email}.`,
+            //     }),
+            // });
         } catch (error) {
             console.error("Error submitting form:", error);
         }
