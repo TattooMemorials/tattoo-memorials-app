@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
 import ConfirmationModal from "./ConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
+import * as postmark from "postmark";
 
 export interface LivingFormData {
     firstName: string;
@@ -34,6 +35,8 @@ export interface LivingFormData {
 
 const NewOrderForm: React.FC = () => {
     const supabase = createClient();
+    var serverToken = process.env.POSTMARK_SERVER_API_TOKEN || "";
+    const postmarkClient = new postmark.ServerClient(serverToken);
 
     const initialFormState: LivingFormData = {
         firstName: "",
@@ -201,6 +204,23 @@ const NewOrderForm: React.FC = () => {
             console.error("Error submitting form:", error);
         }
         setUploading(false);
+
+        try {
+            postmarkClient
+                .sendEmail({
+                    From: "dan@tinner.tech",
+                    To: "dan.tinsman@outlook.com",
+                    Subject: `${orderId}`,
+                    HtmlBody: `${formData}`,
+                })
+                .then((response) => {
+                    console.log("Sending message");
+                    console.log(response.To);
+                    console.log(response.Message);
+                });
+        } catch (error) {
+            console.error("POSTMARK EMAIL ERROR: ", error);
+        }
     };
 
     const handleModalClose = () => {
