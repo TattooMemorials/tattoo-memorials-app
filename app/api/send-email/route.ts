@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             From: "dan@tinner.tech",
             To: email,
             Subject: subject,
-            TextBody: message,
+            HtmlBody: message,
         });
 
         return NextResponse.json({ success: true });

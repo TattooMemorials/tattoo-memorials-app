@@ -230,60 +230,117 @@ const NewOrderForm: React.FC = () => {
                     email: "dan@tinner.tech",
                     subject: `New Order: ${result.orderId}`,
                     message: `
-            New order received from Tattoo Memorials website.
-            
-            Order ID: ${result.orderId}
-            
-            Personal Information:
-            --------------------
-            Name: ${formData.firstName} ${formData.lastName}
-            Email: ${formData.email}
-            Phone: ${formData.phone}
-            
-            Mailing Address:
-            ---------------
-            ${formData.streetAddress}
-            ${formData.streetAddress2 ? formData.streetAddress2 + "\n" : ""}${
-                        formData.city
-                    }, ${formData.state} ${formData.postalCode}
-            
-            Order Details:
-            -------------
-            Medium: ${Object.entries(formData)
-                .filter(
-                    ([key, value]) =>
-                        [
-                            "syntheticSkin",
-                            "ink",
-                            "pencil",
-                            "pastel",
-                            "watercolor",
-                            "oilPaint",
-                        ].includes(key) && value
-                )
-                .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
-                .join(", ")}
-            
-            Type: ${formData.asIs ? "As Is" : "Altered"}
-            ${
-                formData.altered
-                    ? `
-            Alteration Notes: ${formData.alterationNotes}
-            
-            Inspiration Notes: ${formData.inspirationNotes}
-            `
-                    : ""
-            }
-            
-            Files Uploaded: ${files.length}
-            ${files
-                .map((file, index) => `${index + 1}. ${file.name}`)
-                .join("\n")}
-            
-            
-            Thank you,
-            Tattoo Memorials
-                    `,
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>New Order from Tattoo Memorials</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                            h1 { color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 10px; }
+                            h2 { color: #2c5282; margin-top: 20px; }
+                            .order-id { background-color: #edf2f7; padding: 10px; border-radius: 5px; font-weight: bold; }
+                            .section { margin-bottom: 20px; }
+                            .label { font-weight: bold; }
+                            ul { padding-left: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>New Order Received</h1>
+                            
+                            <div class="section">
+                                <p class="order-id">Order ID: ${
+                                    result.orderId
+                                }</p>
+                            </div>
+                    
+                            <div class="section">
+                                <h2>Personal Information</h2>
+                                <p><span class="label">Name:</span> ${
+                                    formData.firstName
+                                } ${formData.lastName}</p>
+                                <p><span class="label">Email:</span> ${
+                                    formData.email
+                                }</p>
+                                <p><span class="label">Phone:</span> ${
+                                    formData.phone
+                                }</p>
+                            </div>
+                    
+                            <div class="section">
+                                <h2>Mailing Address</h2>
+                                <p>${formData.streetAddress}<br>
+                                ${
+                                    formData.streetAddress2
+                                        ? formData.streetAddress2 + "<br>"
+                                        : ""
+                                }
+                                ${formData.city}, ${formData.state} ${
+                        formData.postalCode
+                    }</p>
+                            </div>
+                    
+                            <div class="section">
+                                <h2>Order Details</h2>
+                                <p><span class="label">Medium:</span> ${Object.entries(
+                                    formData
+                                )
+                                    .filter(
+                                        ([key, value]) =>
+                                            [
+                                                "syntheticSkin",
+                                                "ink",
+                                                "pencil",
+                                                "pastel",
+                                                "watercolor",
+                                                "oilPaint",
+                                            ].includes(key) && value
+                                    )
+                                    .map(
+                                        ([key]) =>
+                                            key.charAt(0).toUpperCase() +
+                                            key.slice(1)
+                                    )
+                                    .join(", ")}</p>
+                                <p><span class="label">Type:</span> ${
+                                    formData.asIs ? "As Is" : "Altered"
+                                }</p>
+                                ${
+                                    formData.altered
+                                        ? `
+                                    <p><span class="label">Alteration Notes:</span> ${formData.alterationNotes}</p>
+                                    <p><span class="label">Inspiration Notes:</span> ${formData.inspirationNotes}</p>
+                                `
+                                        : ""
+                                }
+                            </div>
+                    
+                            <div class="section">
+                                <h2>Uploaded Files</h2>
+                                <p><span class="label">Number of files:</span> ${
+                                    files.length
+                                }</p>
+                                <ul>
+                                    ${files
+                                        .map((file) => `<li>${file.name}</li>`)
+                                        .join("")}
+                                </ul>
+                            </div>
+                    
+                            <div class="section">
+                                <p>Please process this order according to our standard procedures. If you have any questions or concerns, please contact the customer directly using the provided contact information.</p>
+                            </div>
+                    
+                            <div class="section">
+                                <p>Thank you,<br>Tattoo Memorials Auto-Notification System</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                            `,
                 }),
             });
         } catch (error) {
