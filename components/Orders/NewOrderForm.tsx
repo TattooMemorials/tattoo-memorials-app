@@ -153,7 +153,7 @@ const NewOrderForm: React.FC = () => {
             return;
         }
 
-        const token = await executeRecaptcha("yourAction");
+        const token = await executeRecaptcha("submitLivingOrderForm");
         setToken(token);
 
         await fetch("/api/verify-recaptcha", {
