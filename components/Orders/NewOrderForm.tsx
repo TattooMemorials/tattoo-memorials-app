@@ -227,7 +227,7 @@ const NewOrderForm: React.FC = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    email: "dan@tinner.tech",
+                    email: "communications@tattoomemorials.com",
                     subject: `${result.orderId}`,
                     message: `This email is for ${formData.firstName} ${formData.lastName}, at ${formData.email}.`,
                 }),
