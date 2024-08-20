@@ -5,7 +5,8 @@ import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
 import ConfirmationModal from "./ConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
-import * as postmark from "postmark";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+// import * as postmark from "postmark";
 
 export interface LivingFormData {
     firstName: string;
@@ -34,9 +35,12 @@ export interface LivingFormData {
 }
 
 const NewOrderForm: React.FC = () => {
+    const { executeRecaptcha } = useGoogleReCaptcha();
+    const [token, setToken] = useState<string | null>(null);
+
     const supabase = createClient();
-    var serverToken = process.env.POSTMARK_SERVER_API_TOKEN || "";
-    const postmarkClient = new postmark.ServerClient(serverToken);
+    // var serverToken = process.env.POSTMARK_SERVER_API_TOKEN || "";
+    // const postmarkClient = new postmark.ServerClient(serverToken);
 
     const initialFormState: LivingFormData = {
         firstName: "",
@@ -145,6 +149,25 @@ const NewOrderForm: React.FC = () => {
     };
 
     const uploadFiles = async () => {
+        // Handle Google reCAPTCHA v3
+
+        if (!executeRecaptcha) {
+            console.log("Execute recaptcha not yet available");
+            return;
+        }
+
+        const token = await executeRecaptcha("yourAction");
+        setToken(token);
+
+        await fetch("/api/verify-recaptcha", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
+        });
+
+        // Handle Form Submission
         try {
             setIsModalOpen(true);
 
@@ -205,22 +228,22 @@ const NewOrderForm: React.FC = () => {
         }
         setUploading(false);
 
-        try {
-            postmarkClient
-                .sendEmail({
-                    From: "dan@tinner.tech",
-                    To: "dan.tinsman@outlook.com",
-                    Subject: `${orderId}`,
-                    HtmlBody: `${formData}`,
-                })
-                .then((response) => {
-                    console.log("Sending message");
-                    console.log(response.To);
-                    console.log(response.Message);
-                });
-        } catch (error) {
-            console.error("POSTMARK EMAIL ERROR: ", error);
-        }
+        // try {
+        //     postmarkClient
+        //         .sendEmail({
+        //             From: "dan@tinner.tech",
+        //             To: "dan.tinsman@outlook.com",
+        //             Subject: `${orderId}`,
+        //             HtmlBody: `${formData}`,
+        //         })
+        //         .then((response) => {
+        //             console.log("Sending message");
+        //             console.log(response.To);
+        //             console.log(response.Message);
+        //         });
+        // } catch (error) {
+        //     console.error("POSTMARK EMAIL ERROR: ", error);
+        // }
     };
 
     const handleModalClose = () => {

@@ -17,6 +17,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-drag-drop-files": "^2.3.10",
+    "react-google-recaptcha-v3": "^1.10.1",
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3"
   },
