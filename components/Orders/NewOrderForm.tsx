@@ -210,17 +210,20 @@ const NewOrderForm: React.FC = () => {
 
     return (
         <div
-            className="flex flex-col w-full gap-4 text-foreground"
+            className="flex flex-col w-full gap-6 text-foreground bg-navy-900 text-gold-300 p-8 rounded-lg shadow-lg"
             data-step={step}
         >
             {step === 1 && (
                 <div className="flex flex-col">
-                    <label className="text-md mb-2" htmlFor="name">
+                    <label
+                        className="text-lg mb-2 text-gold-400"
+                        htmlFor="name"
+                    >
                         Name
                     </label>
-                    <div className="flex flex-col sm:flex-row sm:space-x-4">
+                    <div className="flex flex-col sm:flex-row sm:space-x-4 w-full">
                         <input
-                            className="rounded-md px-4 py-2 bg-inherit border mb-2 sm:mb-0"
+                            className="rounded-md px-4 py-3 bg-navy-800 border border-gold-600 mb-2 sm:mb-0 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-gold-500"
                             name="first_name"
                             placeholder="First Name"
                             required
@@ -232,7 +235,7 @@ const NewOrderForm: React.FC = () => {
                             }
                         />
                         <input
-                            className="rounded-md px-4 py-2 bg-inherit border"
+                            className="rounded-md px-4 py-3 bg-navy-800 border border-gold-600 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-gold-500"
                             name="last_name"
                             placeholder="Last Name"
                             required
@@ -248,7 +251,7 @@ const NewOrderForm: React.FC = () => {
                         Phone
                     </label>
                     <input
-                        className="rounded-md px-4 py-2 bg-inherit border"
+                        className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
                         type="phone"
                         name="phone"
                         placeholder="10-digit phone number"
@@ -267,10 +270,10 @@ const NewOrderForm: React.FC = () => {
                         Email
                     </label>
                     <input
-                        className="rounded-md px-4 py-2 bg-inherit border"
+                        className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
                         type="email"
                         name="email"
-                        placeholder=""
+                        placeholder="Email"
                         required
                         autoComplete="off"
                         data-lpignore="true"
@@ -283,7 +286,7 @@ const NewOrderForm: React.FC = () => {
                         Mailing Address
                     </label>
                     <input
-                        className="rounded-md px-4 py-2 bg-inherit border mt-2"
+                        className="rounded-md px-4 py-2 mt-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
                         name="street_address"
                         placeholder="Street Address"
                         required
@@ -293,7 +296,7 @@ const NewOrderForm: React.FC = () => {
                         }
                     />
                     <input
-                        className="rounded-md px-4 py-2 bg-inherit border mt-2"
+                        className="rounded-md px-4 py-2 mt-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
                         name="street_address_2"
                         placeholder="Street Address Line 2 (Optional)"
                         value={formData.streetAddress2}
@@ -303,7 +306,7 @@ const NewOrderForm: React.FC = () => {
                     />
                     <div className="flex flex-col sm:flex-row sm:space-x-4 mt-4">
                         <input
-                            className="rounded-md px-4 py-2 bg-inherit border mb-2 sm:mb-0 sm:w-1/2"
+                            className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 mb-2 sm:mb-0 sm:w-1/2"
                             name="city"
                             placeholder="City"
                             required
@@ -313,7 +316,7 @@ const NewOrderForm: React.FC = () => {
                             }
                         />
                         <input
-                            className="rounded-md px-4 py-2 bg-inherit border mb-2 sm:mb-0 sm:w-1/4"
+                            className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 mb-2 sm:mb-0 sm:w-1/4"
                             name="state"
                             placeholder="State (XX)"
                             required
@@ -326,7 +329,7 @@ const NewOrderForm: React.FC = () => {
                             }}
                         />
                         <input
-                            className="rounded-md px-4 py-2 bg-inherit border sm:w-1/4"
+                            className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 sm:w-1/4"
                             name="postal_code"
                             placeholder="Postal Code (XXXXX)"
                             required
@@ -347,11 +350,15 @@ const NewOrderForm: React.FC = () => {
 
             {step === 2 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <h2 className="text-2xl font-semibold col-span-full mb-4 text-center">
+                        Medium Choices
+                    </h2>
+
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.syntheticSkin
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("syntheticSkin")}
                     >
@@ -363,10 +370,10 @@ const NewOrderForm: React.FC = () => {
                         )}
                     </div>
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.ink
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("ink")}
                     >
@@ -379,10 +386,10 @@ const NewOrderForm: React.FC = () => {
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.pencil
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("pencil")}
                     >
@@ -395,10 +402,10 @@ const NewOrderForm: React.FC = () => {
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.pastel
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("pastel")}
                     >
@@ -411,10 +418,10 @@ const NewOrderForm: React.FC = () => {
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.watercolor
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("watercolor")}
                     >
@@ -427,10 +434,10 @@ const NewOrderForm: React.FC = () => {
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border border-gray-300 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.oilPaint
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("oilPaint")}
                     >
@@ -449,10 +456,10 @@ const NewOrderForm: React.FC = () => {
             {step === 3 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
-                        className={`relative flex flex-col justify-between border border-gray-300 rounded-md p-4 h-32 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 h-32 cursor-pointer transition ${
                             formData.asIs
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("asIs")}
                     >
@@ -471,10 +478,10 @@ const NewOrderForm: React.FC = () => {
                     </div>
 
                     <div
-                        className={`relative flex flex-col justify-between border border-gray-300 rounded-md p-4 h-32 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 h-32 cursor-pointer transition ${
                             formData.altered
-                                ? "bg-blue-500 text-white"
-                                : "bg-white text-black"
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
                         }`}
                         onClick={() => toggleCheckbox("altered")}
                     >
@@ -505,7 +512,7 @@ const NewOrderForm: React.FC = () => {
                                 What would you like to change?
                             </h3>
                             <textarea
-                                className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+                                className="rounded-md px-4 py-3 bg-navy-800 w-full border border-gold-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-gold-500"
                                 placeholder="Describe the changes you would like..."
                                 value={formData.alterationNotes || ""}
                                 onChange={(e) =>
@@ -527,7 +534,7 @@ const NewOrderForm: React.FC = () => {
                                 Pinterest, YouTube, URL, etc.
                             </h3>
                             <textarea
-                                className="rounded-md px-4 py-3 bg-gray-800 w-full border border-gray-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+                                className="rounded-md px-4 py-3 bg-navy-800 w-full border border-gold-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-gold-500"
                                 placeholder="Provide links or descriptions..."
                                 value={formData.inspirationNotes || ""}
                                 onChange={(e) =>
@@ -565,7 +572,7 @@ const NewOrderForm: React.FC = () => {
                 {step < 4 ? (
                     <button
                         type="button"
-                        className="bg-blue-600 rounded-md px-4 py-2 text-foreground text-white"
+                        className="bg-gold-600 text-navy-900 rounded-md px-6 py-2 font-semibold hover:bg-gold-500 transition"
                         onClick={handleNext}
                     >
                         Continue
