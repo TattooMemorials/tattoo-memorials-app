@@ -1,6 +1,15 @@
 import NewOrderForm from "@/components/Orders/NewOrderForm";
+import GoogleCaptchaWrapper from "./google-captcha-wrapper";
 
-export default async function Index() {
+export default function Index() {
+    return (
+        <GoogleCaptchaWrapper>
+            <IndexInside />
+        </GoogleCaptchaWrapper>
+    );
+}
+
+async function IndexInside() {
     return (
         <div className="flex-1 w-full flex flex-col min-h-screen bg-navy-900 text-gold-300">
             <nav className="w-full border-b border-gold-600/30 h-16 bg-navy-800">

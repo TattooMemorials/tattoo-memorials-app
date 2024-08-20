@@ -18,6 +18,8 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
 
+    console.log("recaptcha data: ", data);
+
     if (data.success) {
         return NextResponse.json({ success: true });
     } else {

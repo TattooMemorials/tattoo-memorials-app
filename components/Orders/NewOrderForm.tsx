@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
 import ConfirmationModal from "./ConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
-// import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 export interface LivingFormData {
     firstName: string;
@@ -34,8 +34,8 @@ export interface LivingFormData {
 }
 
 const NewOrderForm: React.FC = () => {
-    // const { executeRecaptcha } = useGoogleReCaptcha();
-    // const [token, setToken] = useState<string | null>(null);
+    const { executeRecaptcha } = useGoogleReCaptcha();
+    const [token, setToken] = useState<string | null>(null);
 
     const supabase = createClient();
 
@@ -148,21 +148,21 @@ const NewOrderForm: React.FC = () => {
     const uploadFiles = async () => {
         // Handle Google reCAPTCHA v3
 
-        // if (!executeRecaptcha) {
-        //     console.log("Execute recaptcha not yet available");
-        //     return;
-        // }
+        if (!executeRecaptcha) {
+            console.log("Execute recaptcha not yet available");
+            return;
+        }
 
-        // const token = await executeRecaptcha("yourAction");
-        // setToken(token);
+        const token = await executeRecaptcha("yourAction");
+        setToken(token);
 
-        // await fetch("/api/verify-recaptcha", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({ token }),
-        // });
+        await fetch("/api/verify-recaptcha", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
+        });
 
         // Handle Form Submission
         try {
@@ -232,7 +232,6 @@ const NewOrderForm: React.FC = () => {
                     message: `This email is for ${formData.firstName} ${formData.lastName}, at ${formData.email}.`,
                 }),
             });
-            console.log(emailResponse);
         } catch (error) {
             console.error("Error submitting form:", error);
         }
@@ -586,12 +585,21 @@ const NewOrderForm: React.FC = () => {
             )}
 
             {step === 4 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DragDrop
-                        files={files}
-                        setFiles={setFiles}
-                        uploading={uploading}
-                    />
+                <div className="w-full">
+                    <h2 className="text-2xl font-semibold mb-4 text-center text-gold-400">
+                        Upload Your Files
+                    </h2>
+                    <p className="text-center mb-6 text-gold-300">
+                        Share photographs of your tattoo(s) here. You can upload
+                        multiple files if needed.
+                    </p>
+                    <div className="bg-navy-800 p-6 rounded-lg">
+                        <DragDrop
+                            files={files}
+                            setFiles={setFiles}
+                            uploading={uploading}
+                        />
+                    </div>
                 </div>
             )}
 
