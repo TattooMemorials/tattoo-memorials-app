@@ -7,6 +7,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
+import { formatPhoneNumber } from "@/utils/common/format";
 
 export interface LivingFormData {
     firstName: string;
@@ -157,6 +158,27 @@ const NewOrderForm: React.FC = () => {
             ...prev,
             [key]: !prev[key] as boolean, // toggle the boolean value
         }));
+    };
+
+    const handlePhoneNumberChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        // Remove all non-numeric characters
+        const rawValue = e.target.value.replace(/\D/g, "");
+
+        // Enforce a maximum length of 10 digits
+        if (rawValue.length > 10) {
+            return; // Exit early if the length exceeds 10 digits
+        }
+
+        // Format the cleaned value
+        const formattedValue = formatPhoneNumber(rawValue);
+
+        // Update the form state with the raw value
+        updateFormData("phone", rawValue);
+
+        // Update the display value (formatted)
+        e.target.value = formattedValue;
     };
 
     const selectedMediums = Object.entries(formData)
@@ -377,7 +399,7 @@ Tattoo Memorials Auto-Notification System
                         <input
                             className="rounded-md px-4 py-3 bg-navy-800 border border-gold-600 mb-2 sm:mb-0 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-gold-500"
                             name="first_name"
-                            placeholder="First Name"
+                            placeholder="Jane"
                             required
                             autoComplete="off"
                             data-lpignore="true"
@@ -389,7 +411,7 @@ Tattoo Memorials Auto-Notification System
                         <input
                             className="rounded-md px-4 py-3 bg-navy-800 border border-gold-600 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-gold-500"
                             name="last_name"
-                            placeholder="Last Name"
+                            placeholder="Doe"
                             required
                             autoComplete="off"
                             data-lpignore="true"
@@ -404,19 +426,14 @@ Tattoo Memorials Auto-Notification System
                     </label>
                     <input
                         className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
-                        type="phone"
+                        type="tel"
                         name="phone"
-                        placeholder="10-digit phone number"
+                        placeholder="123-456-7890"
                         required
                         autoComplete="off"
                         data-lpignore="true"
-                        value={formData.phone}
-                        onChange={(e) => {
-                            // Restrict input to 2 characters
-                            if (e.target.value.length <= 10) {
-                                updateFormData("phone", e.target.value);
-                            }
-                        }}
+                        value={formatPhoneNumber(formData.phone)} // Display formatted value
+                        onChange={handlePhoneNumberChange} // Use new handler
                     />
                     <label className="text-md mb-2 mt-4" htmlFor="email">
                         Email
@@ -425,7 +442,7 @@ Tattoo Memorials Auto-Notification System
                         className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
                         type="email"
                         name="email"
-                        placeholder="Email"
+                        placeholder="jane.doe@example.com"
                         required
                         autoComplete="off"
                         data-lpignore="true"
@@ -483,7 +500,7 @@ Tattoo Memorials Auto-Notification System
                         <input
                             className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 sm:w-1/4"
                             name="postal_code"
-                            placeholder="Postal Code (XXXXX)"
+                            placeholder="ZIP Code (XXXXX)"
                             required
                             value={formData.postalCode}
                             onChange={(e) => {
