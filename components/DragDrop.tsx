@@ -27,6 +27,7 @@ interface DragDropProps {
 
 const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const maxFileSizeInMb = 6;
 
     const handleChange = (selectedFiles: FileList) => {
         const fileArray = Array.from(selectedFiles);
@@ -43,7 +44,7 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
 
     const handleSizeError = (error: string) => {
         setErrorMessage(
-            "File is too large. Please upload a file smaller than 1MB."
+            `File is too large. Please upload a file smaller than ${maxFileSizeInMb}MB.`
         );
     };
 
@@ -53,7 +54,7 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
                 handleChange={(fileList: FileList) => handleChange(fileList)}
                 name="files"
                 types={fileTypes}
-                maxSize={20} // Max size in MB
+                maxSize={maxFileSizeInMb} // Max size in MB
                 multiple={true}
                 classes="w-full p-8 border-2 border-none rounded-lg text-center bg-navy-950 hover:border-gold-400 transition-all duration-300"
                 onTypeError={handleTypeError}
