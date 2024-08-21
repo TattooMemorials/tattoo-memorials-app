@@ -6,6 +6,7 @@ import DragDrop from "../DragDrop";
 import ConfirmationModal from "./ConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import ProgressBar from "./ProgressBar";
 
 export interface LivingFormData {
     firstName: string;
@@ -77,6 +78,7 @@ const NewOrderForm: React.FC = () => {
         stencil: "Stencil",
     };
 
+    const totalSteps = 4;
     const [step, setStep] = useState(1);
     const bucket = "order-images";
     const [files, setFiles] = useState<File[]>([]);
@@ -366,6 +368,7 @@ Tattoo Memorials Auto-Notification System
             className="flex flex-col w-full gap-6 text-foreground bg-navy-900 text-gold-300 p-8 rounded-lg shadow-lg"
             data-step={step}
         >
+            <ProgressBar step={step} totalSteps={totalSteps} />
             {step === 1 && (
                 <div className="flex flex-col">
                     <label
@@ -609,7 +612,7 @@ Tattoo Memorials Auto-Notification System
             {step === 3 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
-                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 h-32 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 cursor-pointer transition ${
                             formData.asIs
                                 ? "bg-gold-600 text-navy-900"
                                 : "bg-navy-800 text-gold-300"
@@ -631,7 +634,7 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 h-32 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 cursor-pointer transition ${
                             formData.altered
                                 ? "bg-gold-600 text-navy-900"
                                 : "bg-navy-800 text-gold-300"
