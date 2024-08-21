@@ -384,12 +384,6 @@ const NewOrderForm: React.FC = () => {
             : ""
     }
 
-    <h2 style="color: #2c5282; margin-top: 20px;">Uploaded Files</h2>
-    <p><strong>Number of files:</strong> ${files.length}</p>
-    <ul>
-        ${files.map((file) => `<li>${file.name}</li>`).join("")}
-    </ul>
-
     <p style="margin-top: 20px;">Thank you,<br>Tattoo Memorials</p>
 </body>
 </html>
@@ -438,9 +432,6 @@ Inspiration Notes: ${formData.inspirationNotes}
 `
         : ""
 }
-
-Uploaded Files: ${files.length}
-${files.map((file, index) => `${index + 1}. ${file.name}`).join("\n")}
 
 Thank you,
 Tattoo Memorials Auto-Notification System
