@@ -1,7 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 
-const fileTypes = ["JPG", "PNG", "GIF"];
+const fileTypes: string[] = [
+    "jpg",
+    "jpeg",
+    "jpe",
+    "jfif",
+    "jif",
+    "png",
+    "gif",
+    "webp",
+    "bmp",
+    "tif",
+    "tiff",
+    "svg",
+    "ico",
+    "heif",
+    "heic",
+];
 
 interface DragDropProps {
     files: File[];
@@ -10,9 +26,25 @@ interface DragDropProps {
 }
 
 const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
     const handleChange = (selectedFiles: FileList) => {
         const fileArray = Array.from(selectedFiles);
         setFiles(fileArray);
+    };
+
+    const handleTypeError = (error: string) => {
+        setErrorMessage(
+            `File type not supported. Please upload one of the following types: ${fileTypes.join(
+                ", "
+            )}.`
+        );
+    };
+
+    const handleSizeError = (error: string) => {
+        setErrorMessage(
+            "File is too large. Please upload a file smaller than 1MB."
+        );
     };
 
     return (
@@ -21,8 +53,11 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
                 handleChange={(fileList: FileList) => handleChange(fileList)}
                 name="files"
                 types={fileTypes}
+                maxSize={20} // Max size in MB
                 multiple={true}
                 classes="w-full p-8 border-2 border-none rounded-lg text-center bg-navy-950 hover:border-gold-400 transition-all duration-300"
+                onTypeError={handleTypeError}
+                onSizeError={handleSizeError}
             >
                 <div className="flex flex-col items-center justify-center min-h-[200px]">
                     <svg
@@ -47,6 +82,11 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
                     </p>
                 </div>
             </FileUploader>
+            {errorMessage && (
+                <div className="mt-4 p-4 border border-red-600 rounded-lg bg-navy-900">
+                    <p className="text-gold-400">{errorMessage}</p>
+                </div>
+            )}
             {files.length > 0 && (
                 <div className="mt-4 p-4 border border-gold-600 rounded-lg bg-navy-900">
                     <h4 className="text-gold-400 font-semibold mb-2">

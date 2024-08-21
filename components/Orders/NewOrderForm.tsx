@@ -110,20 +110,20 @@ const NewOrderForm: React.FC = () => {
     };
 
     const validateCurrentStep = () => {
-        const currentDiv = document.querySelector(`div[data-step="${step}"]`);
-        if (currentDiv) {
-            const inputs = Array.from(
-                currentDiv.querySelectorAll<
-                    HTMLInputElement | HTMLTextAreaElement
-                >("input, textarea")
-            );
-            for (let input of inputs) {
-                if (!input.checkValidity()) {
-                    input.reportValidity();
-                    return false;
-                }
-            }
-        }
+        // const currentDiv = document.querySelector(`div[data-step="${step}"]`);
+        // if (currentDiv) {
+        //     const inputs = Array.from(
+        //         currentDiv.querySelectorAll<
+        //             HTMLInputElement | HTMLTextAreaElement
+        //         >("input, textarea")
+        //     );
+        //     for (let input of inputs) {
+        //         if (!input.checkValidity()) {
+        //             input.reportValidity();
+        //             return false;
+        //         }
+        //     }
+        // }
         return true;
     };
 
