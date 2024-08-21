@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     try {
         await postmarkClient.sendEmail({
             // From: "new-order@tattoomemorials.com",
-            From: "dan@tinner.tech",
+            From: "new-order@tattoomemorials.com",
             To: email,
             Subject: subject,
             HtmlBody: message,
