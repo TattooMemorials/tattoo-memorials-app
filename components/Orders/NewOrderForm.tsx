@@ -111,20 +111,76 @@ const NewOrderForm: React.FC = () => {
     };
 
     const validateCurrentStep = () => {
-        // const currentDiv = document.querySelector(`div[data-step="${step}"]`);
-        // if (currentDiv) {
-        //     const inputs = Array.from(
-        //         currentDiv.querySelectorAll<
-        //             HTMLInputElement | HTMLTextAreaElement
-        //         >("input, textarea")
-        //     );
-        //     for (let input of inputs) {
-        //         if (!input.checkValidity()) {
-        //             input.reportValidity();
-        //             return false;
-        //         }
-        //     }
-        // }
+        // Step 1: Continue using the existing HTML validation
+        if (step === 1) {
+            const currentDiv = document.querySelector(
+                `div[data-step="${step}"]`
+            );
+            if (currentDiv) {
+                const inputs = Array.from(
+                    currentDiv.querySelectorAll<
+                        HTMLInputElement | HTMLTextAreaElement
+                    >("input, textarea")
+                );
+                for (let input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // Step 2: Validate that at least one medium is selected
+        if (step === 2) {
+            const mediumsSelected =
+                formData.syntheticSkin ||
+                formData.ink ||
+                formData.pencil ||
+                formData.pastel ||
+                formData.watercolor ||
+                formData.oilPaint ||
+                formData.charcoal ||
+                formData.digitalTattooStencil ||
+                formData.stencil;
+            if (!mediumsSelected) {
+                alert("Please select at least one medium.");
+                return false;
+            }
+        }
+
+        // Step 3: Validate that either "As Is" or "Altered" is selected
+        if (step === 3) {
+            if (!formData.asIs && !formData.altered) {
+                alert("Please select either 'As Is' or 'Altered'.");
+                return false;
+            }
+
+            const currentDiv = document.querySelector(
+                `div[data-step="${step}"]`
+            );
+            if (currentDiv) {
+                const inputs = Array.from(
+                    currentDiv.querySelectorAll<
+                        HTMLInputElement | HTMLTextAreaElement
+                    >("input, textarea")
+                );
+                for (let input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // Step 4: Validate that at least one file is uploaded
+        if (step === 4) {
+            if (files.length === 0) {
+                alert("Please upload at least one file.");
+                return false;
+            }
+        }
         return true;
     };
 
@@ -161,6 +217,8 @@ const NewOrderForm: React.FC = () => {
                     ...prev,
                     asIs: !prev.asIs,
                     altered: !prev.asIs ? false : prev.altered,
+                    alterationNotes: !prev.asIs ? "" : prev.alterationNotes,
+                    inspirationNotes: !prev.asIs ? "" : prev.inspirationNotes,
                 };
             } else if (key === "altered") {
                 // Toggle "Altered" and reset "As Is" if "Altered" is selected
@@ -205,7 +263,7 @@ const NewOrderForm: React.FC = () => {
         .map(([key]) => mediumMapping[key as keyof typeof mediumMapping])
         .join(", ");
 
-    const uploadFiles = async () => {
+    const submitForm = async () => {
         // Handle Google reCAPTCHA v3
 
         if (!executeRecaptcha) {
@@ -709,6 +767,7 @@ Tattoo Memorials Auto-Notification System
                                         e.target.value
                                     )
                                 }
+                                required
                             />
 
                             <h2 className="text-lg font-semibold mb-4 text-white">
@@ -778,7 +837,7 @@ Tattoo Memorials Auto-Notification System
                     <button
                         type="button"
                         className="bg-green-600 rounded-md px-4 py-2 text-foreground text-white"
-                        onClick={uploadFiles}
+                        onClick={submitForm}
                     >
                         Submit
                     </button>
