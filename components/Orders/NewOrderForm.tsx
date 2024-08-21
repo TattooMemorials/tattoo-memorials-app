@@ -65,6 +65,18 @@ const NewOrderForm: React.FC = () => {
         watercolor: false,
     };
 
+    const mediumMapping = {
+        syntheticSkin: "Synthetic Skin",
+        ink: "Ink",
+        pencil: "Pencil",
+        pastel: "Pastel",
+        watercolor: "Watercolor",
+        oilPaint: "Oil Paint",
+        charcoal: "Charcoal",
+        digitalTattooStencil: "Digital Tattoo Stencil",
+        stencil: "Stencil",
+    };
+
     const [step, setStep] = useState(1);
     const bucket = "order-images";
     const [files, setFiles] = useState<File[]>([]);
@@ -144,6 +156,11 @@ const NewOrderForm: React.FC = () => {
             [key]: !prev[key] as boolean, // toggle the boolean value
         }));
     };
+
+    const selectedMediums = Object.entries(formData)
+        .filter(([key, value]) => key in mediumMapping && value)
+        .map(([key]) => mediumMapping[key as keyof typeof mediumMapping])
+        .join(", ");
 
     const uploadFiles = async () => {
         // Handle Google reCAPTCHA v3
@@ -255,20 +272,7 @@ const NewOrderForm: React.FC = () => {
     ${formData.city}, ${formData.state} ${formData.postalCode}</p>
 
     <h2 style="color: #2c5282; margin-top: 20px;">Order Details</h2>
-    <p><strong>Medium:</strong> ${Object.entries(formData)
-        .filter(
-            ([key, value]) =>
-                [
-                    "syntheticSkin",
-                    "ink",
-                    "pencil",
-                    "pastel",
-                    "watercolor",
-                    "oilPaint",
-                ].includes(key) && value
-        )
-        .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
-        .join(", ")}</p>
+    <p><strong>Medium:</strong> ${selectedMediums || "None selected"}</p>
     <p><strong>Type:</strong> ${formData.asIs ? "As Is" : "Altered"}</p>
     ${
         formData.altered
