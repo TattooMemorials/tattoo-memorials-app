@@ -111,20 +111,20 @@ const NewOrderForm: React.FC = () => {
     };
 
     const validateCurrentStep = () => {
-        const currentDiv = document.querySelector(`div[data-step="${step}"]`);
-        if (currentDiv) {
-            const inputs = Array.from(
-                currentDiv.querySelectorAll<
-                    HTMLInputElement | HTMLTextAreaElement
-                >("input, textarea")
-            );
-            for (let input of inputs) {
-                if (!input.checkValidity()) {
-                    input.reportValidity();
-                    return false;
-                }
-            }
-        }
+        // const currentDiv = document.querySelector(`div[data-step="${step}"]`);
+        // if (currentDiv) {
+        //     const inputs = Array.from(
+        //         currentDiv.querySelectorAll<
+        //             HTMLInputElement | HTMLTextAreaElement
+        //         >("input, textarea")
+        //     );
+        //     for (let input of inputs) {
+        //         if (!input.checkValidity()) {
+        //             input.reportValidity();
+        //             return false;
+        //         }
+        //     }
+        // }
         return true;
     };
 
@@ -154,10 +154,29 @@ const NewOrderForm: React.FC = () => {
     const handlePrevious = () => setStep(step - 1);
 
     const toggleCheckbox = (key: keyof LivingFormData) => {
-        setFormData((prev) => ({
-            ...prev,
-            [key]: !prev[key] as boolean, // toggle the boolean value
-        }));
+        setFormData((prev) => {
+            if (key === "asIs") {
+                // Toggle "As Is" and reset "Altered" if "As Is" is selected
+                return {
+                    ...prev,
+                    asIs: !prev.asIs,
+                    altered: !prev.asIs ? false : prev.altered,
+                };
+            } else if (key === "altered") {
+                // Toggle "Altered" and reset "As Is" if "Altered" is selected
+                return {
+                    ...prev,
+                    altered: !prev.altered,
+                    asIs: !prev.altered ? false : prev.asIs,
+                };
+            } else {
+                // Generic toggle for other checkboxes
+                return {
+                    ...prev,
+                    [key]: !prev[key] as boolean,
+                };
+            }
+        });
     };
 
     const handlePhoneNumberChange = (
