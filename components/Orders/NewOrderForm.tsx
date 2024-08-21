@@ -291,9 +291,7 @@ const NewOrderForm: React.FC = () => {
         ${files.map((file) => `<li>${file.name}</li>`).join("")}
     </ul>
 
-    <p style="margin-top: 20px;">Please process this order according to our standard procedures. If you have any questions or concerns, please contact the customer directly using the provided contact information.</p>
-
-    <p style="margin-top: 20px;">Thank you,<br>Tattoo Memorials Auto-Notification System</p>
+    <p style="margin-top: 20px;">Thank you,<br>Tattoo Memorials</p>
 </body>
 </html>
         `,
@@ -344,8 +342,6 @@ Inspiration Notes: ${formData.inspirationNotes}
 
 Uploaded Files: ${files.length}
 ${files.map((file, index) => `${index + 1}. ${file.name}`).join("\n")}
-
-Please process this order according to our standard procedures. If you have any questions or concerns, please contact the customer directly using the provided contact information.
 
 Thank you,
 Tattoo Memorials Auto-Notification System
