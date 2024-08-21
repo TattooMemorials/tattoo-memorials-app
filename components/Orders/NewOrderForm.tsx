@@ -465,7 +465,7 @@ Tattoo Memorials Auto-Notification System
                         }
                     />
                     <input
-                        className="rounded-md px-4 py-2 mt-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                        className="rounded-md px-4 py-2 mt-4 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
                         name="street_address_2"
                         placeholder="Street Address Line 2 (Optional)"
                         value={formData.streetAddress2}
