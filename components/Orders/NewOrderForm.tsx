@@ -245,7 +245,7 @@ const NewOrderForm: React.FC = () => {
                 },
                 body: JSON.stringify({
                     email: "dan@tinner.tech",
-                    subject: `New Order: ${result.orderId}`,
+                    subject: `Tattoo Memorials Order Received`,
                     message: `
 <!DOCTYPE html>
 <html lang="en">
@@ -296,9 +296,10 @@ const NewOrderForm: React.FC = () => {
 </html>
         `,
                     TextBody: `
-New order received from Tattoo Memorials website.
+We have received your Tattoo Memorials order.
 
-Order ID: ${result.orderId}
+Order ID:
+${result.orderId}
 
 Personal Information:
 Name: ${formData.firstName} ${formData.lastName}
