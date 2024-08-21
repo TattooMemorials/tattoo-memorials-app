@@ -22,6 +22,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     const [copied, setCopied] = useState(false);
 
     const mediumMapping = {
+        acrylic: "Acrylic",
         syntheticSkin: "Synthetic Skin",
         ink: "Ink",
         pencil: "Pencil",
@@ -30,7 +31,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         oilPaint: "Oil Paint",
         charcoal: "Charcoal",
         digitalTattooStencil: "Digital Tattoo Stencil",
-        stencil: "Stencil",
+        digital: "Digital",
     };
 
     useEffect(() => {
@@ -44,18 +45,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     }, [fileUploadStatus]);
 
     const selectedMediums = Object.entries(formData)
-        .filter(
-            ([key, value]) =>
-                [
-                    "syntheticSkin",
-                    "ink",
-                    "pencil",
-                    "pastel",
-                    "watercolor",
-                    "oilPaint",
-                ].includes(key) && value
-        )
-        .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+        .filter(([key, value]) => key in mediumMapping && value)
+        .map(([key]) => mediumMapping[key as keyof typeof mediumMapping])
         .join(", ");
 
     const copyToClipboard = async (text: string) => {

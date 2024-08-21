@@ -30,7 +30,7 @@ export interface LivingFormData {
     oilPaint: boolean;
     pastel: boolean;
     pencil: boolean;
-    stencil: boolean;
+    digital: boolean;
     syntheticSkin: boolean;
     watercolor: boolean;
 }
@@ -62,12 +62,13 @@ const NewOrderForm: React.FC = () => {
         oilPaint: false,
         pastel: false,
         pencil: false,
-        stencil: false,
+        digital: false,
         syntheticSkin: false,
         watercolor: false,
     };
 
     const mediumMapping = {
+        acrylic: "Acrylic",
         syntheticSkin: "Synthetic Skin",
         ink: "Ink",
         pencil: "Pencil",
@@ -76,7 +77,7 @@ const NewOrderForm: React.FC = () => {
         oilPaint: "Oil Paint",
         charcoal: "Charcoal",
         digitalTattooStencil: "Digital Tattoo Stencil",
-        stencil: "Stencil",
+        digital: "Digital",
     };
 
     const totalSteps = 4;
@@ -134,6 +135,7 @@ const NewOrderForm: React.FC = () => {
         // Step 2: Validate that at least one medium is selected
         if (step === 2) {
             const mediumsSelected =
+                formData.acrylic ||
                 formData.syntheticSkin ||
                 formData.ink ||
                 formData.pencil ||
@@ -142,7 +144,7 @@ const NewOrderForm: React.FC = () => {
                 formData.oilPaint ||
                 formData.charcoal ||
                 formData.digitalTattooStencil ||
-                formData.stencil;
+                formData.digital;
             if (!mediumsSelected) {
                 alert("Please select at least one medium.");
                 return false;
@@ -593,6 +595,22 @@ Tattoo Memorials Auto-Notification System
 
                     <div
                         className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                            formData.acrylic
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
+                        }`}
+                        onClick={() => toggleCheckbox("acrylic")}
+                    >
+                        <span>Acrylic</span>
+                        {formData.acrylic && (
+                            <span className="absolute top-2 right-2 text-xl">
+                                ✓
+                            </span>
+                        )}
+                    </div>
+
+                    <div
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.syntheticSkin
                                 ? "bg-gold-600 text-navy-900"
                                 : "bg-navy-800 text-gold-300"
@@ -606,6 +624,7 @@ Tattoo Memorials Auto-Notification System
                             </span>
                         )}
                     </div>
+
                     <div
                         className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
                             formData.ink
@@ -686,7 +705,53 @@ Tattoo Memorials Auto-Notification System
                         )}
                     </div>
 
-                    {/* Add more as needed */}
+                    <div
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                            formData.charcoal
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
+                        }`}
+                        onClick={() => toggleCheckbox("charcoal")}
+                    >
+                        <span>Charcoal</span>
+                        {formData.charcoal && (
+                            <span className="absolute top-2 right-2 text-xl">
+                                ✓
+                            </span>
+                        )}
+                    </div>
+
+                    <div
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                            formData.digitalTattooStencil
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
+                        }`}
+                        onClick={() => toggleCheckbox("digitalTattooStencil")}
+                    >
+                        <span>Digital Tattoo Stencil</span>
+                        {formData.digitalTattooStencil && (
+                            <span className="absolute top-2 right-2 text-xl">
+                                ✓
+                            </span>
+                        )}
+                    </div>
+
+                    <div
+                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                            formData.digital
+                                ? "bg-gold-600 text-navy-900"
+                                : "bg-navy-800 text-gold-300"
+                        }`}
+                        onClick={() => toggleCheckbox("digital")}
+                    >
+                        <span>Digital</span>
+                        {formData.digital && (
+                            <span className="absolute top-2 right-2 text-xl">
+                                ✓
+                            </span>
+                        )}
+                    </div>
                 </div>
             )}
 

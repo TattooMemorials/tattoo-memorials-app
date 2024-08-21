@@ -67,7 +67,7 @@ async function submitLivingForm(
                     oil_paint: formData.oilPaint,
                     pastel: formData.pastel,
                     pencil: formData.pencil,
-                    stencil: formData.stencil,
+                    digital: formData.digital,
                     synthetic_skin: formData.syntheticSkin,
                     watercolor: formData.watercolor,
                 },
