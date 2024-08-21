@@ -140,8 +140,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                 </div>
                             )}
                             <p className="mb-6">
-                                Your order has been successfully submitted. Here
-                                are the details:
+                                We have sent an email to confirm your order.
                             </p>
 
                             <div className="mb-6">
