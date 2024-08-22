@@ -29,9 +29,17 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const maxFileSizeInMb = 6;
 
-    const handleChange = (selectedFiles: FileList) => {
-        const newFiles = Array.from(selectedFiles);
+    const handleChange = (selectedFiles: FileList | File[]) => {
+        const newFiles = Array.isArray(selectedFiles)
+            ? selectedFiles
+            : Array.from(selectedFiles);
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    };
+
+    const handleRemoveFile = (indexToRemove: number) => {
+        setFiles((prevFiles) =>
+            prevFiles.filter((_, index) => index !== indexToRemove)
+        );
     };
 
     const handleTypeError = (error: string) => {
@@ -51,10 +59,10 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
     return (
         <div className="w-full">
             <FileUploader
-                handleChange={(fileList: FileList) => handleChange(fileList)}
+                handleChange={handleChange}
                 name="files"
                 types={fileTypes}
-                maxSize={maxFileSizeInMb} // Max size in MB
+                maxSize={maxFileSizeInMb}
                 multiple={true}
                 classes="w-full p-8 border-2 border-none rounded-lg text-center bg-navy-950 hover:border-gold-400 transition-all duration-300"
                 onTypeError={handleTypeError}
@@ -97,9 +105,16 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
                         {files.map((file, index) => (
                             <li
                                 key={index}
-                                className="text-gold-300 text-sm py-1 border-b border-gold-600/30 last:border-b-0"
+                                className="flex justify-between items-center text-gold-300 text-sm py-2 border-b border-gold-600/30 last:border-b-0"
                             >
-                                {file.name}
+                                <span>{file.name}</span>
+                                <button
+                                    onClick={() => handleRemoveFile(index)}
+                                    className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                    disabled={uploading}
+                                >
+                                    Remove
+                                </button>
                             </li>
                         ))}
                     </ul>
