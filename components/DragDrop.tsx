@@ -21,7 +21,7 @@ const fileTypes: string[] = [
 
 interface DragDropProps {
     files: File[];
-    setFiles: (files: File[]) => void;
+    setFiles: React.Dispatch<React.SetStateAction<File[]>>;
     uploading: boolean;
 }
 
@@ -30,8 +30,8 @@ const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
     const maxFileSizeInMb = 6;
 
     const handleChange = (selectedFiles: FileList) => {
-        const fileArray = Array.from(selectedFiles);
-        setFiles(fileArray);
+        const newFiles = Array.from(selectedFiles);
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     };
 
     const handleTypeError = (error: string) => {
