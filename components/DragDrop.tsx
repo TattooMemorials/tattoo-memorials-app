@@ -27,7 +27,7 @@ interface DragDropProps {
 
 const DragDrop: React.FC<DragDropProps> = ({ files, setFiles, uploading }) => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const maxFileSizeInMb = 6;
+    const maxFileSizeInMb = 50;
 
     useEffect(() => {
         if (errorMessage) {
