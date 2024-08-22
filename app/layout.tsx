@@ -1,5 +1,11 @@
-import { GeistSans } from "geist/font/sans";
+import { Overlock } from "next/font/google";
+
 import "./globals.css";
+
+const overlock = Overlock({
+    weight: ["400", "700", "900"],
+    subsets: ["latin"],
+});
 
 const defaultUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
@@ -17,7 +23,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className={GeistSans.className}>
+        <html lang="en" className={overlock.className}>
             <body className="bg-background text-foreground">
                 <main className="min-h-screen flex flex-col items-center">
                     {children}
