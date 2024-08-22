@@ -62,14 +62,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-navy-900 bg-opacity-80 flex justify-center items-center">
+        <div className="fixed inset-0 bg-tan-500 bg-opacity-80 flex justify-center items-center">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="bg-navy-800 p-8 rounded-lg max-w-md w-full border border-gold-600 shadow-lg"
+                className="bg-tan-500 p-8 rounded-lg max-w-md w-full border border-navy-500 shadow-lg"
             >
-                <h2 className="text-2xl font-bold mb-6 text-gold-400">
+                <h2 className="text-2xl font-bold mb-6 text-black">
                     Order Confirmation
                 </h2>
 
@@ -98,22 +98,22 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
-                            className="text-gold-300"
+                            className="text-black"
                         >
                             {orderId && (
                                 <div className="mb-6">
-                                    <p className="text-green-400 font-semibold mb-2">
+                                    <p className="text-black font-semibold mb-2">
                                         Order ID:
                                     </p>
-                                    <div className="flex items-center bg-navy-700 p-2 rounded">
-                                        <span className="mr-2 text-gold-300 truncate flex-grow">
+                                    <div className="flex items-center bg-tan-500 p-2 rounded">
+                                        <span className="mr-2 text-black truncate flex-grow">
                                             {orderId}
                                         </span>
                                         <button
                                             onClick={() =>
                                                 copyToClipboard(orderId)
                                             }
-                                            className="bg-navy-600 hover:bg-navy-500 text-gold-300 p-1 rounded transition-colors duration-300 flex-shrink-0"
+                                            className="text-black p-1 rounded transition-colors duration-300 flex-shrink-0"
                                             title="Copy to clipboard"
                                         >
                                             <svg
@@ -133,7 +133,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                         </button>
                                     </div>
                                     {copied && (
-                                        <p className="text-green-400 mt-1 text-sm">
+                                        <p className="text-black mt-1 text-sm">
                                             Copied to clipboard!
                                         </p>
                                     )}
@@ -144,7 +144,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             </p>
 
                             <div className="mb-6">
-                                <h3 className="font-semibold text-gold-400 mb-2">
+                                <h3 className="font-semibold text-black mb-2">
                                     Personal Information:
                                 </h3>
                                 <p>
@@ -156,7 +156,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             </div>
 
                             <div className="mb-6">
-                                <h3 className="font-semibold text-gold-400 mb-2">
+                                <h3 className="font-semibold text-black mb-2">
                                     Order Details:
                                 </h3>
                                 <p>Mediums: {selectedMediums}</p>
@@ -179,7 +179,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
                             <button
                                 onClick={onClose}
-                                className="bg-gold-600 text-navy-900 px-6 py-2 rounded-md font-semibold hover:bg-gold-500 transition-colors duration-300"
+                                className="bg-navy-500 text-white rounded-md px-6 py-2 hover:bg-gold-600 transition"
                             >
                                 Close
                             </button>
