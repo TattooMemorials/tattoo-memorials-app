@@ -14,6 +14,7 @@ module.exports = {
                     "background-hover": "hsl(var(--btn-background-hover))",
                 },
                 navy: {
+                    500: "#00317b",
                     800: "#1a2a4a",
                     900: "#0f172a",
                 },
@@ -22,6 +23,12 @@ module.exports = {
                     400: "#fbbf24",
                     500: "#f59e0b",
                     600: "#d97706",
+                },
+                tan: {
+                    500: "#e9dbce",
+                },
+                red: {
+                    600: "#e42121",
                 },
             },
         },
