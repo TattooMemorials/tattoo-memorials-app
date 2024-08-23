@@ -49,16 +49,6 @@ const FormUpload: React.FC = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        const response = await fetch("/api/memoriam-form", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                test: "todo",
-            }),
-        });
-
-        console.log("memoriam-form response: ", response);
-
         // // Handle Google reCAPTCHA v3
         // if (!executeRecaptcha) {
         //     console.log("Execute recaptcha not yet available");
@@ -79,20 +69,6 @@ const FormUpload: React.FC = () => {
         // Handle Form Submission
         try {
             setIsModalOpen(true);
-
-            // 1. POST form data to /api/living-form API route
-            const response = await fetch("/api/memoriam-form", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    formData,
-                }),
-            });
-
-            if (!response.ok) throw new Error("Failed to submit form");
-
-            const result = await response.json();
-            setOrderId(result.orderId);
 
             // Initialize file upload status
             setFileUploadStatus(
@@ -132,6 +108,24 @@ const FormUpload: React.FC = () => {
                     );
                 }
             }
+
+            // TODO: figure out chicken and egg probelm with uploading files to orderId and uploading an empty order record first.
+            // May need to make all fields nullable, create an empty memoriam-orders row, grab the orderid, upload the files, and then update
+            // the form path columns on that row. If the uploads fail, just delete the emptry orderId record in the catch block?
+            // something like that.
+
+            const response = await fetch("/api/memoriam-form", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    test: "todo",
+                }),
+            });
+
+            const result = await response.json();
+            setOrderId(result.orderId);
+
+            console.log("memoriam-form response: ", response);
         } catch (error) {
             console.error("Error submitting form:", error);
         }
