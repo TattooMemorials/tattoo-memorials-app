@@ -53,7 +53,7 @@ const FormUpload: React.FC = () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                test: "fart",
+                test: "todo",
             }),
         });
 
@@ -76,66 +76,66 @@ const FormUpload: React.FC = () => {
         //     body: JSON.stringify({ token }),
         // });
 
-        // // Handle Form Submission
-        // try {
-        //     setIsModalOpen(true);
+        // Handle Form Submission
+        try {
+            setIsModalOpen(true);
 
-        //     // 1. POST form data to /api/living-form API route
-        //     const response = await fetch("/api/memoriam-form", {
-        //         method: "POST",
-        //         headers: { "Content-Type": "application/json" },
-        //         body: JSON.stringify({
-        //             formData,
-        //         }),
-        //     });
+            // 1. POST form data to /api/living-form API route
+            const response = await fetch("/api/memoriam-form", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    formData,
+                }),
+            });
 
-        //     if (!response.ok) throw new Error("Failed to submit form");
+            if (!response.ok) throw new Error("Failed to submit form");
 
-        //     const result = await response.json();
-        //     setOrderId(result.orderId);
+            const result = await response.json();
+            setOrderId(result.orderId);
 
-        //     // Initialize file upload status
-        //     setFileUploadStatus(
-        //         files.map((file) => ({ name: file.name, status: "pending" }))
-        //     );
+            // Initialize file upload status
+            setFileUploadStatus(
+                files.map((file) => ({ name: file.name, status: "pending" }))
+            );
 
-        //     // 2. Uppload files to Storage with result.orderId as the folder
-        //     for (let i = 0; i < files.length; i++) {
-        //         const file = files[i];
-        //         try {
-        //             const { error } = await supabase.storage
-        //                 .from(bucket)
-        //                 .upload(`${result.orderId}/${file.name}`, file);
+            // 2. Uppload files to Storage with result.orderId as the folder
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                try {
+                    const { error } = await supabase.storage
+                        .from(bucket)
+                        .upload(`${result.orderId}/${file.name}`, file);
 
-        //             if (error) {
-        //                 setFileUploadStatus((prev) =>
-        //                     prev.map((item, index) =>
-        //                         index === i
-        //                             ? { ...item, status: "error" }
-        //                             : item
-        //                     )
-        //                 );
-        //             } else {
-        //                 setFileUploadStatus((prev) =>
-        //                     prev.map((item, index) =>
-        //                         index === i
-        //                             ? { ...item, status: "success" }
-        //                             : item
-        //                     )
-        //                 );
-        //             }
-        //         } catch (error) {
-        //             setFileUploadStatus((prev) =>
-        //                 prev.map((item, index) =>
-        //                     index === i ? { ...item, status: "error" } : item
-        //                 )
-        //             );
-        //         }
-        //     }
-        // } catch (error) {
-        //     console.error("Error submitting form:", error);
-        // }
-        // setUploading(false);
+                    if (error) {
+                        setFileUploadStatus((prev) =>
+                            prev.map((item, index) =>
+                                index === i
+                                    ? { ...item, status: "error" }
+                                    : item
+                            )
+                        );
+                    } else {
+                        setFileUploadStatus((prev) =>
+                            prev.map((item, index) =>
+                                index === i
+                                    ? { ...item, status: "success" }
+                                    : item
+                            )
+                        );
+                    }
+                } catch (error) {
+                    setFileUploadStatus((prev) =>
+                        prev.map((item, index) =>
+                            index === i ? { ...item, status: "error" } : item
+                        )
+                    );
+                }
+            }
+        } catch (error) {
+            console.error("Error submitting form:", error);
+        }
+        setUploading(false);
     };
 
     return (

@@ -19,9 +19,9 @@ async function submitLivingForm(
     let orderData: { id: string } | null = null;
 
     try {
-        // 1. Insert into base_orders table
+        // 1. Insert into living_orders table
         const { data, error: orderError } = await supabase
-            .from("base_orders")
+            .from("living_orders")
             .insert([
                 {
                     first_name: formData.firstName,
@@ -44,15 +44,10 @@ async function submitLivingForm(
             .single();
 
         if (orderError) throw orderError;
-        if (!data) throw new Error("No data returned from base_orders insert");
+        if (!data)
+            throw new Error("No data returned from living_orders insert");
 
         orderData = data;
-
-        // 2. Insert into living_orders table
-        const { error: livingOrderError } = await supabase
-            .from("living_orders")
-            .insert([{ id: orderData?.id }]);
-        if (livingOrderError) throw livingOrderError;
 
         // 3. Insert into order_mediums table
         const { error: mediumsError } = await supabase
@@ -79,7 +74,10 @@ async function submitLivingForm(
         console.error("Error submitting living form:", error);
         // If an error occurred after creating the order, we should delete it
         if (orderData && orderData.id) {
-            await supabase.from("base_orders").delete().eq("id", orderData.id);
+            await supabase
+                .from("living_orders")
+                .delete()
+                .eq("id", orderData.id);
         }
         return { success: false, error: (error as Error).message };
     }

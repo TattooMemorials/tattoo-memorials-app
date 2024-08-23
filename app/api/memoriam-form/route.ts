@@ -14,9 +14,9 @@ async function submitMemoriamForm(
     let orderData: { id: string } | null = null;
 
     try {
-        // 1. Insert into base_orders table
+        // 1. Insert into memoriam_orders table
         const { data, error: orderError } = await supabase
-            .from("base_orders")
+            .from("memoriam_orders")
             .insert([
                 {
                     // first_name: formData.firstName,
@@ -32,6 +32,8 @@ async function submitMemoriamForm(
                     // altered: formData.altered,
                     // alteration_notes: formData.alterationNotes,
                     // inspiration_notes: formData.inspirationNotes,
+                    intake_form_path: "here/is/some/path",
+                    consent_form_path: "here/is/antother/path",
                     order_type: "Memoriam",
                 },
             ])
@@ -39,42 +41,40 @@ async function submitMemoriamForm(
             .single();
 
         if (orderError) throw orderError;
-        if (!data) throw new Error("No data returned from base_orders insert");
+        if (!data)
+            throw new Error("No data returned from memoriam_orders insert");
 
         orderData = data;
 
-        // 2. Insert into living_orders table
-        const { error: livingOrderError } = await supabase
-            .from("living_orders")
-            .insert([{ id: orderData?.id }]);
-        if (livingOrderError) throw livingOrderError;
-
         // 3. Insert into order_mediums table
-        const { error: mediumsError } = await supabase
-            .from("order_mediums")
-            .insert([
-                {
-                    id: orderData?.id,
-                    acrylic: formData.acrylic,
-                    charcoal: formData.charcoal,
-                    digital_tattoo_stencil: formData.digitalTattooStencil,
-                    ink: formData.ink,
-                    oil_paint: formData.oilPaint,
-                    pastel: formData.pastel,
-                    pencil: formData.pencil,
-                    digital: formData.digital,
-                    synthetic_skin: formData.syntheticSkin,
-                    watercolor: formData.watercolor,
-                },
-            ]);
-        if (mediumsError) throw mediumsError;
+        // const { error: mediumsError } = await supabase
+        //     .from("order_mediums")
+        //     .insert([
+        //         {
+        //             id: orderData?.id,
+        //             acrylic: formData.acrylic,
+        //             charcoal: formData.charcoal,
+        //             digital_tattoo_stencil: formData.digitalTattooStencil,
+        //             ink: formData.ink,
+        //             oil_paint: formData.oilPaint,
+        //             pastel: formData.pastel,
+        //             pencil: formData.pencil,
+        //             digital: formData.digital,
+        //             synthetic_skin: formData.syntheticSkin,
+        //             watercolor: formData.watercolor,
+        //         },
+        //     ]);
+        // if (mediumsError) throw mediumsError;
 
         return { success: true, orderId: orderData?.id };
     } catch (error) {
         console.error("Error submitting living form:", error);
         // If an error occurred after creating the order, we should delete it
         if (orderData && orderData.id) {
-            await supabase.from("base_orders").delete().eq("id", orderData.id);
+            await supabase
+                .from("memoriam_orders")
+                .delete()
+                .eq("id", orderData.id);
         }
         return { success: false, error: (error as Error).message };
     }
