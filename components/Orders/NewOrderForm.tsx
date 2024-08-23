@@ -453,21 +453,18 @@ Tattoo Memorials Auto-Notification System
 
     return (
         <div
-            className="flex flex-col w-full gap-6 text-foreground bg-navy-900 text-gold-300 p-8 rounded-lg shadow-lg"
+            className="flex flex-col w-full gap-6 text-foreground bg-tan-500 p-8"
             data-step={step}
         >
             <ProgressBar step={step} totalSteps={totalSteps} />
             {step === 1 && (
                 <div className="flex flex-col">
-                    <label
-                        className="text-lg mb-2 text-gold-400"
-                        htmlFor="name"
-                    >
+                    <label className="text-lg mb-2 text-black" htmlFor="name">
                         Name
                     </label>
                     <div className="flex flex-col sm:flex-row sm:space-x-4 w-full">
                         <input
-                            className="rounded-md px-4 py-3 bg-navy-800 border border-gold-600 mb-2 sm:mb-0 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                            className="rounded-md px-4 py-3 bg-tan-500 border border-black mb-2 sm:mb-0 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                             name="first_name"
                             placeholder="Jane"
                             required
@@ -479,7 +476,7 @@ Tattoo Memorials Auto-Notification System
                             }
                         />
                         <input
-                            className="rounded-md px-4 py-3 bg-navy-800 border border-gold-600 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                            className="rounded-md px-4 py-3 bg-tan-500 border border-black w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                             name="last_name"
                             placeholder="Doe"
                             required
@@ -491,11 +488,14 @@ Tattoo Memorials Auto-Notification System
                             }
                         />
                     </div>
-                    <label className="text-md mb-2 mt-4" htmlFor="phone">
+                    <label
+                        className="text-md mb-2 mt-4 text-black"
+                        htmlFor="phone"
+                    >
                         Phone
                     </label>
                     <input
-                        className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                        className="rounded-md px-4 py-2 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                         type="tel"
                         name="phone"
                         placeholder="123-456-7890"
@@ -505,11 +505,14 @@ Tattoo Memorials Auto-Notification System
                         value={formatPhoneNumber(formData.phone)} // Display formatted value
                         onChange={handlePhoneNumberChange} // Use new handler
                     />
-                    <label className="text-md mb-2 mt-4" htmlFor="email">
+                    <label
+                        className="text-md mb-2 mt-4 text-black"
+                        htmlFor="email"
+                    >
                         Email
                     </label>
                     <input
-                        className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                        className="rounded-md px-4 py-2 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                         type="email"
                         name="email"
                         placeholder="jane.doe@example.com"
@@ -521,11 +524,14 @@ Tattoo Memorials Auto-Notification System
                             updateFormData("email", e.target.value)
                         }
                     />
-                    <label className="text-md mb-2 mt-4" htmlFor="address">
+                    <label
+                        className="text-md mb-2 mt-4 text-black"
+                        htmlFor="address"
+                    >
                         Mailing Address
                     </label>
                     <input
-                        className="rounded-md px-4 py-2 mt-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                        className="rounded-md px-4 py-2 mt-2 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                         name="street_address"
                         placeholder="Street Address"
                         required
@@ -533,19 +539,23 @@ Tattoo Memorials Auto-Notification System
                         onChange={(e) =>
                             updateFormData("streetAddress", e.target.value)
                         }
+                        autoComplete="off"
+                        data-lpignore="true"
                     />
                     <input
-                        className="rounded-md px-4 py-2 mt-4 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                        className="rounded-md px-4 py-2 mt-4 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                         name="street_address_2"
                         placeholder="Street Address Line 2 (Optional)"
                         value={formData.streetAddress2}
                         onChange={(e) =>
                             updateFormData("streetAddress2", e.target.value)
                         }
+                        autoComplete="off"
+                        data-lpignore="true"
                     />
                     <div className="flex flex-col sm:flex-row sm:space-x-4 mt-4">
                         <input
-                            className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 mb-2 sm:mb-0 sm:w-1/2"
+                            className="rounded-md px-4 py-2 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 mb-2 sm:mb-0 sm:w-1/2 text-black"
                             name="city"
                             placeholder="City"
                             required
@@ -553,9 +563,11 @@ Tattoo Memorials Auto-Notification System
                             onChange={(e) =>
                                 updateFormData("city", e.target.value)
                             }
+                            autoComplete="off"
+                            data-lpignore="true"
                         />
                         <input
-                            className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 mb-2 sm:mb-0 sm:w-1/4"
+                            className="rounded-md px-4 py-2 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 mb-2 sm:mb-0 sm:w-1/4 text-black"
                             name="state"
                             placeholder="State (XX)"
                             required
@@ -566,9 +578,11 @@ Tattoo Memorials Auto-Notification System
                                     updateFormData("state", e.target.value);
                                 }
                             }}
+                            autoComplete="off"
+                            data-lpignore="true"
                         />
                         <input
-                            className="rounded-md px-4 py-2 bg-navy-800 border border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 sm:w-1/4"
+                            className="rounded-md px-4 py-2 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 sm:w-1/4 text-black"
                             name="postal_code"
                             placeholder="ZIP Code (XXXXX)"
                             required
@@ -582,6 +596,8 @@ Tattoo Memorials Auto-Notification System
                                     );
                                 }
                             }}
+                            autoComplete="off"
+                            data-lpignore="true"
                         />
                     </div>
                 </div>
@@ -594,10 +610,10 @@ Tattoo Memorials Auto-Notification System
                     </h2>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.acrylic
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("acrylic")}
                     >
@@ -610,10 +626,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.syntheticSkin
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("syntheticSkin")}
                     >
@@ -626,10 +642,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.ink
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("ink")}
                     >
@@ -642,10 +658,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.pencil
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("pencil")}
                     >
@@ -658,10 +674,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.pastel
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("pastel")}
                     >
@@ -674,10 +690,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.watercolor
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("watercolor")}
                     >
@@ -690,10 +706,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.oilPaint
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("oilPaint")}
                     >
@@ -706,10 +722,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.charcoal
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("charcoal")}
                     >
@@ -722,10 +738,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.digitalTattooStencil
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("digitalTattooStencil")}
                     >
@@ -738,10 +754,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex items-center justify-center border-2 border-gold-600 rounded-md h-24 cursor-pointer transition ${
+                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
                             formData.digital
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("digital")}
                     >
@@ -758,10 +774,10 @@ Tattoo Memorials Auto-Notification System
             {step === 3 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
-                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-black rounded-md p-4 cursor-pointer transition ${
                             formData.asIs
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("asIs")}
                     >
@@ -780,10 +796,10 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     <div
-                        className={`relative flex flex-col justify-between border border-gold-600 rounded-md p-4 cursor-pointer transition ${
+                        className={`relative flex flex-col justify-between border border-black rounded-md p-4 cursor-pointer transition ${
                             formData.altered
-                                ? "bg-gold-600 text-navy-900"
-                                : "bg-navy-800 text-gold-300"
+                                ? "bg-navy-500 text-white"
+                                : "bg-tan-500 text-black"
                         }`}
                         onClick={() => toggleCheckbox("altered")}
                     >
@@ -803,18 +819,18 @@ Tattoo Memorials Auto-Notification System
                     </div>
 
                     {formData.altered && (
-                        <div className="col-span-1 sm:col-span-2 mt-6 p-4 border border-gray-300 rounded-md bg-gray-900 text-white">
-                            <h2 className="text-lg font-semibold mb-4 text-white">
+                        <div className="col-span-1 sm:col-span-2 mt-6 p-4 border border-black rounded-md bg-tan-500 text-white">
+                            <h2 className="text-lg font-semibold mb-4 text-black">
                                 Please describe the augmentations below. Be sure
                                 to include the dimensions in inches for size
                                 alterations.
                             </h2>
 
-                            <h3 className="text-md font-medium mb-2 text-white">
+                            <h3 className="text-md font-medium mb-2 text-black">
                                 What would you like to change?
                             </h3>
                             <textarea
-                                className="rounded-md px-4 py-3 bg-navy-800 w-full border border-gold-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                className="rounded-md px-4 py-3 bg-tan-500 w-full border border-black mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                                 placeholder="Describe the changes you would like..."
                                 value={formData.alterationNotes || ""}
                                 onChange={(e) =>
@@ -826,18 +842,18 @@ Tattoo Memorials Auto-Notification System
                                 required
                             />
 
-                            <h2 className="text-lg font-semibold mb-4 text-white">
+                            <h2 className="text-lg font-semibold mb-4 text-black">
                                 Do you have any examples or inspiration you can
                                 share with us that will help us better
                                 understand the direction you wish us to take for
                                 your artistic representation?
                             </h2>
 
-                            <h3 className="text-md font-medium mb-2 text-white">
+                            <h3 className="text-md font-medium mb-2 text-black">
                                 Pinterest, YouTube, URL, etc.
                             </h3>
                             <textarea
-                                className="rounded-md px-4 py-3 bg-navy-800 w-full border border-gold-600 mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                className="rounded-md px-4 py-3 bg-tan-500 w-full border border-black mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
                                 placeholder="Provide links or descriptions..."
                                 value={formData.inspirationNotes || ""}
                                 onChange={(e) =>
@@ -854,14 +870,11 @@ Tattoo Memorials Auto-Notification System
 
             {step === 4 && (
                 <div className="w-full">
-                    <h2 className="text-2xl font-semibold mb-4 text-center text-gold-400">
-                        Upload Your Files
-                    </h2>
-                    <p className="text-center mb-6 text-gold-300">
+                    <p className="text-center mb-6 text-black">
                         Share photographs of your tattoo(s) here. You can upload
                         multiple files if needed.
                     </p>
-                    <div className="bg-navy-800 p-6 rounded-lg">
+                    <div className="bg-tan-500 p-6 rounded-lg">
                         <DragDrop
                             files={files}
                             setFiles={setFiles}
@@ -884,7 +897,7 @@ Tattoo Memorials Auto-Notification System
                 {step < 4 ? (
                     <button
                         type="button"
-                        className="bg-gold-600 text-navy-900 rounded-md px-6 py-2 font-semibold hover:bg-gold-500 transition"
+                        className="bg-navy-500 text-white rounded-md px-6 py-2 hover:bg-gold-600 transition"
                         onClick={handleNext}
                     >
                         Continue
@@ -892,7 +905,7 @@ Tattoo Memorials Auto-Notification System
                 ) : (
                     <button
                         type="button"
-                        className="bg-green-600 rounded-md px-4 py-2 text-foreground text-white"
+                        className="bg-navy-500 text-white rounded-md px-6 py-2 hover:bg-gold-600 transition"
                         onClick={submitForm}
                     >
                         Submit
