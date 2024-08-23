@@ -1,4 +1,7 @@
+import { FileUploadStatus } from "@/components/Orders/FileUploadProgress";
+import { createClient } from "@/utils/supabase/client";
 import React, { useState, ChangeEvent } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 interface FileState {
     file: File | null;
@@ -6,6 +9,21 @@ interface FileState {
 }
 
 const FormUpload: React.FC = () => {
+    const supabase = createClient();
+
+    const { executeRecaptcha } = useGoogleReCaptcha();
+    const [token, setToken] = useState<string | null>(null);
+    const bucket = "order-images";
+    const [files, setFiles] = useState<File[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [orderId, setOrderId] = useState<string | null>(null);
+
+    // const [formData, setFormData] = useState<LivingFormData>(initialFormState);
+    const [fileUploadStatus, setFileUploadStatus] = useState<
+        FileUploadStatus[]
+    >([]);
+
     const [intakeForm, setIntakeForm] = useState<FileState>({
         file: null,
         name: "",
@@ -28,10 +46,96 @@ const FormUpload: React.FC = () => {
         setImages(files);
     };
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        // Handle form submission
-        console.log("Submitting:", { intakeForm, consentForm, images });
+
+        const response = await fetch("/api/memoriam-form", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                test: "fart",
+            }),
+        });
+
+        console.log("memoriam-form response: ", response);
+
+        // // Handle Google reCAPTCHA v3
+        // if (!executeRecaptcha) {
+        //     console.log("Execute recaptcha not yet available");
+        //     return;
+        // }
+
+        // const token = await executeRecaptcha("submitLivingOrderForm");
+        // setToken(token);
+
+        // await fetch("/api/verify-recaptcha", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({ token }),
+        // });
+
+        // // Handle Form Submission
+        // try {
+        //     setIsModalOpen(true);
+
+        //     // 1. POST form data to /api/living-form API route
+        //     const response = await fetch("/api/memoriam-form", {
+        //         method: "POST",
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify({
+        //             formData,
+        //         }),
+        //     });
+
+        //     if (!response.ok) throw new Error("Failed to submit form");
+
+        //     const result = await response.json();
+        //     setOrderId(result.orderId);
+
+        //     // Initialize file upload status
+        //     setFileUploadStatus(
+        //         files.map((file) => ({ name: file.name, status: "pending" }))
+        //     );
+
+        //     // 2. Uppload files to Storage with result.orderId as the folder
+        //     for (let i = 0; i < files.length; i++) {
+        //         const file = files[i];
+        //         try {
+        //             const { error } = await supabase.storage
+        //                 .from(bucket)
+        //                 .upload(`${result.orderId}/${file.name}`, file);
+
+        //             if (error) {
+        //                 setFileUploadStatus((prev) =>
+        //                     prev.map((item, index) =>
+        //                         index === i
+        //                             ? { ...item, status: "error" }
+        //                             : item
+        //                     )
+        //                 );
+        //             } else {
+        //                 setFileUploadStatus((prev) =>
+        //                     prev.map((item, index) =>
+        //                         index === i
+        //                             ? { ...item, status: "success" }
+        //                             : item
+        //                     )
+        //                 );
+        //             }
+        //         } catch (error) {
+        //             setFileUploadStatus((prev) =>
+        //                 prev.map((item, index) =>
+        //                     index === i ? { ...item, status: "error" } : item
+        //                 )
+        //             );
+        //         }
+        //     }
+        // } catch (error) {
+        //     console.error("Error submitting form:", error);
+        // }
+        // setUploading(false);
     };
 
     return (

@@ -267,7 +267,6 @@ const NewOrderForm: React.FC = () => {
 
     const submitForm = async () => {
         // Handle Google reCAPTCHA v3
-
         if (!executeRecaptcha) {
             console.log("Execute recaptcha not yet available");
             return;
