@@ -586,28 +586,40 @@ Tattoo Memorials Auto-Notification System
             )}
 
             {step === 2 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <h2 className="text-2xl font-semibold col-span-full mb-4 text-center">
-                        Medium Choice
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-semibold text-center mb-6">
+                        Choose Your Medium
                     </h2>
-                    {Object.values(MEDIUMS).map((medium) => (
-                        <div
-                            key={medium}
-                            className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                                formData.medium === medium
-                                    ? "bg-navy-500 text-white"
-                                    : "bg-tan-500 text-black"
-                            }`}
-                            onClick={() => setMedium(medium)}
-                        >
-                            <span>{medium}</span>
-                            {formData.medium === medium && (
-                                <span className="absolute top-2 right-2 text-xl">
-                                    ✓
-                                </span>
-                            )}
-                        </div>
-                    ))}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {Object.values(MEDIUMS).map((medium) => (
+                            <div
+                                key={medium}
+                                className={`
+            relative p-4 rounded-lg shadow-md cursor-pointer transition-all duration-300
+            border-2
+            ${
+                formData.medium === medium
+                    ? "bg-navy-500 text-white"
+                    : "bg-tan-500 text-black border-gray-400 hover:bg-tan-600 hover:border-gray-600"
+            }
+          `}
+                                onClick={() => setMedium(medium)}
+                            >
+                                <div className="flex flex-col items-center justify-center h-full">
+                                    {/* You can add icons here if you have them */}
+                                    {/* <IconComponent medium={medium} className="w-12 h-12 mb-2" /> */}
+                                    <span className="text-center font-medium">
+                                        {medium}
+                                    </span>
+                                </div>
+                                {formData.medium === medium && (
+                                    <span className="absolute top-2 right-2 text-xl">
+                                        ✓
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
