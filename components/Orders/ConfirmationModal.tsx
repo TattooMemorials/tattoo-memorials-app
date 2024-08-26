@@ -21,19 +21,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     const [uploadsComplete, setUploadsComplete] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    const mediumMapping = {
-        acrylic: "Acrylic",
-        syntheticSkin: "Synthetic Skin",
-        ink: "Ink",
-        pencil: "Pencil",
-        pastel: "Pastel",
-        watercolor: "Watercolor",
-        oilPaint: "Oil Paint",
-        charcoal: "Charcoal",
-        digitalTattooStencil: "Digital Tattoo Stencil",
-        digital: "Digital",
-    };
-
     useEffect(() => {
         if (
             fileUploadStatus.length > 0 &&
@@ -43,11 +30,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             setTimeout(() => setShowOrderDetails(true), 1000);
         }
     }, [fileUploadStatus]);
-
-    const selectedMediums = Object.entries(formData)
-        .filter(([key, value]) => key in mediumMapping && value)
-        .map(([key]) => mediumMapping[key as keyof typeof mediumMapping])
-        .join(", ");
 
     const copyToClipboard = async (text: string) => {
         try {
@@ -159,7 +141,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                 <h3 className="font-semibold text-black mb-2">
                                     Order Details:
                                 </h3>
-                                <p>Mediums: {selectedMediums}</p>
+                                <p>Medium: {formData.medium}</p>
                                 <p>
                                     Type: {formData.asIs ? "As Is" : "Altered"}
                                 </p>

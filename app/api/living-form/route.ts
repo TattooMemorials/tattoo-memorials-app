@@ -37,7 +37,7 @@ async function submitLivingForm(
                     altered: formData.altered,
                     alteration_notes: formData.alterationNotes,
                     inspiration_notes: formData.inspirationNotes,
-                    order_type: "Living",
+                    medium: formData.medium,
                 },
             ])
             .select()
@@ -48,26 +48,6 @@ async function submitLivingForm(
             throw new Error("No data returned from living_orders insert");
 
         orderData = data;
-
-        // 3. Insert into order_mediums table
-        const { error: mediumsError } = await supabase
-            .from("order_mediums")
-            .insert([
-                {
-                    id: orderData?.id,
-                    acrylic: formData.acrylic,
-                    charcoal: formData.charcoal,
-                    digital_tattoo_stencil: formData.digitalTattooStencil,
-                    ink: formData.ink,
-                    oil_paint: formData.oilPaint,
-                    pastel: formData.pastel,
-                    pencil: formData.pencil,
-                    digital: formData.digital,
-                    synthetic_skin: formData.syntheticSkin,
-                    watercolor: formData.watercolor,
-                },
-            ]);
-        if (mediumsError) throw mediumsError;
 
         return { success: true, orderId: orderData?.id };
     } catch (error) {

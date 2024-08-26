@@ -9,6 +9,31 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
 import { formatPhoneNumber } from "@/utils/common/format";
 
+export type Medium =
+    | "Acrylic"
+    | "Charcoal"
+    | "Digital Tattoo Stencil"
+    | "Ink"
+    | "Oil Paint"
+    | "Pastel"
+    | "Pencil"
+    | "Digital"
+    | "Synthetic Skin"
+    | "Watercolor";
+
+export const MEDIUMS: Record<Medium, Medium> = {
+    Acrylic: "Acrylic",
+    Charcoal: "Charcoal",
+    "Digital Tattoo Stencil": "Digital Tattoo Stencil",
+    Ink: "Ink",
+    "Oil Paint": "Oil Paint",
+    Pastel: "Pastel",
+    Pencil: "Pencil",
+    Digital: "Digital",
+    "Synthetic Skin": "Synthetic Skin",
+    Watercolor: "Watercolor",
+};
+
 export interface LivingFormData {
     firstName: string;
     lastName: string;
@@ -23,16 +48,7 @@ export interface LivingFormData {
     altered: boolean;
     alterationNotes?: string | null;
     inspirationNotes?: string;
-    acrylic: boolean;
-    charcoal: boolean;
-    digitalTattooStencil: boolean;
-    ink: boolean;
-    oilPaint: boolean;
-    pastel: boolean;
-    pencil: boolean;
-    digital: boolean;
-    syntheticSkin: boolean;
-    watercolor: boolean;
+    medium: Medium | null;
 }
 
 const NewOrderForm: React.FC = () => {
@@ -55,29 +71,7 @@ const NewOrderForm: React.FC = () => {
         altered: false,
         alterationNotes: "",
         inspirationNotes: "",
-        acrylic: false,
-        charcoal: false,
-        digitalTattooStencil: false,
-        ink: false,
-        oilPaint: false,
-        pastel: false,
-        pencil: false,
-        digital: false,
-        syntheticSkin: false,
-        watercolor: false,
-    };
-
-    const mediumMapping = {
-        acrylic: "Acrylic",
-        syntheticSkin: "Synthetic Skin",
-        ink: "Ink",
-        pencil: "Pencil",
-        pastel: "Pastel",
-        watercolor: "Watercolor",
-        oilPaint: "Oil Paint",
-        charcoal: "Charcoal",
-        digitalTattooStencil: "Digital Tattoo Stencil",
-        digital: "Digital",
+        medium: null,
     };
 
     const totalSteps = 4;
@@ -111,6 +105,10 @@ const NewOrderForm: React.FC = () => {
         }));
     };
 
+    const setMedium = (medium: Medium) => {
+        setFormData((prev) => ({ ...prev, medium }));
+    };
+
     const validateCurrentStep = () => {
         // Step 1: Continue using the existing HTML validation
         if (step === 1) {
@@ -134,19 +132,8 @@ const NewOrderForm: React.FC = () => {
 
         // Step 2: Validate that at least one medium is selected
         if (step === 2) {
-            const mediumsSelected =
-                formData.acrylic ||
-                formData.syntheticSkin ||
-                formData.ink ||
-                formData.pencil ||
-                formData.pastel ||
-                formData.watercolor ||
-                formData.oilPaint ||
-                formData.charcoal ||
-                formData.digitalTattooStencil ||
-                formData.digital;
-            if (!mediumsSelected) {
-                alert("Please select at least one medium.");
+            if (!formData.medium) {
+                alert("Please select a medium.");
                 return false;
             }
         }
@@ -260,11 +247,6 @@ const NewOrderForm: React.FC = () => {
         e.target.value = formattedValue;
     };
 
-    const selectedMediums = Object.entries(formData)
-        .filter(([key, value]) => key in mediumMapping && value)
-        .map(([key]) => mediumMapping[key as keyof typeof mediumMapping])
-        .join(", ");
-
     const submitForm = async () => {
         // Handle Google reCAPTCHA v3
         if (!executeRecaptcha) {
@@ -374,7 +356,7 @@ const NewOrderForm: React.FC = () => {
     ${formData.city}, ${formData.state} ${formData.postalCode}</p>
 
     <h2 style="color: #2c5282; margin-top: 20px;">Order Details</h2>
-    <p><strong>Medium:</strong> ${selectedMediums || "None selected"}</p>
+    <p><strong>Medium:</strong> ${formData.medium || "None selected"}</p>
     <p><strong>Type:</strong> ${formData.asIs ? "As Is" : "Altered"}</p>
     ${
         formData.altered
@@ -603,169 +585,39 @@ Tattoo Memorials Auto-Notification System
             )}
 
             {step === 2 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <h2 className="text-2xl font-semibold col-span-full mb-4 text-center">
-                        Medium Choices
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-semibold text-center mb-6">
+                        Choose Your Medium
                     </h2>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.acrylic
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("acrylic")}
-                    >
-                        <span>Acrylic</span>
-                        {formData.acrylic && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.syntheticSkin
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("syntheticSkin")}
-                    >
-                        <span>Synthetic Skin</span>
-                        {formData.syntheticSkin && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.ink
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("ink")}
-                    >
-                        <span>Ink</span>
-                        {formData.ink && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.pencil
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("pencil")}
-                    >
-                        <span>Pencil</span>
-                        {formData.pencil && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.pastel
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("pastel")}
-                    >
-                        <span>Pastel</span>
-                        {formData.pastel && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.watercolor
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("watercolor")}
-                    >
-                        <span>Watercolor</span>
-                        {formData.watercolor && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.oilPaint
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("oilPaint")}
-                    >
-                        <span>Oil Paint</span>
-                        {formData.oilPaint && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.charcoal
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("charcoal")}
-                    >
-                        <span>Charcoal</span>
-                        {formData.charcoal && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.digitalTattooStencil
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("digitalTattooStencil")}
-                    >
-                        <span>Digital Tattoo Stencil</span>
-                        {formData.digitalTattooStencil && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
-
-                    <div
-                        className={`relative flex items-center justify-center border-2 border-black rounded-md h-24 cursor-pointer transition ${
-                            formData.digital
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("digital")}
-                    >
-                        <span>Digital</span>
-                        {formData.digital && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {Object.values(MEDIUMS).map((medium) => (
+                            <div
+                                key={medium}
+                                className={`
+            relative p-4 rounded-lg shadow-md cursor-pointer transition-all duration-300
+            border-2
+            ${
+                formData.medium === medium
+                    ? "bg-navy-500 text-white"
+                    : "bg-tan-500 text-black border-gray-400 hover:bg-tan-600 hover:border-gray-600"
+            }
+          `}
+                                onClick={() => setMedium(medium)}
+                            >
+                                <div className="flex flex-col items-center justify-center h-full">
+                                    {/* You can add icons here if you have them */}
+                                    {/* <IconComponent medium={medium} className="w-12 h-12 mb-2" /> */}
+                                    <span className="text-center font-medium">
+                                        {medium}
+                                    </span>
+                                </div>
+                                {formData.medium === medium && (
+                                    <span className="absolute top-2 right-2 text-xl">
+                                        ✓
+                                    </span>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
