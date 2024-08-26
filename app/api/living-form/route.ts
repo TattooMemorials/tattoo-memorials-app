@@ -38,7 +38,6 @@ async function submitLivingForm(
                     alteration_notes: formData.alterationNotes,
                     inspiration_notes: formData.inspirationNotes,
                     medium: formData.medium,
-                    order_type: "Living",
                 },
             ])
             .select()
