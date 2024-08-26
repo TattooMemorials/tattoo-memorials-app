@@ -13,7 +13,8 @@ const FormUpload: React.FC = () => {
 
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [token, setToken] = useState<string | null>(null);
-    const bucket = "order-images";
+    const imagesBucket = "order-images";
+    const formsBucket = "order-forms";
     const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,22 +25,16 @@ const FormUpload: React.FC = () => {
         FileUploadStatus[]
     >([]);
 
-    const [intakeForm, setIntakeForm] = useState<FileState>({
-        file: null,
-        name: "",
-    });
-    const [consentForm, setConsentForm] = useState<FileState>({
-        file: null,
-        name: "",
-    });
+    const [intakeForm, setIntakeForm] = useState<File>();
+    const [consentForm, setConsentForm] = useState<File>();
     const [images, setImages] = useState<File[]>([]);
 
-    const handleFileChange =
-        (setter: React.Dispatch<React.SetStateAction<FileState>>) =>
-        (event: ChangeEvent<HTMLInputElement>) => {
-            const file = event.target.files?.[0] || null;
-            setter({ file, name: file?.name || "" });
-        };
+    // const handleFileChange =
+    //     (setter: React.Dispatch<React.SetStateAction<File>>) =>
+    //     (event: ChangeEvent<HTMLInputElement>) => {
+    //         const file = event.target.files?.[0] || null;
+    //         setter({ file, name: file?.name || "" });
+    //     };
 
     const handleImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files || []);
@@ -66,6 +61,68 @@ const FormUpload: React.FC = () => {
         //     body: JSON.stringify({ token }),
         // });
 
+        // TODO: figure out chicken and egg probelm with uploading files to orderId and uploading an empty order record first.
+        // May need to make all fields nullable, create an empty memoriam-orders row, grab the orderid, upload the files, and then update
+        // the form path columns on that row. If the uploads fail, just delete the emptry orderId record in the catch block?
+        // something like that.
+
+        // 1. Create empty memoriam_orders record
+        let result;
+        try {
+            const response = await fetch("/api/memoriam-form", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    test: "formData",
+                }),
+            });
+
+            result = await response.json();
+            setOrderId(result.orderId);
+
+            console.log("memoriam-form response: ", response);
+        } catch (error) {
+            console.error("Error creating memoriam_orders record:", error);
+        }
+
+        // 2. Upload the intake form.
+        // note: If this upload fails, we should "rollback" this entire operation including deleting the memoriam_orders record
+        try {
+            const { error } = await supabase.storage
+                .from(formsBucket)
+                .upload(`${result.orderId}/${intakeForm?.name}`, intakeForm!);
+
+            if (error) {
+                // TODO setFileUploadStatus
+                console.error("Error uploading intake form: ", error);
+            } else {
+                // TODO setFileUploadStatus
+            }
+        } catch (error) {
+            // TODO setFileUploadStatus
+            // TODO cancel uploading process, delete memoriam_orders record that was created
+            console.error("Error uploading intake form: ", error);
+        }
+
+        // 3. Upload the consent form.
+        // note: If this upload fails, we should "rollback" this entire operation including deleting the memoriam_orders record
+        try {
+            const { error } = await supabase.storage
+                .from(formsBucket)
+                .upload(`${result.orderId}/${consentForm?.name}`, consentForm!);
+
+            if (error) {
+                // TODO setFileUploadStatus
+                console.error("Error uploading consent form: ", error);
+            } else {
+                // TODO setFileUploadStatus
+            }
+        } catch (error) {
+            // TODO setFileUploadStatus
+            // TODO cancel uploading process, delete memoriam_orders record that was created
+            console.error("Error uploading consent form: ", error);
+        }
+
         // Handle Form Submission
         try {
             setIsModalOpen(true);
@@ -76,12 +133,12 @@ const FormUpload: React.FC = () => {
             );
 
             // 2. Uppload files to Storage with result.orderId as the folder
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            for (let i = 0; i < images.length; i++) {
+                const image = images[i];
                 try {
                     const { error } = await supabase.storage
-                        .from(bucket)
-                        .upload(`${result.orderId}/${file.name}`, file);
+                        .from(imagesBucket)
+                        .upload(`${result.orderId}/${image.name}`, image);
 
                     if (error) {
                         setFileUploadStatus((prev) =>
@@ -108,24 +165,6 @@ const FormUpload: React.FC = () => {
                     );
                 }
             }
-
-            // TODO: figure out chicken and egg probelm with uploading files to orderId and uploading an empty order record first.
-            // May need to make all fields nullable, create an empty memoriam-orders row, grab the orderid, upload the files, and then update
-            // the form path columns on that row. If the uploads fail, just delete the emptry orderId record in the catch block?
-            // something like that.
-
-            const response = await fetch("/api/memoriam-form", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    test: "todo",
-                }),
-            });
-
-            const result = await response.json();
-            setOrderId(result.orderId);
-
-            console.log("memoriam-form response: ", response);
         } catch (error) {
             console.error("Error submitting form:", error);
         }
@@ -151,11 +190,15 @@ const FormUpload: React.FC = () => {
                 <input
                     id="intakeForm"
                     type="file"
-                    onChange={handleFileChange(setIntakeForm)}
+                    onChange={(event) => {
+                        if (event.target && event.target.files) {
+                            setIntakeForm(event.target.files[0]);
+                        }
+                    }}
                     className="hidden"
                 />
                 <span className="ml-4">
-                    {intakeForm.name || "(list file here)"}
+                    {intakeForm?.name || "(list file here)"}
                 </span>
             </div>
 
@@ -175,11 +218,15 @@ const FormUpload: React.FC = () => {
                 <input
                     id="consentForm"
                     type="file"
-                    onChange={handleFileChange(setConsentForm)}
+                    onChange={(event) => {
+                        if (event.target && event.target.files) {
+                            setConsentForm(event.target.files[0]);
+                        }
+                    }}
                     className="hidden"
                 />
                 <span className="ml-4">
-                    {consentForm.name || "(list file here)"}
+                    {consentForm?.name || "(list file here)"}
                 </span>
             </div>
 

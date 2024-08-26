@@ -32,8 +32,8 @@ async function submitMemoriamForm(
                     // altered: formData.altered,
                     // alteration_notes: formData.alterationNotes,
                     // inspiration_notes: formData.inspirationNotes,
-                    intake_form_path: "here/is/some/path",
-                    consent_form_path: "here/is/antother/path",
+                    //intake_form_path: "here/is/some/path",
+                    //consent_form_path: "here/is/antother/path",
                     order_type: "Memoriam",
                 },
             ])
