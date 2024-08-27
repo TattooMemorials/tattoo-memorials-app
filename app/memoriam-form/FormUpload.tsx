@@ -67,6 +67,7 @@ const FormUpload: React.FC = () => {
         // something like that.
 
         // 1. Create empty memoriam_orders record
+        // 1. Create empty memoriam_orders record
         let result;
         try {
             const response = await fetch("/api/memoriam-form", {
@@ -83,92 +84,149 @@ const FormUpload: React.FC = () => {
             console.log("memoriam-form response: ", response);
         } catch (error) {
             console.error("Error creating memoriam_orders record:", error);
+            return; // Exit early on error
         }
 
-        // 2. Upload the intake form.
-        // note: If this upload fails, we should "rollback" this entire operation including deleting the memoriam_orders record
+        // 2. Upload the intake form and update the path.
+        let intakeFilePath = "";
         try {
+            intakeFilePath = `${result.orderId}/${intakeForm?.name}`;
             const { error } = await supabase.storage
                 .from(formsBucket)
-                .upload(`${result.orderId}/${intakeForm?.name}`, intakeForm!);
+                .upload(intakeFilePath, intakeForm!);
 
             if (error) {
-                // TODO setFileUploadStatus
                 console.error("Error uploading intake form: ", error);
-            } else {
-                // TODO setFileUploadStatus
+
+                // Rollback by deleting the created memoriam_orders record
+                await fetch("/api/memoriam-form", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        orderId: result.orderId,
+                    }),
+                });
+                return; // Exit early on error
             }
+
+            // Update record with intake form path via API call
+            await fetch("/api/memoriam-form", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: result.orderId,
+                    intake_form_path: intakeFilePath,
+                }),
+            });
         } catch (error) {
-            // TODO setFileUploadStatus
-            // TODO cancel uploading process, delete memoriam_orders record that was created
-            console.error("Error uploading intake form: ", error);
+            console.error(
+                "Error uploading or updating intake form path:",
+                error
+            );
+
+            // Rollback by deleting the created memoriam_orders record
+            await fetch("/api/memoriam-form", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: result.orderId,
+                }),
+            });
+            return; // Exit early on error
         }
 
-        // 3. Upload the consent form.
-        // note: If this upload fails, we should "rollback" this entire operation including deleting the memoriam_orders record
+        // 3. Upload the consent form and update the path.
+        let consentFilePath = "";
         try {
+            consentFilePath = `${result.orderId}/${consentForm?.name}`;
             const { error } = await supabase.storage
                 .from(formsBucket)
-                .upload(`${result.orderId}/${consentForm?.name}`, consentForm!);
+                .upload(consentFilePath, consentForm!);
 
             if (error) {
-                // TODO setFileUploadStatus
                 console.error("Error uploading consent form: ", error);
-            } else {
-                // TODO setFileUploadStatus
+
+                // Rollback by deleting the created memoriam_orders record
+                await fetch("/api/memoriam-form", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        orderId: result.orderId,
+                    }),
+                });
+                return; // Exit early on error
             }
+
+            // Update record with consent form path via API call
+            await fetch("/api/memoriam-form", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: result.orderId,
+                    consent_form_path: consentFilePath,
+                }),
+            });
         } catch (error) {
-            // TODO setFileUploadStatus
-            // TODO cancel uploading process, delete memoriam_orders record that was created
-            console.error("Error uploading consent form: ", error);
+            console.error(
+                "Error uploading or updating consent form path:",
+                error
+            );
+
+            // Rollback by deleting the created memoriam_orders record
+            await fetch("/api/memoriam-form", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: result.orderId,
+                }),
+            });
+            return; // Exit early on error
         }
 
-        // Handle Form Submission
+        // 4. Upload the images (as previously implemented)
         try {
             setIsModalOpen(true);
 
             // Initialize file upload status
             setFileUploadStatus(
-                files.map((file) => ({ name: file.name, status: "pending" }))
+                images.map((file) => ({ name: file.name, status: "pending" }))
             );
 
-            // 2. Uppload files to Storage with result.orderId as the folder
             for (let i = 0; i < images.length; i++) {
                 const image = images[i];
-                try {
-                    const { error } = await supabase.storage
-                        .from(imagesBucket)
-                        .upload(`${result.orderId}/${image.name}`, image);
+                const { error } = await supabase.storage
+                    .from(imagesBucket)
+                    .upload(`${result.orderId}/${image.name}`, image);
 
-                    if (error) {
-                        setFileUploadStatus((prev) =>
-                            prev.map((item, index) =>
-                                index === i
-                                    ? { ...item, status: "error" }
-                                    : item
-                            )
-                        );
-                    } else {
-                        setFileUploadStatus((prev) =>
-                            prev.map((item, index) =>
-                                index === i
-                                    ? { ...item, status: "success" }
-                                    : item
-                            )
-                        );
-                    }
-                } catch (error) {
+                if (error) {
                     setFileUploadStatus((prev) =>
                         prev.map((item, index) =>
                             index === i ? { ...item, status: "error" } : item
                         )
                     );
+                    throw new Error(`Error uploading image: ${image.name}`);
+                } else {
+                    setFileUploadStatus((prev) =>
+                        prev.map((item, index) =>
+                            index === i ? { ...item, status: "success" } : item
+                        )
+                    );
                 }
             }
         } catch (error) {
-            console.error("Error submitting form:", error);
+            console.error("Error uploading images:", error);
+
+            // Rollback by deleting the created memoriam_orders record
+            await fetch("/api/memoriam-form", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: result.orderId,
+                }),
+            });
+        } finally {
+            setUploading(false);
         }
-        setUploading(false);
     };
 
     return (

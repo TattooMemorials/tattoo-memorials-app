@@ -7,6 +7,10 @@ interface SubmissionResult {
     error?: string;
 }
 
+function formatPhoneNumber(phone: string): string {
+    return phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+}
+
 async function submitMemoriamForm(
     formData: any,
     supabase: any
@@ -17,26 +21,7 @@ async function submitMemoriamForm(
         // 1. Insert into memoriam_orders table
         const { data, error: orderError } = await supabase
             .from("memoriam_orders")
-            .insert([
-                {
-                    // first_name: formData.firstName,
-                    // last_name: formData.lastName,
-                    // email: formData.email,
-                    // phone: formatPhoneNumber(formData.phone),
-                    // street_address: formData.streetAddress,
-                    // street_address2: formData.streetAddress2,
-                    // city: formData.city,
-                    // state: formData.state,
-                    // postal_code: formData.postalCode,
-                    // as_is: formData.asIs,
-                    // altered: formData.altered,
-                    // alteration_notes: formData.alterationNotes,
-                    // inspiration_notes: formData.inspirationNotes,
-                    //intake_form_path: "here/is/some/path",
-                    //consent_form_path: "here/is/antother/path",
-                    order_type: "Memoriam",
-                },
-            ])
+            .insert([{}]) // empty row
             .select()
             .single();
 
@@ -46,29 +31,9 @@ async function submitMemoriamForm(
 
         orderData = data;
 
-        // 3. Insert into order_mediums table
-        // const { error: mediumsError } = await supabase
-        //     .from("order_mediums")
-        //     .insert([
-        //         {
-        //             id: orderData?.id,
-        //             acrylic: formData.acrylic,
-        //             charcoal: formData.charcoal,
-        //             digital_tattoo_stencil: formData.digitalTattooStencil,
-        //             ink: formData.ink,
-        //             oil_paint: formData.oilPaint,
-        //             pastel: formData.pastel,
-        //             pencil: formData.pencil,
-        //             digital: formData.digital,
-        //             synthetic_skin: formData.syntheticSkin,
-        //             watercolor: formData.watercolor,
-        //         },
-        //     ]);
-        // if (mediumsError) throw mediumsError;
-
         return { success: true, orderId: orderData?.id };
     } catch (error) {
-        console.error("Error submitting living form:", error);
+        console.error("Error submitting memoriam form:", error);
         // If an error occurred after creating the order, we should delete it
         if (orderData && orderData.id) {
             await supabase
@@ -79,6 +44,21 @@ async function submitMemoriamForm(
         return { success: false, error: (error as Error).message };
     }
 }
+
+const deleteOrder = async (orderId: string, supabase: any) => {
+    const { data, error: deleteError } = await supabase
+        .from("memoriam_orders")
+        .delete()
+        .eq("id", orderId); // Replace "id" with the correct field if necessary
+
+    if (deleteError) {
+        console.error("Error deleting order:", deleteError);
+        return { success: false, error: (deleteError as Error).message };
+    } else {
+        console.log("Order deleted successfully:", data);
+        return { success: true };
+    }
+};
 
 export async function POST(request: Request) {
     try {
@@ -97,7 +77,69 @@ export async function POST(request: Request) {
             return NextResponse.json(result, { status: 400 });
         }
     } catch (error) {
-        console.error("Error processing living form submission:", error);
+        console.error("Error processing memoriam form submission:", error);
+        return NextResponse.json(
+            { success: false, error: "Internal Server Error" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function PATCH(request: Request) {
+    const supabase = createClient();
+
+    try {
+        const { orderId, ...updateFields } = await request.json();
+
+        // Ensure at least one field is provided to update
+        if (!orderId || Object.keys(updateFields).length === 0) {
+            return NextResponse.json(
+                { success: false, error: "No fields provided for update" },
+                { status: 400 }
+            );
+        }
+
+        // Perform the update operation
+        const { error } = await supabase
+            .from("memoriam_orders")
+            .update(updateFields)
+            .eq("id", orderId);
+
+        if (error) {
+            return NextResponse.json(
+                { success: false, error: error.message },
+                { status: 400 }
+            );
+        }
+
+        return NextResponse.json({ success: true }, { status: 200 });
+    } catch (error) {
+        console.error("Error updating memoriam order:", error);
+        return NextResponse.json(
+            { success: false, error: "Internal Server Error" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(request: Request) {
+    try {
+        // Initialize Supabase client inside the request handler
+        const supabase = createClient();
+
+        const { orderId } = await request.json();
+
+        // TODO: Validate formData here
+
+        const result = await deleteOrder(orderId, supabase);
+
+        if (result.success) {
+            return NextResponse.json(result, { status: 200 });
+        } else {
+            return NextResponse.json(result, { status: 400 });
+        }
+    } catch (error) {
+        console.error("Error deleting memoriam order:", error);
         return NextResponse.json(
             { success: false, error: "Internal Server Error" },
             { status: 500 }
