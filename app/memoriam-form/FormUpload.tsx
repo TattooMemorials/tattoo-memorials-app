@@ -232,16 +232,18 @@ const FormUpload: React.FC = () => {
     return (
         <form
             onSubmit={handleSubmit}
-            className="p-6 bg-navy-950 rounded-lg text-gold-300"
+            className="flex flex-col w-full gap-6 text-foreground bg-tan-500 p-8 rounded-lg"
         >
-            <div className="mb-4 flex items-center">
-                <label className="w-1/2">Upload Intake Form:</label>
+            <div className="flex items-center mb-4">
+                <label className="w-1/2 text-lg text-black">
+                    Upload Intake Form:
+                </label>
                 <button
                     type="button"
                     onClick={() =>
                         document.getElementById("intakeForm")?.click()
                     }
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
                 >
                     Upload
                 </button>
@@ -255,13 +257,13 @@ const FormUpload: React.FC = () => {
                     }}
                     className="hidden"
                 />
-                <span className="ml-4">
-                    {intakeForm?.name || "(list file here)"}
+                <span className="ml-4 text-black">
+                    {intakeForm?.name || "(No file selected)"}
                 </span>
             </div>
 
-            <div className="mb-4 flex items-center">
-                <label className="w-1/2">
+            <div className="flex items-center mb-4">
+                <label className="w-1/2 text-lg text-black">
                     Upload Photography Consent Form:
                 </label>
                 <button
@@ -269,7 +271,7 @@ const FormUpload: React.FC = () => {
                     onClick={() =>
                         document.getElementById("consentForm")?.click()
                     }
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
                 >
                     Upload
                 </button>
@@ -283,21 +285,21 @@ const FormUpload: React.FC = () => {
                     }}
                     className="hidden"
                 />
-                <span className="ml-4">
-                    {consentForm?.name || "(list file here)"}
+                <span className="ml-4 text-black">
+                    {consentForm?.name || "(No file selected)"}
                 </span>
             </div>
 
-            <div className="mb-4 flex items-center">
-                <label className="w-1/2">
+            <div className="flex flex-col mb-4">
+                <label className="text-lg text-black mb-2">
                     Upload Images (jpg/png/pdf/gif):
                 </label>
                 <button
                     type="button"
                     onClick={() => document.getElementById("images")?.click()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
                 >
-                    Upload
+                    Upload Images
                 </button>
                 <input
                     id="images"
@@ -307,23 +309,23 @@ const FormUpload: React.FC = () => {
                     onChange={handleImagesChange}
                     className="hidden"
                 />
-                <span className="ml-4">
+                <span className="mt-2 text-black">
                     {images.length > 0
                         ? `${images.length} file(s) selected`
-                        : "(list files here...)"}
+                        : "(No files selected)"}
                 </span>
             </div>
 
-            <div className="flex justify-end space-x-4 mt-6">
+            <div className="flex justify-end mt-6 space-x-4">
                 <button
                     type="button"
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    className="bg-navy-500 hover:bg-gold-600 text-white px-6 py-2 rounded transition"
                 >
                     Submit
                 </button>
