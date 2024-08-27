@@ -269,8 +269,8 @@ const LivingOrderForm: React.FC = () => {
         try {
             setIsModalOpen(true);
 
-            // 1. POST form data to /api/living-form API route
-            const response = await fetch("/api/living-form", {
+            // 1. POST form data to /api/living-order API route
+            const response = await fetch("/api/living-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

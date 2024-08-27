@@ -86,7 +86,7 @@ const MemoriamOrderForm: React.FC = () => {
         // 1. Create empty memoriam_orders record
         let result;
         try {
-            const response = await fetch("/api/memoriam-form", {
+            const response = await fetch("/api/memoriam-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -115,7 +115,7 @@ const MemoriamOrderForm: React.FC = () => {
                 console.error("Error uploading intake form: ", error);
 
                 // Rollback by deleting the created memoriam_orders record
-                await fetch("/api/memoriam-form", {
+                await fetch("/api/memoriam-order", {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -126,7 +126,7 @@ const MemoriamOrderForm: React.FC = () => {
             }
 
             // Update record with intake form path via API call
-            await fetch("/api/memoriam-form", {
+            await fetch("/api/memoriam-order", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -141,7 +141,7 @@ const MemoriamOrderForm: React.FC = () => {
             );
 
             // Rollback by deleting the created memoriam_orders record
-            await fetch("/api/memoriam-form", {
+            await fetch("/api/memoriam-order", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -163,7 +163,7 @@ const MemoriamOrderForm: React.FC = () => {
                 console.error("Error uploading consent form: ", error);
 
                 // Rollback by deleting the created memoriam_orders record
-                await fetch("/api/memoriam-form", {
+                await fetch("/api/memoriam-order", {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -174,7 +174,7 @@ const MemoriamOrderForm: React.FC = () => {
             }
 
             // Update record with consent form path via API call
-            await fetch("/api/memoriam-form", {
+            await fetch("/api/memoriam-order", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -189,7 +189,7 @@ const MemoriamOrderForm: React.FC = () => {
             );
 
             // Rollback by deleting the created memoriam_orders record
-            await fetch("/api/memoriam-form", {
+            await fetch("/api/memoriam-order", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -240,7 +240,7 @@ const MemoriamOrderForm: React.FC = () => {
             console.error("Error uploading images:", error);
 
             // Rollback by deleting the created memoriam_orders record
-            await fetch("/api/memoriam-form", {
+            await fetch("/api/memoriam-order", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
