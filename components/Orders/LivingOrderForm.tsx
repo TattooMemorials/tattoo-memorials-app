@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
-import ConfirmationModal from "./ConfirmationModal";
+import LivingFormConfirmationModal from "./LivingFormConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
@@ -51,7 +51,7 @@ export interface LivingFormData {
     medium: Medium | null;
 }
 
-const NewOrderForm: React.FC = () => {
+const LivingOrderForm: React.FC = () => {
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [token, setToken] = useState<string | null>(null);
 
@@ -763,7 +763,7 @@ Tattoo Memorials Auto-Notification System
                     </button>
                 )}
             </div>
-            <ConfirmationModal
+            <LivingFormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 formData={formData}
@@ -774,4 +774,4 @@ Tattoo Memorials Auto-Notification System
     );
 };
 
-export default NewOrderForm;
+export default LivingOrderForm;

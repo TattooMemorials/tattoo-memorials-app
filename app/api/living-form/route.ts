@@ -1,4 +1,4 @@
-import { LivingFormData } from "@/components/Orders/NewOrderForm";
+import { LivingFormData } from "@/components/Orders/LivingOrderForm";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 

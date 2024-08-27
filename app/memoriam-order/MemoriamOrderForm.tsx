@@ -1,9 +1,12 @@
+"use client";
+
 import { FileUploadStatus } from "@/components/Orders/FileUploadProgress";
+import MemoriamFormConfirmationModal from "@/components/Orders/MemoriamFormConfirmationModal";
 import { createClient } from "@/utils/supabase/client";
 import React, { useState, ChangeEvent } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
-const FormUpload: React.FC = () => {
+const MemoriamOrderForm: React.FC = () => {
     const supabase = createClient();
 
     const { executeRecaptcha } = useGoogleReCaptcha();
@@ -25,6 +28,16 @@ const FormUpload: React.FC = () => {
     const handleImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
         const newFiles = Array.from(event.target.files || []);
         setImages((prevFiles) => [...prevFiles, ...newFiles]);
+    };
+
+    const resetForm = () => {
+        setIntakeForm(null);
+        setConsentForm(null);
+        setImages([]);
+        setFileUploadStatus([]);
+        setOrderId(null);
+        setIsModalOpen(false);
+        setUploading(false);
     };
 
     const removeFile = (
@@ -50,6 +63,25 @@ const FormUpload: React.FC = () => {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        // Handle Google reCAPTCHA v3
+        if (!executeRecaptcha) {
+            console.log("Execute recaptcha not yet available");
+            return;
+        }
+
+        const token = await executeRecaptcha("submitMemoriamOrderForm");
+        setToken(token);
+
+        await fetch("/api/verify-recaptcha", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
+        });
+
+        setIsModalOpen(true);
 
         // 1. Create empty memoriam_orders record
         let result;
@@ -169,12 +201,19 @@ const FormUpload: React.FC = () => {
 
         // 4. Upload the images (as previously implemented)
         try {
-            setIsModalOpen(true);
-
             // Initialize file upload status
-            setFileUploadStatus(
-                images.map((file) => ({ name: file.name, status: "pending" }))
-            );
+            setFileUploadStatus([
+                ...(intakeForm
+                    ? [{ name: intakeForm.name, status: "pending" as const }]
+                    : []),
+                ...(consentForm
+                    ? [{ name: consentForm.name, status: "pending" as const }]
+                    : []),
+                ...images.map((file) => ({
+                    name: file.name,
+                    status: "pending" as const,
+                })),
+            ]);
 
             for (let i = 0; i < images.length; i++) {
                 const image = images[i];
@@ -366,8 +405,19 @@ const FormUpload: React.FC = () => {
                     Submit
                 </button>
             </div>
+            <MemoriamFormConfirmationModal
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    resetForm();
+                }}
+                intakeFormName={intakeForm?.name ?? null}
+                consentFormName={consentForm?.name ?? null}
+                images={images}
+                fileUploadStatus={fileUploadStatus}
+            />
         </form>
     );
 };
 
-export default FormUpload;
+export default MemoriamOrderForm;
