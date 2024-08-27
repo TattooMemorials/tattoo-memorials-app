@@ -3,11 +3,6 @@ import { createClient } from "@/utils/supabase/client";
 import React, { useState, ChangeEvent } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
-interface FileState {
-    file: File | null;
-    name: string;
-}
-
 const FormUpload: React.FC = () => {
     const supabase = createClient();
 
@@ -19,54 +14,43 @@ const FormUpload: React.FC = () => {
     const [uploading, setUploading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
-
-    // const [formData, setFormData] = useState<LivingFormData>(initialFormState);
     const [fileUploadStatus, setFileUploadStatus] = useState<
         FileUploadStatus[]
     >([]);
 
-    const [intakeForm, setIntakeForm] = useState<File>();
-    const [consentForm, setConsentForm] = useState<File>();
+    const [intakeForm, setIntakeForm] = useState<File | null>(null);
+    const [consentForm, setConsentForm] = useState<File | null>(null);
     const [images, setImages] = useState<File[]>([]);
 
-    // const handleFileChange =
-    //     (setter: React.Dispatch<React.SetStateAction<File>>) =>
-    //     (event: ChangeEvent<HTMLInputElement>) => {
-    //         const file = event.target.files?.[0] || null;
-    //         setter({ file, name: file?.name || "" });
-    //     };
-
     const handleImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(event.target.files || []);
-        setImages(files);
+        const newFiles = Array.from(event.target.files || []);
+        setImages((prevFiles) => [...prevFiles, ...newFiles]);
+    };
+
+    const removeFile = (
+        fileType: "intake" | "consent" | "images",
+        index?: number
+    ) => {
+        switch (fileType) {
+            case "intake":
+                setIntakeForm(null);
+                break;
+            case "consent":
+                setConsentForm(null);
+                break;
+            case "images":
+                if (index !== undefined) {
+                    setImages((prevFiles) =>
+                        prevFiles.filter((_, i) => i !== index)
+                    );
+                }
+                break;
+        }
     };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        // // Handle Google reCAPTCHA v3
-        // if (!executeRecaptcha) {
-        //     console.log("Execute recaptcha not yet available");
-        //     return;
-        // }
-
-        // const token = await executeRecaptcha("submitLivingOrderForm");
-        // setToken(token);
-
-        // await fetch("/api/verify-recaptcha", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({ token }),
-        // });
-
-        // TODO: figure out chicken and egg probelm with uploading files to orderId and uploading an empty order record first.
-        // May need to make all fields nullable, create an empty memoriam-orders row, grab the orderid, upload the files, and then update
-        // the form path columns on that row. If the uploads fail, just delete the emptry orderId record in the catch block?
-        // something like that.
-
-        // 1. Create empty memoriam_orders record
         // 1. Create empty memoriam_orders record
         let result;
         try {
@@ -234,88 +218,140 @@ const FormUpload: React.FC = () => {
             onSubmit={handleSubmit}
             className="flex flex-col w-full gap-6 text-foreground bg-tan-500 p-8 rounded-lg"
         >
-            <div className="flex items-center mb-4">
-                <label className="w-1/2 text-lg text-black">
+            {/* Intake Form Upload */}
+            <div className="flex flex-col mb-4">
+                <label className="text-lg text-black mb-2">
                     Upload Intake Form:
                 </label>
-                <button
-                    type="button"
-                    onClick={() =>
-                        document.getElementById("intakeForm")?.click()
-                    }
-                    className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
-                >
-                    Upload
-                </button>
-                <input
-                    id="intakeForm"
-                    type="file"
-                    onChange={(event) => {
-                        if (event.target && event.target.files) {
-                            setIntakeForm(event.target.files[0]);
+                <div className="flex items-center">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            document.getElementById("intakeForm")?.click()
                         }
-                    }}
-                    className="hidden"
-                />
-                <span className="ml-4 text-black">
-                    {intakeForm?.name || "(No file selected)"}
-                </span>
+                        className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
+                    >
+                        Select File
+                    </button>
+                    <input
+                        id="intakeForm"
+                        type="file"
+                        onChange={(event) => {
+                            if (event.target && event.target.files) {
+                                setIntakeForm(event.target.files[0]);
+                            }
+                        }}
+                        className="hidden"
+                    />
+                </div>
+                {intakeForm && (
+                    <div className="mt-2 flex justify-between items-center text-black">
+                        <span>{intakeForm.name}</span>
+                        <button
+                            type="button"
+                            onClick={() => removeFile("intake")}
+                            className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                            disabled={uploading}
+                        >
+                            Remove
+                        </button>
+                    </div>
+                )}
             </div>
 
-            <div className="flex items-center mb-4">
-                <label className="w-1/2 text-lg text-black">
+            {/* Consent Form Upload */}
+            <div className="flex flex-col mb-4">
+                <label className="text-lg text-black mb-2">
                     Upload Photography Consent Form:
                 </label>
-                <button
-                    type="button"
-                    onClick={() =>
-                        document.getElementById("consentForm")?.click()
-                    }
-                    className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
-                >
-                    Upload
-                </button>
-                <input
-                    id="consentForm"
-                    type="file"
-                    onChange={(event) => {
-                        if (event.target && event.target.files) {
-                            setConsentForm(event.target.files[0]);
+                <div className="flex items-center">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            document.getElementById("consentForm")?.click()
                         }
-                    }}
-                    className="hidden"
-                />
-                <span className="ml-4 text-black">
-                    {consentForm?.name || "(No file selected)"}
-                </span>
+                        className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
+                    >
+                        Select File
+                    </button>
+                    <input
+                        id="consentForm"
+                        type="file"
+                        onChange={(event) => {
+                            if (event.target && event.target.files) {
+                                setConsentForm(event.target.files[0]);
+                            }
+                        }}
+                        className="hidden"
+                    />
+                </div>
+                {consentForm && (
+                    <div className="mt-2 flex justify-between items-center text-black">
+                        <span>{consentForm.name}</span>
+                        <button
+                            type="button"
+                            onClick={() => removeFile("consent")}
+                            className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                            disabled={uploading}
+                        >
+                            Remove
+                        </button>
+                    </div>
+                )}
             </div>
 
+            {/* Images Upload */}
             <div className="flex flex-col mb-4">
                 <label className="text-lg text-black mb-2">
                     Upload Images (jpg/png/pdf/gif):
                 </label>
-                <button
-                    type="button"
-                    onClick={() => document.getElementById("images")?.click()}
-                    className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
-                >
-                    Upload Images
-                </button>
-                <input
-                    id="images"
-                    type="file"
-                    multiple
-                    accept=".jpg,.jpeg,.png,.pdf,.gif"
-                    onChange={handleImagesChange}
-                    className="hidden"
-                />
-                <span className="mt-2 text-black">
-                    {images.length > 0
-                        ? `${images.length} file(s) selected`
-                        : "(No files selected)"}
-                </span>
+                <div className="flex items-center">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            document.getElementById("images")?.click()
+                        }
+                        className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
+                    >
+                        Upload Images
+                    </button>
+                    <input
+                        id="images"
+                        type="file"
+                        multiple
+                        accept=".jpg,.jpeg,.png,.pdf,.gif"
+                        onChange={handleImagesChange}
+                        className="hidden"
+                    />
+                    <span className="ml-4 text-black">
+                        {images.length > 0
+                            ? `${images.length} file(s) selected`
+                            : "(No files selected)"}
+                    </span>
+                </div>
+                {images.length > 0 && (
+                    <ul className="mt-2">
+                        {images.map((image, index) => (
+                            <li
+                                key={index}
+                                className="flex justify-between items-center text-black text-sm py-2"
+                            >
+                                <span>{image.name}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => removeFile("images", index)}
+                                    className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                    disabled={uploading}
+                                >
+                                    Remove
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
 
+            {/* Form Submission Buttons */}
             <div className="flex justify-end mt-6 space-x-4">
                 <button
                     type="button"
