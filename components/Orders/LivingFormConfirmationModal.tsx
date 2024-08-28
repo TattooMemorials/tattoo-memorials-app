@@ -31,15 +31,15 @@ const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
         }
     }, [fileUploadStatus]);
 
-    const copyToClipboard = async (text: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
-        } catch (err) {
-            console.error("Failed to copy text: ", err);
-        }
-    };
+    // const copyToClipboard = async (text: string) => {
+    //     try {
+    //         await navigator.clipboard.writeText(text);
+    //         setCopied(true);
+    //         setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
+    //     } catch (err) {
+    //         console.error("Failed to copy text: ", err);
+    //     }
+    // };
 
     if (!isOpen) return null;
 
@@ -91,7 +91,7 @@ const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                         <span className="mr-2 text-black truncate flex-grow">
                                             {orderId}
                                         </span>
-                                        <button
+                                        {/* <button
                                             onClick={() =>
                                                 copyToClipboard(orderId)
                                             }
@@ -112,13 +112,13 @@ const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                                     d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                                                 />
                                             </svg>
-                                        </button>
+                                        </button> */}
                                     </div>
-                                    {copied && (
+                                    {/* {copied && (
                                         <p className="text-black mt-1 text-sm">
                                             Copied to clipboard!
                                         </p>
-                                    )}
+                                    )} */}
                                 </div>
                             )}
                             <p className="mb-6">
