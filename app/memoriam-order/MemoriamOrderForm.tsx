@@ -13,7 +13,6 @@ const MemoriamOrderForm: React.FC = () => {
     const [token, setToken] = useState<string | null>(null);
     const imagesBucket = "order-images";
     const formsBucket = "order-forms";
-    const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
@@ -73,13 +72,20 @@ const MemoriamOrderForm: React.FC = () => {
         const token = await executeRecaptcha("submitMemoriamOrderForm");
         setToken(token);
 
-        await fetch("/api/verify-recaptcha", {
+        const recaptchaResponse = await fetch("/api/verify-recaptcha", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ token }),
         });
+
+        const recaptchaResult = await recaptchaResponse.json();
+
+        if (!recaptchaResult.success) {
+            console.error("Recaptcha Error: ", recaptchaResult.error);
+            return; // Exit early on error
+        }
 
         setIsModalOpen(true);
 
@@ -342,7 +348,7 @@ const MemoriamOrderForm: React.FC = () => {
             {/* Images Upload */}
             <div className="flex flex-col mb-4">
                 <label className="text-lg text-black mb-2">
-                    Upload Images (jpg/png/pdf/gif):
+                    Select Images (jpg/png/pdf/gif):
                 </label>
                 <div className="flex items-center">
                     <button
@@ -352,7 +358,7 @@ const MemoriamOrderForm: React.FC = () => {
                         }
                         className="bg-navy-500 hover:bg-gold-600 text-white px-4 py-2 rounded transition"
                     >
-                        Upload Images
+                        Select Images
                     </button>
                     <input
                         id="images"
@@ -362,11 +368,11 @@ const MemoriamOrderForm: React.FC = () => {
                         onChange={handleImagesChange}
                         className="hidden"
                     />
-                    <span className="ml-4 text-black">
+                    {/* <span className="ml-4 text-black">
                         {images.length > 0
                             ? `${images.length} file(s) selected`
                             : "(No files selected)"}
-                    </span>
+                    </span> */}
                 </div>
                 {images.length > 0 && (
                     <ul className="mt-2">
