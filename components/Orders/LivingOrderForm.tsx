@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
-import ConfirmationModal from "./ConfirmationModal";
+import LivingFormConfirmationModal from "./LivingFormConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
@@ -51,7 +51,7 @@ export interface LivingFormData {
     medium: Medium | null;
 }
 
-const NewOrderForm: React.FC = () => {
+const LivingOrderForm: React.FC = () => {
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [token, setToken] = useState<string | null>(null);
 
@@ -249,7 +249,6 @@ const NewOrderForm: React.FC = () => {
 
     const submitForm = async () => {
         // Handle Google reCAPTCHA v3
-
         if (!executeRecaptcha) {
             console.log("Execute recaptcha not yet available");
             return;
@@ -267,17 +266,21 @@ const NewOrderForm: React.FC = () => {
         });
 
         const recaptchaResult = await recaptchaResponse.json();
+
         if (!recaptchaResult.success) {
+            const tattooEnv = process.env.NEXT_PUBLIC_TATTOO_ENV;
             console.error("Recaptcha Error: ", recaptchaResult.error);
-            return; // Exit early on error
+            if (tattooEnv !== "dev") {
+                return; // Exit early on error
+            }
         }
 
         // Handle Form Submission
         try {
             setIsModalOpen(true);
 
-            // 1. POST form data to /api/living-form API route
-            const response = await fetch("/api/living-form", {
+            // 1. POST form data to /api/living-order API route
+            const response = await fetch("/api/living-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -770,7 +773,7 @@ Tattoo Memorials Auto-Notification System
                     </button>
                 )}
             </div>
-            <ConfirmationModal
+            <LivingFormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 formData={formData}
@@ -781,4 +784,4 @@ Tattoo Memorials Auto-Notification System
     );
 };
 
-export default NewOrderForm;
+export default LivingOrderForm;

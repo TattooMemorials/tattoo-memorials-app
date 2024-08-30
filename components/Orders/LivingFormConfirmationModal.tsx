@@ -10,7 +10,7 @@ interface ConfirmationModalProps {
     fileUploadStatus: FileUploadStatus[];
 }
 
-const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
     isOpen,
     onClose,
     formData,
@@ -173,4 +173,4 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-export default ConfirmationModal;
+export default LivingFormConfirmationModal;
