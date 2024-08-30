@@ -267,9 +267,6 @@ const NewOrderForm: React.FC = () => {
         });
 
         const recaptchaResult = await recaptchaResponse.json();
-
-        console.log(recaptchaResult);
-
         if (!recaptchaResult.success) {
             console.error("Recaptcha Error: ", recaptchaResult.error);
             return; // Exit early on error
