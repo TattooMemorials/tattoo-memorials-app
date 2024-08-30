@@ -83,8 +83,11 @@ const MemoriamOrderForm: React.FC = () => {
         const recaptchaResult = await recaptchaResponse.json();
 
         if (!recaptchaResult.success) {
+            const tattooEnv = process.env.NEXT_PUBLIC_TATTOO_ENV;
             console.error("Recaptcha Error: ", recaptchaResult.error);
-            return; // Exit early on error
+            if (tattooEnv !== "dev") {
+                return; // Exit early on error
+            }
         }
 
         setIsModalOpen(true);
