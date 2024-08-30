@@ -24,6 +24,7 @@ const MemoriamOrderForm: React.FC = () => {
     const [consentForm, setConsentForm] = useState<File | null>(null);
     const [images, setImages] = useState<File[]>([]);
     const [isFormValid, setIsFormValid] = useState(false);
+    const [email, setEmail] = useState<string>("");
 
     // Add this useEffect hook to check form validity
     useEffect(() => {
@@ -43,6 +44,7 @@ const MemoriamOrderForm: React.FC = () => {
         setOrderId(null);
         setIsModalOpen(false);
         setUploading(false);
+        setEmail("");
     };
 
     const removeFile = (
@@ -119,7 +121,9 @@ const MemoriamOrderForm: React.FC = () => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    test: "formData",
+                    formData: {
+                        email: email || null, // Include email if provided, otherwise null
+                    },
                 }),
             });
 
@@ -445,11 +449,20 @@ const MemoriamOrderForm: React.FC = () => {
                     Submit
                 </button>
             </div>
-            {!isFormValid && (
-                <p className="text-red-500 text-sm mt-2">
-                    Please select all required files before submitting.
-                </p>
-            )}
+            {/* Email Input */}
+            {/* <div className="flex flex-col mb-4">
+                <label htmlFor="email" className="text-lg text-black mb-2">
+                    Email Address:
+                </label>
+                <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy-500"
+                    placeholder="Authorized Representative Email Address"
+                />
+            </div> */}
             <MemoriamFormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={() => {

@@ -21,7 +21,7 @@ async function submitMemoriamForm(
         // 1. Insert into memoriam_orders table
         const { data, error: orderError } = await supabase
             .from("memoriam_orders")
-            .insert([{}]) // empty row
+            .insert([{ email: formData.email }]) // potentially submit email
             .select()
             .single();
 
