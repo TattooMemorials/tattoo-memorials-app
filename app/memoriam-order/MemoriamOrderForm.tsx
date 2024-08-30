@@ -90,6 +90,20 @@ const MemoriamOrderForm: React.FC = () => {
             }
         }
 
+        // Initialize file upload status before starting uploads
+        setFileUploadStatus([
+            ...(intakeForm
+                ? [{ name: intakeForm.name, status: "pending" as const }]
+                : []),
+            ...(consentForm
+                ? [{ name: consentForm.name, status: "pending" as const }]
+                : []),
+            ...images.map((file) => ({
+                name: file.name,
+                status: "pending" as const,
+            })),
+        ]);
+
         setIsModalOpen(true);
 
         // 1. Create empty memoriam_orders record
@@ -115,40 +129,48 @@ const MemoriamOrderForm: React.FC = () => {
         // 2. Upload the intake form and update the path.
         let intakeFilePath = "";
         try {
-            intakeFilePath = `${result.orderId}/${intakeForm?.name}`;
-            const { error } = await supabase.storage
-                .from(formsBucket)
-                .upload(intakeFilePath, intakeForm!);
+            if (intakeForm) {
+                intakeFilePath = `${result.orderId}/${intakeForm.name}`;
+                const { error } = await supabase.storage
+                    .from(formsBucket)
+                    .upload(intakeFilePath, intakeForm);
 
-            if (error) {
-                console.error("Error uploading intake form: ", error);
+                if (error) {
+                    console.error("Error uploading intake form: ", error);
+                    // Rollback by deleting the created memoriam_orders record
+                    await fetch("/api/memoriam-order", {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            orderId: result.orderId,
+                        }),
+                    });
+                    return; // Exit early on error
+                }
 
-                // Rollback by deleting the created memoriam_orders record
+                setFileUploadStatus((prev) =>
+                    prev.map((item) =>
+                        item.name === intakeForm.name
+                            ? { ...item, status: "success" }
+                            : item
+                    )
+                );
+
+                // Update record with intake form path via API call
                 await fetch("/api/memoriam-order", {
-                    method: "DELETE",
+                    method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         orderId: result.orderId,
+                        intake_form_path: intakeFilePath,
                     }),
                 });
-                return; // Exit early on error
             }
-
-            // Update record with intake form path via API call
-            await fetch("/api/memoriam-order", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    orderId: result.orderId,
-                    intake_form_path: intakeFilePath,
-                }),
-            });
         } catch (error) {
             console.error(
                 "Error uploading or updating intake form path:",
                 error
             );
-
             // Rollback by deleting the created memoriam_orders record
             await fetch("/api/memoriam-order", {
                 method: "DELETE",
@@ -163,40 +185,48 @@ const MemoriamOrderForm: React.FC = () => {
         // 3. Upload the consent form and update the path.
         let consentFilePath = "";
         try {
-            consentFilePath = `${result.orderId}/${consentForm?.name}`;
-            const { error } = await supabase.storage
-                .from(formsBucket)
-                .upload(consentFilePath, consentForm!);
+            if (consentForm) {
+                consentFilePath = `${result.orderId}/${consentForm.name}`;
+                const { error } = await supabase.storage
+                    .from(formsBucket)
+                    .upload(consentFilePath, consentForm);
 
-            if (error) {
-                console.error("Error uploading consent form: ", error);
+                if (error) {
+                    console.error("Error uploading consent form: ", error);
+                    // Rollback by deleting the created memoriam_orders record
+                    await fetch("/api/memoriam-order", {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            orderId: result.orderId,
+                        }),
+                    });
+                    return; // Exit early on error
+                }
 
-                // Rollback by deleting the created memoriam_orders record
+                setFileUploadStatus((prev) =>
+                    prev.map((item) =>
+                        item.name === consentForm.name
+                            ? { ...item, status: "success" }
+                            : item
+                    )
+                );
+
+                // Update record with consent form path via API call
                 await fetch("/api/memoriam-order", {
-                    method: "DELETE",
+                    method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         orderId: result.orderId,
+                        consent_form_path: consentFilePath,
                     }),
                 });
-                return; // Exit early on error
             }
-
-            // Update record with consent form path via API call
-            await fetch("/api/memoriam-order", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    orderId: result.orderId,
-                    consent_form_path: consentFilePath,
-                }),
-            });
         } catch (error) {
             console.error(
                 "Error uploading or updating consent form path:",
                 error
             );
-
             // Rollback by deleting the created memoriam_orders record
             await fetch("/api/memoriam-order", {
                 method: "DELETE",
@@ -210,20 +240,6 @@ const MemoriamOrderForm: React.FC = () => {
 
         // 4. Upload the images (as previously implemented)
         try {
-            // Initialize file upload status
-            setFileUploadStatus([
-                ...(intakeForm
-                    ? [{ name: intakeForm.name, status: "pending" as const }]
-                    : []),
-                ...(consentForm
-                    ? [{ name: consentForm.name, status: "pending" as const }]
-                    : []),
-                ...images.map((file) => ({
-                    name: file.name,
-                    status: "pending" as const,
-                })),
-            ]);
-
             for (let i = 0; i < images.length; i++) {
                 const image = images[i];
                 const { error } = await supabase.storage
@@ -232,15 +248,19 @@ const MemoriamOrderForm: React.FC = () => {
 
                 if (error) {
                     setFileUploadStatus((prev) =>
-                        prev.map((item, index) =>
-                            index === i ? { ...item, status: "error" } : item
+                        prev.map((item) =>
+                            item.name === image.name
+                                ? { ...item, status: "error" }
+                                : item
                         )
                     );
                     throw new Error(`Error uploading image: ${image.name}`);
                 } else {
                     setFileUploadStatus((prev) =>
-                        prev.map((item, index) =>
-                            index === i ? { ...item, status: "success" } : item
+                        prev.map((item) =>
+                            item.name === image.name
+                                ? { ...item, status: "success" }
+                                : item
                         )
                     );
                 }
