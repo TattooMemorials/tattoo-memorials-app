@@ -257,13 +257,20 @@ const LivingOrderForm: React.FC = () => {
         const token = await executeRecaptcha("submitLivingOrderForm");
         setToken(token);
 
-        await fetch("/api/verify-recaptcha", {
+        const recaptchaResponse = await fetch("/api/verify-recaptcha", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ token }),
         });
+
+        const recaptchaResult = await recaptchaResponse.json();
+
+        if (!recaptchaResult.success) {
+            console.error("Recaptcha Error: ", recaptchaResult.error);
+            return; // Exit early on error
+        }
 
         // Handle Form Submission
         try {
