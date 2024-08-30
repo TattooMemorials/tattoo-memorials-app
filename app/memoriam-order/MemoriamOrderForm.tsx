@@ -3,7 +3,7 @@
 import { FileUploadStatus } from "@/components/Orders/FileUploadProgress";
 import MemoriamFormConfirmationModal from "@/components/Orders/MemoriamFormConfirmationModal";
 import { createClient } from "@/utils/supabase/client";
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const MemoriamOrderForm: React.FC = () => {
@@ -23,6 +23,12 @@ const MemoriamOrderForm: React.FC = () => {
     const [intakeForm, setIntakeForm] = useState<File | null>(null);
     const [consentForm, setConsentForm] = useState<File | null>(null);
     const [images, setImages] = useState<File[]>([]);
+    const [isFormValid, setIsFormValid] = useState(false);
+
+    // Add this useEffect hook to check form validity
+    useEffect(() => {
+        setIsFormValid(!!intakeForm && !!consentForm && images.length > 0);
+    }, [intakeForm, consentForm, images]);
 
     const handleImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
         const newFiles = Array.from(event.target.files || []);
@@ -429,11 +435,21 @@ const MemoriamOrderForm: React.FC = () => {
                 </button>
                 <button
                     type="submit"
-                    className="bg-navy-500 hover:bg-gold-600 text-white px-6 py-2 rounded transition"
+                    className={`${
+                        isFormValid
+                            ? "bg-navy-500 hover:bg-gold-600"
+                            : "bg-gray-400 cursor-not-allowed"
+                    } text-white px-6 py-2 rounded transition`}
+                    disabled={!isFormValid}
                 >
                     Submit
                 </button>
             </div>
+            {!isFormValid && (
+                <p className="text-red-500 text-sm mt-2">
+                    Please select all required files before submitting.
+                </p>
+            )}
             <MemoriamFormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={() => {
