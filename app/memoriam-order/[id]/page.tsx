@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 
 interface Order {
     id: string;
+    intake_form_path: string;
     // Add other order properties here
 }
 
@@ -51,6 +52,7 @@ export default function MemoriamOrderForm() {
                     Memoriam Order Details
                 </h1>
                 <p>Order ID: {orderData.id}</p>
+                <p>Intake Form Path: {orderData.intake_form_path}</p>
                 {/* Add more order details here as needed */}
             </main>
         </div>

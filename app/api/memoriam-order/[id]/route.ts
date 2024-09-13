@@ -13,7 +13,7 @@ export async function GET(
     try {
         const { data, error } = await supabase
             .from("memoriam_orders")
-            .select("id")
+            .select()
             .eq("id", id)
             .single();
 

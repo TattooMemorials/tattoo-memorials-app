@@ -6,6 +6,10 @@
     "start": "next start"
   },
   "dependencies": {
+    "@refinedev/antd": "^5.43.1",
+    "@refinedev/core": "^4.54.1",
+    "@refinedev/nextjs-router": "^6.1.0",
+    "@refinedev/supabase": "^5.9.4",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "autoprefixer": "10.4.17",
