@@ -6,6 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.4.0",
     "@refinedev/antd": "^5.43.1",
     "@refinedev/core": "^4.54.1",
     "@refinedev/nextjs-router": "^6.1.0",
