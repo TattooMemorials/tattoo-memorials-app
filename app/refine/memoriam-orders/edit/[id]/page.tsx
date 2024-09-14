@@ -290,7 +290,7 @@ export default function EditPage() {
     );
 }
 
-interface IMemoriamOrder {
+export interface IMemoriamOrder {
     id: string;
     first_name: string;
     last_name: string;
