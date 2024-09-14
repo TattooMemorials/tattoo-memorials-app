@@ -3,8 +3,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Refine } from "@refinedev/core";
 import routerProvider from "@refinedev/nextjs-router";
 import { dataProvider } from "@refinedev/supabase";
-import { RefineThemes, ThemedLayoutV2 } from "@refinedev/antd";
-
+import { RefineThemes, ThemedLayoutV2, ThemedTitleV2 } from "@refinedev/antd";
 import { App as AntdApp, ConfigProvider } from "antd";
 
 export default function RefineLayout({
@@ -33,7 +32,16 @@ export default function RefineLayout({
                     ]}
                     options={{ syncWithLocation: true }}
                 >
-                    {children}
+                    <ThemedLayoutV2
+                        Title={({ collapsed }) => (
+                            <ThemedTitleV2
+                                collapsed={collapsed}
+                                text="Tattoo Memorials"
+                            />
+                        )}
+                    >
+                        {children}
+                    </ThemedLayoutV2>
                 </Refine>
             </AntdApp>
         </ConfigProvider>

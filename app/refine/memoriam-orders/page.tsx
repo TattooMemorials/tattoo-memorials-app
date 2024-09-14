@@ -67,89 +67,88 @@ export default function MemoriamOrders() {
     };
 
     return (
-        <>
-            <List>
-                <Table {...tableProps} rowKey="id">
-                    <Table.Column
-                        dataIndex="id"
-                        title="ID"
-                        sorter
-                        defaultSortOrder={getDefaultSortOrder("id", sorter)}
-                    />
-                    <Table.Column
-                        dataIndex="first_name"
-                        title="First Name"
-                        filterDropdown={(props) => (
-                            <FilterDropdown {...props}>
-                                <Input />
-                            </FilterDropdown>
-                        )}
-                        filterIcon={<SearchOutlined />}
-                    />
-                    <Table.Column
-                        dataIndex="last_name"
-                        title="Last Name"
-                        filterDropdown={(props) => (
-                            <FilterDropdown {...props}>
-                                <Input />
-                            </FilterDropdown>
-                        )}
-                        filterIcon={<SearchOutlined />}
-                    />
-                    <Table.Column dataIndex="email" title="Email" />
-                    <Table.Column dataIndex="phone" title="Phone" />
-                    <Table.Column
-                        dataIndex="funeral_home_name"
-                        title="Funeral Home"
-                        filterDropdown={(props) => (
-                            <FilterDropdown {...props}>
-                                <Input />
-                            </FilterDropdown>
-                        )}
-                        filterIcon={<SearchOutlined />}
-                    />
-                    <Table.Column
-                        dataIndex="date_loaded"
-                        title="Date Loaded"
-                        render={(value) => new Date(value).toLocaleDateString()}
-                        sorter
-                    />
-                    <Table.Column
-                        dataIndex="as_is"
-                        title="As Is"
-                        render={(value) => (value ? "Yes" : "No")}
-                    />
-                    <Table.Column
-                        title="Actions"
-                        dataIndex="actions"
-                        render={(_, record: any) => (
-                            <Space>
-                                <EditButton
-                                    hideText
-                                    size="small"
-                                    recordItemId={record.id}
-                                />
-                                <ShowButton
-                                    hideText
-                                    size="small"
-                                    recordItemId={record.id}
-                                />
-                                <DeleteButton
-                                    hideText
-                                    size="small"
-                                    recordItemId={record.id}
-                                />
-                                <Button
-                                    icon={<MailOutlined />}
-                                    size="small"
-                                    onClick={() => handleSendEmail(record)}
-                                    title="Send Email"
-                                />
-                            </Space>
-                        )}
-                    />
-                </Table>
-            </List>
+        <List>
+            <Table {...tableProps} rowKey="id">
+                <Table.Column
+                    dataIndex="id"
+                    title="ID"
+                    sorter
+                    defaultSortOrder={getDefaultSortOrder("id", sorter)}
+                />
+                <Table.Column
+                    dataIndex="first_name"
+                    title="First Name"
+                    filterDropdown={(props) => (
+                        <FilterDropdown {...props}>
+                            <Input />
+                        </FilterDropdown>
+                    )}
+                    filterIcon={<SearchOutlined />}
+                />
+                <Table.Column
+                    dataIndex="last_name"
+                    title="Last Name"
+                    filterDropdown={(props) => (
+                        <FilterDropdown {...props}>
+                            <Input />
+                        </FilterDropdown>
+                    )}
+                    filterIcon={<SearchOutlined />}
+                />
+                <Table.Column dataIndex="email" title="Email" />
+                <Table.Column dataIndex="phone" title="Phone" />
+                <Table.Column
+                    dataIndex="funeral_home_name"
+                    title="Funeral Home"
+                    filterDropdown={(props) => (
+                        <FilterDropdown {...props}>
+                            <Input />
+                        </FilterDropdown>
+                    )}
+                    filterIcon={<SearchOutlined />}
+                />
+                <Table.Column
+                    dataIndex="date_loaded"
+                    title="Date Loaded"
+                    render={(value) => new Date(value).toLocaleDateString()}
+                    sorter
+                />
+                <Table.Column
+                    dataIndex="as_is"
+                    title="As Is"
+                    render={(value) => (value ? "Yes" : "No")}
+                />
+                <Table.Column
+                    title="Actions"
+                    dataIndex="actions"
+                    render={(_, record: any) => (
+                        <Space>
+                            <EditButton
+                                hideText
+                                size="small"
+                                recordItemId={record.id}
+                            />
+                            <ShowButton
+                                hideText
+                                size="small"
+                                recordItemId={record.id}
+                            />
+                            <DeleteButton
+                                hideText
+                                size="small"
+                                recordItemId={record.id}
+                                type="primary"
+                            />
+                            <Button
+                                icon={<MailOutlined />}
+                                size="small"
+                                onClick={() => handleSendEmail(record)}
+                                title="Send Email"
+                            />
+                        </Space>
+                    )}
+                />
+            </Table>
             <Modal
                 title="Enter Email Address"
                 visible={isModalVisible}
@@ -175,6 +174,6 @@ export default function MemoriamOrders() {
                     </Form.Item>
                 </Form>
             </Modal>
-        </>
+        </List>
     );
 }
