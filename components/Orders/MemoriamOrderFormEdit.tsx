@@ -7,6 +7,7 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
 import { formatPhoneNumber } from "@/utils/common/format";
 import OrderDetails from "./OrderDetails";
+import SomethingWentWrong from "../Common/SomethingWentWrong";
 
 export type Medium =
     | "Acrylic"
@@ -204,7 +205,10 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     };
 
     if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (error)
+        return (
+            <SomethingWentWrong message="It looks like we can't find the details of that Order ID." />
+        );
 
     const handleNext = () => {
         if (validateCurrentStep()) {
