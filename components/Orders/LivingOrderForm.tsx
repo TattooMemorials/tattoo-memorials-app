@@ -535,7 +535,7 @@ Tattoo Memorials Auto-Notification System
                     />
                     <input
                         className="rounded-md px-4 py-2 mt-4 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
-                        name="street_address_2"
+                        name="street_address2"
                         placeholder="Street Address Line 2 (Optional)"
                         value={formData.streetAddress2}
                         onChange={(e) =>

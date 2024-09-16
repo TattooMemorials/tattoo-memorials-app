@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import DragDrop from "../DragDrop";
 import LivingFormConfirmationModal from "./LivingFormConfirmationModal";
-import { FileUploadStatus } from "./FileUploadProgress";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
 import { formatPhoneNumber } from "@/utils/common/format";
@@ -34,7 +32,7 @@ export const MEDIUMS: Record<Medium, Medium> = {
     Watercolor: "Watercolor",
 };
 
-export interface LivingFormData {
+export interface MemoriamFormData {
     firstName: string;
     lastName: string;
     email: string;
@@ -51,11 +49,11 @@ export interface LivingFormData {
     medium: Medium | null;
 }
 
-interface LivingOrderFormEditProps {
+interface MemoriamOrderFormEditProps {
     orderId: string;
 }
 
-const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
+const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     orderId,
 }) => {
     const { executeRecaptcha } = useGoogleReCaptcha();
@@ -63,7 +61,7 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
 
     const supabase = createClient();
 
-    const initialFormState: LivingFormData = {
+    const initialFormState: MemoriamFormData = {
         firstName: "",
         lastName: "",
         email: "",
@@ -83,10 +81,12 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
     const totalSteps = 3;
     const [step, setStep] = useState(1);
 
-    const [formData, setFormData] = useState<LivingFormData>(initialFormState);
+    const [formData, setFormData] =
+        useState<MemoriamFormData>(initialFormState);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Fetch order data from Supabase
     useEffect(() => {
@@ -107,7 +107,7 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
                         email: data.email || "",
                         phone: data.phone || "",
                         streetAddress: data.street_address || "",
-                        streetAddress2: data.street_address_2 || "",
+                        streetAddress2: data.street_address2 || "",
                         city: data.city || "",
                         state: data.state || "",
                         postalCode: data.postal_code || "",
@@ -135,9 +135,9 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
     };
 
     // Helper function to update form data
-    const updateFormData = <K extends keyof LivingFormData>(
+    const updateFormData = <K extends keyof MemoriamFormData>(
         key: K,
-        value: LivingFormData[K]
+        value: MemoriamFormData[K]
     ) => {
         setFormData((prev) => ({
             ...prev,
@@ -205,39 +205,6 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
         return true;
     };
 
-    const handleSubmit = async () => {
-        // Handle form submission logic here
-        // This should update the existing order in Supabase instead of creating a new one
-        try {
-            const { data, error } = await supabase
-                .from("memoriam_orders")
-                .update({
-                    first_name: formData.firstName,
-                    last_name: formData.lastName,
-                    email: formData.email,
-                    phone: formData.phone,
-                    street_address: formData.streetAddress,
-                    street_address_2: formData.streetAddress2,
-                    city: formData.city,
-                    state: formData.state,
-                    postal_code: formData.postalCode,
-                    as_is: formData.asIs,
-                    altered: formData.altered,
-                    alteration_notes: formData.alterationNotes,
-                    inspiration_notes: formData.inspirationNotes,
-                    medium: formData.medium,
-                })
-                .eq("id", orderId);
-
-            if (error) throw error;
-
-            // Handle successful update (e.g., show a success message, redirect, etc.)
-        } catch (error) {
-            console.error("Error updating order:", error);
-            // Handle error (e.g., show error message to user)
-        }
-    };
-
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
@@ -266,7 +233,7 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
 
     const handlePrevious = () => setStep(step - 1);
 
-    const toggleCheckbox = (key: keyof LivingFormData) => {
+    const toggleCheckbox = (key: keyof MemoriamFormData) => {
         setFormData((prev) => {
             if (key === "asIs") {
                 // Toggle "As Is" and reset "Altered" if "As Is" is selected
@@ -335,8 +302,11 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
 
         const recaptchaResult = await recaptchaResponse.json();
 
+        const tattooEnv = process.env.NEXT_PUBLIC_TATTOO_ENV;
         if (!recaptchaResult.success) {
-            const tattooEnv = process.env.NEXT_PUBLIC_TATTOO_ENV;
+            setErrorMessage(
+                "Failed to verify reCAPTCHA. Please reload the page and try again."
+            );
             console.error("Recaptcha Error: ", recaptchaResult.error);
             if (tattooEnv !== "dev") {
                 return; // Exit early on error
@@ -347,119 +317,141 @@ const LivingOrderFormEdit: React.FC<LivingOrderFormEditProps> = ({
         try {
             setIsModalOpen(true);
 
-            // 1. POST form data to /api/living-order API route
-            const response = await fetch("/api/living-order", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    formData,
-                }),
-            });
+            // Handle form submission logic here
+            // This should update the existing order in Supabase instead of creating a new one
+            try {
+                const { data, error } = await supabase
+                    .from("memoriam_orders")
+                    .update({
+                        first_name: formData.firstName,
+                        last_name: formData.lastName,
+                        email: formData.email,
+                        phone: formData.phone,
+                        street_address: formData.streetAddress,
+                        street_address2: formData.streetAddress2,
+                        city: formData.city,
+                        state: formData.state,
+                        postal_code: formData.postalCode,
+                        as_is: formData.asIs,
+                        altered: formData.altered,
+                        alteration_notes: formData.alterationNotes,
+                        inspiration_notes: formData.inspirationNotes,
+                        medium: formData.medium,
+                    })
+                    .eq("id", orderId);
 
-            if (!response.ok) throw new Error("Failed to submit form");
+                if (error) throw error;
 
-            const result = await response.json();
+                // Handle successful update (e.g., show a success message, redirect, etc.)
+            } catch (error) {
+                setErrorMessage(
+                    "Error updating order. Please reload the page and try again."
+                );
 
-            const emailResponse = await fetch("/api/send-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: formData.email,
-                    subject: `Tattoo Memorials Order Received`,
-                    message: `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Order from Tattoo Memorials</title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h1 style="color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 10px;">New Order Received</h1>
+                console.error("Error updating order:", error);
+                // Handle error (e.g., show error message to user)
+            }
+
+            if (tattooEnv !== "dev") {
+                const emailResponse = await fetch("/api/send-email", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: formData.email,
+                        subject: `Tattoo Memorials Order Received`,
+                        message: `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Order from Tattoo Memorials</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 10px;">New Order Received</h1>
+        
+        <p style="background-color: #edf2f7; padding: 10px; border-radius: 5px; font-weight: bold;">Order ID: ${orderId}</p>
     
-    <p style="background-color: #edf2f7; padding: 10px; border-radius: 5px; font-weight: bold;">Order ID: ${
-        result.orderId
-    }</p>
-
-    <h2 style="color: #2c5282; margin-top: 20px;">Personal Information</h2>
-    <p><strong>Name:</strong> ${formData.firstName} ${formData.lastName}</p>
-    <p><strong>Email:</strong> ${formData.email}</p>
-    <p><strong>Phone:</strong> ${formData.phone}</p>
-
-    <h2 style="color: #2c5282; margin-top: 20px;">Mailing Address</h2>
-    <p>${formData.streetAddress}<br>
-    ${formData.streetAddress2 ? formData.streetAddress2 + "<br>" : ""}
-    ${formData.city}, ${formData.state} ${formData.postalCode}</p>
-
-    <h2 style="color: #2c5282; margin-top: 20px;">Order Details</h2>
-    <p><strong>Medium:</strong> ${formData.medium || "None selected"}</p>
-    <p><strong>Type:</strong> ${formData.asIs ? "As Is" : "Altered"}</p>
+        <h2 style="color: #2c5282; margin-top: 20px;">Personal Information</h2>
+        <p><strong>Name:</strong> ${formData.firstName} ${formData.lastName}</p>
+        <p><strong>Email:</strong> ${formData.email}</p>
+        <p><strong>Phone:</strong> ${formData.phone}</p>
+    
+        <h2 style="color: #2c5282; margin-top: 20px;">Mailing Address</h2>
+        <p>${formData.streetAddress}<br>
+        ${formData.streetAddress2 ? formData.streetAddress2 + "<br>" : ""}
+        ${formData.city}, ${formData.state} ${formData.postalCode}</p>
+    
+        <h2 style="color: #2c5282; margin-top: 20px;">Order Details</h2>
+        <p><strong>Medium:</strong> ${formData.medium || "None selected"}</p>
+        <p><strong>Type:</strong> ${formData.asIs ? "As Is" : "Altered"}</p>
+        ${
+            formData.altered
+                ? `
+            <p><strong>Alteration Notes:</strong> ${formData.alterationNotes}</p>
+            <p><strong>Inspiration Notes:</strong> ${formData.inspirationNotes}</p>
+        `
+                : ""
+        }
+    
+        <p style="margin-top: 20px;">Thank you,<br>Tattoo Memorials</p>
+    </body>
+    </html>
+            `,
+                        TextBody: `
+    We have received your Tattoo Memorials order.
+    
+    Order ID:
+    ${orderId}
+    
+    Personal Information:
+    Name: ${formData.firstName} ${formData.lastName}
+    Email: ${formData.email}
+    Phone: ${formData.phone}
+    
+    Mailing Address:
+    ${formData.streetAddress}
+    ${formData.streetAddress2 ? formData.streetAddress2 + "\n" : ""}${
+                            formData.city
+                        }, ${formData.state} ${formData.postalCode}
+    
+    Order Details:
+    Medium: ${Object.entries(formData)
+        .filter(
+            ([key, value]) =>
+                [
+                    "syntheticSkin",
+                    "ink",
+                    "pencil",
+                    "pastel",
+                    "watercolor",
+                    "oilPaint",
+                ].includes(key) && value
+        )
+        .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+        .join(", ")}
+    Type: ${formData.asIs ? "As Is" : "Altered"}
     ${
         formData.altered
             ? `
-        <p><strong>Alteration Notes:</strong> ${formData.alterationNotes}</p>
-        <p><strong>Inspiration Notes:</strong> ${formData.inspirationNotes}</p>
+    Alteration Notes: ${formData.alterationNotes}
+    Inspiration Notes: ${formData.inspirationNotes}
     `
             : ""
     }
-
-    <p style="margin-top: 20px;">Thank you,<br>Tattoo Memorials</p>
-</body>
-</html>
-        `,
-                    TextBody: `
-We have received your Tattoo Memorials order.
-
-Order ID:
-${result.orderId}
-
-Personal Information:
-Name: ${formData.firstName} ${formData.lastName}
-Email: ${formData.email}
-Phone: ${formData.phone}
-
-Mailing Address:
-${formData.streetAddress}
-${formData.streetAddress2 ? formData.streetAddress2 + "\n" : ""}${
-                        formData.city
-                    }, ${formData.state} ${formData.postalCode}
-
-Order Details:
-Medium: ${Object.entries(formData)
-                        .filter(
-                            ([key, value]) =>
-                                [
-                                    "syntheticSkin",
-                                    "ink",
-                                    "pencil",
-                                    "pastel",
-                                    "watercolor",
-                                    "oilPaint",
-                                ].includes(key) && value
-                        )
-                        .map(
-                            ([key]) =>
-                                key.charAt(0).toUpperCase() + key.slice(1)
-                        )
-                        .join(", ")}
-Type: ${formData.asIs ? "As Is" : "Altered"}
-${
-    formData.altered
-        ? `
-Alteration Notes: ${formData.alterationNotes}
-Inspiration Notes: ${formData.inspirationNotes}
-`
-        : ""
-}
-
-Thank you,
-Tattoo Memorials Auto-Notification System
-        `,
-                }),
-            });
+    
+    Thank you,
+    Tattoo Memorials Auto-Notification System
+            `,
+                    }),
+                });
+            }
         } catch (error) {
+            setErrorMessage(
+                "Error submitting form. Please reload the page and try again."
+            );
             console.error("Error submitting form:", error);
         }
     };
@@ -562,7 +554,7 @@ Tattoo Memorials Auto-Notification System
                     />
                     <input
                         className="rounded-md px-4 py-2 mt-4 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
-                        name="street_address_2"
+                        name="street_address2"
                         placeholder="Street Address Line 2 (Optional)"
                         value={formData.streetAddress2}
                         onChange={(e) =>
@@ -784,15 +776,24 @@ Tattoo Memorials Auto-Notification System
                     </button>
                 )}
             </div>
-            <LivingFormConfirmationModal
+            {/* <LivingFormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 formData={formData}
                 orderId={orderId}
                 fileUploadStatus={[]}
-            />
+            /> */}
+            {errorMessage && (
+                <div
+                    className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                    role="alert"
+                >
+                    <strong className="font-bold">Error: </strong>
+                    <span className="block sm:inline">{errorMessage}</span>
+                </div>
+            )}
         </div>
     );
 };
 
-export default LivingOrderFormEdit;
+export default MemoriamOrderFormEdit;
