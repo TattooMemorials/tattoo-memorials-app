@@ -306,11 +306,12 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
 
         const tattooEnv = process.env.NEXT_PUBLIC_TATTOO_ENV;
         if (!recaptchaResult.success) {
-            setErrorMessage(
-                "Failed to verify reCAPTCHA. Please reload the page and try again."
-            );
-            console.error("Recaptcha Error: ", recaptchaResult.error);
             if (tattooEnv === "production") {
+                setErrorMessage(
+                    "Failed to verify reCAPTCHA. Please reload the page and try again."
+                );
+                console.error("Recaptcha Error: ", recaptchaResult.error);
+
                 return; // Exit early on error
             }
         }
@@ -766,7 +767,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         Previous
                     </button>
                 )}
-                {step < 4 ? (
+                {step < 3 ? (
                     <button
                         type="button"
                         className="bg-navy-500 text-white rounded-md px-6 py-2 hover:bg-gold-600 transition"
