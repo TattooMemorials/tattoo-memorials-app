@@ -6,6 +6,7 @@ import LivingFormConfirmationModal from "./LivingFormConfirmationModal";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
 import { formatPhoneNumber } from "@/utils/common/format";
+import OrderDetails from "./OrderDetails";
 
 export type Medium =
     | "Acrylic"
@@ -58,6 +59,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
 }) => {
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [token, setToken] = useState<string | null>(null);
+    const [isOrderComplete, setIsOrderComplete] = useState<boolean>(false);
 
     const supabase = createClient();
 
@@ -117,6 +119,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         inspirationNotes: data.inspiration_notes || "",
                         medium: (data.medium as Medium) || null,
                     });
+                    setIsOrderComplete(data.is_complete); // TODO: remove hardcoded status. need to add `status` to the order tables in Supabase
                 }
             } catch (error) {
                 setError("Failed to fetch order data");
@@ -128,11 +131,6 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
 
         fetchOrderData();
     }, [orderId]);
-
-    const resetForm = () => {
-        setStep(1);
-        setFormData(initialFormState);
-    };
 
     // Helper function to update form data
     const updateFormData = <K extends keyof MemoriamFormData>(
@@ -337,6 +335,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         alteration_notes: formData.alterationNotes,
                         inspiration_notes: formData.inspirationNotes,
                         medium: formData.medium,
+                        is_complete: true,
                     })
                     .eq("id", orderId);
 
@@ -458,8 +457,13 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
 
     const handleModalClose = () => {
         setIsModalOpen(false);
-        resetForm();
+        setIsOrderComplete(true);
     };
+
+    // Render order details if the form has been completed
+    if (isOrderComplete) {
+        return <OrderDetails formData={formData} orderId={orderId} />;
+    }
 
     return (
         <div
@@ -776,13 +780,12 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                     </button>
                 )}
             </div>
-            {/* <LivingFormConfirmationModal
+            <LivingFormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 formData={formData}
                 orderId={orderId}
-                fileUploadStatus={[]}
-            /> */}
+            />
             {errorMessage && (
                 <div
                     className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
