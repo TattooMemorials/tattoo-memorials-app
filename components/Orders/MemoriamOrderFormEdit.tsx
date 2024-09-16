@@ -310,7 +310,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                 "Failed to verify reCAPTCHA. Please reload the page and try again."
             );
             console.error("Recaptcha Error: ", recaptchaResult.error);
-            if (tattooEnv !== "dev") {
+            if (tattooEnv === "production") {
                 return; // Exit early on error
             }
         }
@@ -355,7 +355,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                 // Handle error (e.g., show error message to user)
             }
 
-            if (tattooEnv !== "dev") {
+            if (tattooEnv === "production") {
                 const emailResponse = await fetch("/api/send-email", {
                     method: "POST",
                     headers: {

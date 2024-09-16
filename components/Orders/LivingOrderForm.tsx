@@ -270,7 +270,7 @@ const LivingOrderForm: React.FC = () => {
         if (!recaptchaResult.success) {
             const tattooEnv = process.env.NEXT_PUBLIC_TATTOO_ENV;
             console.error("Recaptcha Error: ", recaptchaResult.error);
-            if (tattooEnv !== "dev") {
+            if (tattooEnv === "production") {
                 return; // Exit early on error
             }
         }
