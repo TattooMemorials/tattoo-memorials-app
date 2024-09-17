@@ -7,7 +7,7 @@ interface ConfirmationModalProps {
     onClose: () => void;
     formData: any;
     orderId: string | null;
-    fileUploadStatus: FileUploadStatus[];
+    fileUploadStatus?: FileUploadStatus[];
 }
 
 const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -19,27 +19,21 @@ const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
 }) => {
     const [showOrderDetails, setShowOrderDetails] = useState(false);
     const [uploadsComplete, setUploadsComplete] = useState(false);
-    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        if (
-            fileUploadStatus.length > 0 &&
-            fileUploadStatus.every((file) => file.status === "success")
-        ) {
-            setUploadsComplete(true);
-            setTimeout(() => setShowOrderDetails(true), 1000);
+        if (fileUploadStatus) {
+            if (
+                fileUploadStatus.length > 0 &&
+                fileUploadStatus.every((file) => file.status === "success")
+            ) {
+                setUploadsComplete(true);
+                setTimeout(() => setShowOrderDetails(true), 1000);
+            }
+        } else {
+            // If fileUploadStatus is not provided, show order details immediately
+            setShowOrderDetails(true);
         }
     }, [fileUploadStatus]);
-
-    // const copyToClipboard = async (text: string) => {
-    //     try {
-    //         await navigator.clipboard.writeText(text);
-    //         setCopied(true);
-    //         setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
-    //     } catch (err) {
-    //         console.error("Failed to copy text: ", err);
-    //     }
-    // };
 
     if (!isOpen) return null;
 
@@ -56,22 +50,24 @@ const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </h2>
 
                 <AnimatePresence>
-                    {fileUploadStatus.length > 0 && !showOrderDetails && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        >
-                            <FileUploadProgress
-                                fileUploadStatus={fileUploadStatus}
-                            />
-                            {uploadsComplete && (
-                                <p className="mt-4 text-green-400 font-semibold">
-                                    All files uploaded successfully!
-                                </p>
-                            )}
-                        </motion.div>
-                    )}
+                    {fileUploadStatus &&
+                        fileUploadStatus.length > 0 &&
+                        !showOrderDetails && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                            >
+                                <FileUploadProgress
+                                    fileUploadStatus={fileUploadStatus}
+                                />
+                                {uploadsComplete && (
+                                    <p className="mt-4 text-green-400 font-semibold">
+                                        All files uploaded successfully!
+                                    </p>
+                                )}
+                            </motion.div>
+                        )}
                 </AnimatePresence>
 
                 <AnimatePresence>
@@ -91,34 +87,7 @@ const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                         <span className="mr-2 text-black truncate flex-grow">
                                             {orderId}
                                         </span>
-                                        {/* <button
-                                            onClick={() =>
-                                                copyToClipboard(orderId)
-                                            }
-                                            className="text-black p-1 rounded transition-colors duration-300 flex-shrink-0"
-                                            title="Copy to clipboard"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                                />
-                                            </svg>
-                                        </button> */}
                                     </div>
-                                    {/* {copied && (
-                                        <p className="text-black mt-1 text-sm">
-                                            Copied to clipboard!
-                                        </p>
-                                    )} */}
                                 </div>
                             )}
                             <p className="mb-6">

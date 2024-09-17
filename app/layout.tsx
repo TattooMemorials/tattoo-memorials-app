@@ -24,11 +24,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" className={overlock.className}>
-            <body className="bg-background text-foreground">
-                <main className="min-h-screen flex flex-col items-center">
-                    {children}
-                </main>
-            </body>
+            <body className="bg-background text-foreground">{children}</body>
         </html>
     );
 }

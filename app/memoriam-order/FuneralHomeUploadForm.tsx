@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
-const MemoriamOrderForm: React.FC = () => {
+const FuneralHomeUploadForm: React.FC = () => {
     const supabase = createClient();
 
     const { executeRecaptcha } = useGoogleReCaptcha();
@@ -77,7 +77,7 @@ const MemoriamOrderForm: React.FC = () => {
             return;
         }
 
-        const token = await executeRecaptcha("submitMemoriamOrderForm");
+        const token = await executeRecaptcha("submitFuneralHomeUploadForm");
         setToken(token);
 
         const recaptchaResponse = await fetch("/api/verify-recaptcha", {
@@ -93,7 +93,7 @@ const MemoriamOrderForm: React.FC = () => {
         if (!recaptchaResult.success) {
             const tattooEnv = process.env.NEXT_PUBLIC_TATTOO_ENV;
             console.error("Recaptcha Error: ", recaptchaResult.error);
-            if (tattooEnv !== "dev") {
+            if (tattooEnv === "production") {
                 return; // Exit early on error
             }
         }
@@ -478,4 +478,4 @@ const MemoriamOrderForm: React.FC = () => {
     );
 };
 
-export default MemoriamOrderForm;
+export default FuneralHomeUploadForm;
