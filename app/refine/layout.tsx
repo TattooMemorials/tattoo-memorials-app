@@ -3,12 +3,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Refine } from "@refinedev/core";
 import routerProvider from "@refinedev/nextjs-router";
 import { dataProvider } from "@refinedev/supabase";
-import {
-    AuthPage,
-    RefineThemes,
-    ThemedLayoutV2,
-    ThemedTitleV2,
-} from "@refinedev/antd";
+import { RefineThemes, ThemedLayoutV2, ThemedTitleV2 } from "@refinedev/antd";
 import { App as AntdApp, ConfigProvider } from "antd";
 import { Suspense } from "react";
 import { authProvider } from "./auth-provider";
