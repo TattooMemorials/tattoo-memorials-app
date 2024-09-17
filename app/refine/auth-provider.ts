@@ -62,7 +62,7 @@ export const authProvider: AuthProvider = {
             authenticated: false,
             error: new Error("Not authenticated"),
             logout: true,
-            redirectTo: "/login",
+            redirectTo: "/refine/login",
         };
     },
     getPermissions: async () => {
