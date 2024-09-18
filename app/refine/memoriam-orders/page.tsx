@@ -7,6 +7,7 @@ import {
     DeleteButton,
     getDefaultSortOrder,
     FilterDropdown,
+    CreateButton,
 } from "@refinedev/antd";
 import { Table, Space, Input, Button, Modal, Form } from "antd";
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
@@ -66,7 +67,7 @@ export default function MemoriamOrders() {
     };
 
     return (
-        <List>
+        <List headerButtons={<CreateButton />}>
             <Table {...tableProps} rowKey="id">
                 <Table.Column
                     dataIndex="id"
