@@ -6,6 +6,7 @@ import { dataProvider } from "@refinedev/supabase";
 import { RefineThemes, ThemedLayoutV2, ThemedTitleV2 } from "@refinedev/antd";
 import { App as AntdApp, ConfigProvider } from "antd";
 import { Suspense } from "react";
+import { authProvider } from "./auth-provider";
 
 export default function RefineLayout({
     children,
@@ -13,20 +14,34 @@ export default function RefineLayout({
     children: React.ReactNode;
 }) {
     const supabaseClient = createClient();
+
+    const customTheme = {
+        ...RefineThemes.Orange,
+        token: {
+            ...RefineThemes.Orange.token,
+        },
+        components: {
+            Button: {
+                primaryColor: "#ff6b35",
+            },
+        },
+    };
+
     return (
         <Suspense>
-            <ConfigProvider theme={RefineThemes.Orange}>
+            <ConfigProvider theme={customTheme}>
                 <AntdApp>
                     <Refine
                         routerProvider={routerProvider}
                         dataProvider={dataProvider(supabaseClient)}
+                        authProvider={authProvider}
                         resources={[
                             {
                                 name: "memoriam_orders",
-                                list: "/refine/memoriam-orders",
-                                show: "/refine/memoriam-orders/show/:id",
-                                create: "/refine/memoriam-orders/create",
-                                edit: "/refine/memoriam-orders/edit/:id",
+                                list: "/staff/memoriam-orders",
+                                show: "/staff/memoriam-orders/show/:id",
+                                create: "/staff/memoriam-orders/create",
+                                edit: "/staff/memoriam-orders/edit/:id",
                                 meta: {
                                     canDelete: true,
                                 },

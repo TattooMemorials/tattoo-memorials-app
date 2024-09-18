@@ -129,8 +129,6 @@ const FuneralHomeUploadForm: React.FC = () => {
 
             result = await response.json();
             setOrderId(result.orderId);
-
-            console.log("memoriam-form response: ", response);
         } catch (error) {
             console.error("Error creating memoriam_orders record:", error);
             return; // Exit early on error
