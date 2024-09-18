@@ -16,7 +16,31 @@ export const authProvider: AuthProvider = {
             };
         }
 
-        if (data?.user) {
+        const user = data.user;
+
+        if (user) {
+            // Check if MFA is required
+            const { data: aalData, error: aalError } =
+                await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+            if (aalError) {
+                return {
+                    success: false,
+                    error: new Error(aalError.message),
+                };
+            }
+
+            const { currentLevel, nextLevel } = aalData;
+
+            if (currentLevel === "aal1" && nextLevel === "aal2") {
+                // MFA is required
+                return {
+                    success: true,
+                    redirectTo: "/refine/mfa", // Redirect to MFA verification page
+                };
+            }
+
+            // MFA not required, proceed normally
             return {
                 success: true,
                 redirectTo: "/refine/memoriam-orders",
@@ -53,8 +77,37 @@ export const authProvider: AuthProvider = {
         const { data } = await supabase.auth.getSession();
 
         if (data?.session) {
+            // Check if MFA is required
+            const { data: aalData, error: aalError } =
+                await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+            if (aalError) {
+                return {
+                    authenticated: false,
+                    error: new Error(aalError.message),
+                    logout: true,
+                    redirectTo: "/refine/login",
+                };
+            }
+
+            const { currentLevel, nextLevel } = aalData;
+
+            if (
+                currentLevel === "aal2" ||
+                (currentLevel === "aal1" && nextLevel === "aal1")
+            ) {
+                // User is fully authenticated
+                return {
+                    authenticated: true,
+                };
+            }
+
+            // MFA is required but not completed
             return {
-                authenticated: true,
+                authenticated: false,
+                error: new Error("MFA required"),
+                logout: true,
+                redirectTo: "/refine/mfa",
             };
         }
 

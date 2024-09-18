@@ -39,6 +39,8 @@ export async function middleware(request: NextRequest) {
         "/refine/signup",
         "/refine/forgot-password",
         "/refine/reset-password",
+        "/refine/mfa-setup",
+        "/refine/mfa",
         "/_next", // Next.js internal paths
         "/favicon.ico", // Favicon
         "/memoriam-order",
