@@ -12,19 +12,23 @@
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 
-export default function EnableMFA({
-    onEnrolled,
-    onCancelled,
-}: {
-    onEnrolled: () => void;
-    onCancelled: () => void;
-}) {
+export default function EnableMFA() {
     const [factorId, setFactorId] = useState("");
     const [qr, setQR] = useState(""); // holds the QR code image SVG
     const [verifyCode, setVerifyCode] = useState(""); // contains the code entered by the user
     const [error, setError] = useState(""); // holds an error message
 
     const supabase = createClient();
+
+    const onEnrolled = () => {
+        // Handle successful MFA enrollment
+        window.location.href = "/refine/memoriam-orders";
+    };
+
+    const onCancelled = () => {
+        // Handle cancelled MFA setup
+        window.location.href = "/refine/memoriam-orders";
+    };
 
     const onEnableClicked = () => {
         setError("");
@@ -57,11 +61,9 @@ export default function EnableMFA({
                 factorType: "totp",
             });
             if (error) {
-                console.log("errrorrrrrr: ", error);
                 throw error;
             }
 
-            console.log("factor data: ", data.id);
             setFactorId(data.id);
 
             // Supabase Auth returns an SVG QR code which you can convert into a data

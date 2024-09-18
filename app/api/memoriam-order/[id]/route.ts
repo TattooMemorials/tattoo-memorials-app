@@ -8,8 +8,6 @@ export async function GET(
     const supabase = createClient();
     const { id } = params;
 
-    console.log("requested orderID: ", id);
-
     try {
         const { data, error } = await supabase
             .from("memoriam_orders")
