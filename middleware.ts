@@ -1,10 +1,11 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createClient } from "./utils/supabase/server";
 
 export async function middleware(request: NextRequest) {
     const supabase = createClient();
+
+    // Check if the user is authenticated
     const {
         data: { session },
     } = await supabase.auth.getSession();
@@ -42,19 +43,33 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // Check MFA status
+    // Check if the user has MFA factors set up
+    const { data: factorsData, error: factorsError } =
+        await supabase.auth.mfa.listFactors();
+
+    if (factorsError) {
+        console.error("Error fetching MFA factors:", factorsError);
+        // In case of error, redirect to login for safety
+        return NextResponse.redirect(new URL("/refine/login", request.url));
+    }
+
+    // If no MFA factors are set up, redirect to MFA setup
+    if (!factorsData.totp || factorsData.totp.length === 0) {
+        return NextResponse.redirect(new URL("/refine/mfa-setup", request.url));
+    }
+
+    // Check MFA status for the current session
     const { data: aalData, error: aalError } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
     if (aalError) {
-        // Handle error, possibly log it
         console.error("Error checking MFA status:", aalError);
         return NextResponse.redirect(new URL("/refine/login", request.url));
     }
 
     const { currentLevel, nextLevel } = aalData;
 
-    // If MFA is required but not completed, redirect to MFA page
+    // If MFA is required but not completed for this session, redirect to MFA verification
     if (currentLevel === "aal1" && nextLevel === "aal2") {
         return NextResponse.redirect(new URL("/refine/mfa", request.url));
     }

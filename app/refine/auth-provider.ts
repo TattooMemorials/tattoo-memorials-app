@@ -19,7 +19,26 @@ export const authProvider: AuthProvider = {
         const user = data.user;
 
         if (user) {
-            // Check if MFA is required
+            // Check if user has MFA factors set up
+            const { data: factorsData, error: factorsError } =
+                await supabase.auth.mfa.listFactors();
+
+            if (factorsError) {
+                return {
+                    success: false,
+                    error: new Error(factorsError.message),
+                };
+            }
+
+            if (!factorsData.totp || factorsData.totp.length === 0) {
+                // No MFA factors set up, redirect to MFA setup
+                return {
+                    success: true,
+                    redirectTo: "/refine/mfa-setup",
+                };
+            }
+
+            // Check if MFA is required for this session
             const { data: aalData, error: aalError } =
                 await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
@@ -40,7 +59,7 @@ export const authProvider: AuthProvider = {
                 };
             }
 
-            // MFA not required, proceed normally
+            // MFA not required for this session, proceed normally
             return {
                 success: true,
                 redirectTo: "/refine/memoriam-orders",
@@ -74,9 +93,42 @@ export const authProvider: AuthProvider = {
     },
     check: async () => {
         const supabase = createClient();
-        const { data } = await supabase.auth.getSession();
+        const { data: sessionData, error: sessionError } =
+            await supabase.auth.getSession();
 
-        if (data?.session) {
+        if (sessionError) {
+            return {
+                authenticated: false,
+                error: new Error(sessionError.message),
+                logout: true,
+                redirectTo: "/refine/login",
+            };
+        }
+
+        if (sessionData?.session) {
+            // Check if user has MFA factors set up
+            const { data: factorsData, error: factorsError } =
+                await supabase.auth.mfa.listFactors();
+
+            if (factorsError) {
+                return {
+                    authenticated: false,
+                    error: new Error(factorsError.message),
+                    logout: true,
+                    redirectTo: "/refine/login",
+                };
+            }
+
+            if (!factorsData.totp || factorsData.totp.length === 0) {
+                // No MFA factors set up, redirect to MFA setup
+                return {
+                    authenticated: false,
+                    error: new Error("MFA setup required"),
+                    logout: false,
+                    redirectTo: "/refine/mfa-setup",
+                };
+            }
+
             const { data: aalData, error: aalError } =
                 await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
@@ -101,11 +153,11 @@ export const authProvider: AuthProvider = {
                 };
             }
 
-            // MFA is required but not completed
+            // MFA is required but not completed for this session
             return {
                 authenticated: false,
                 error: new Error("MFA required"),
-                logout: false, // Changed from true to false
+                logout: false,
                 redirectTo: "/refine/mfa",
             };
         }
