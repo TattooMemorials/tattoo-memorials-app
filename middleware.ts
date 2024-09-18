@@ -14,12 +14,12 @@ export async function middleware(request: NextRequest) {
 
     // Define paths that should be accessible without authentication
     const publicPaths = [
-        "/refine/login",
-        "/refine/signup",
-        "/refine/forgot-password",
-        "/refine/reset-password",
-        "/refine/mfa-setup",
-        "/refine/mfa",
+        "/staff/login",
+        "/staff/signup",
+        "/staff/forgot-password",
+        "/staff/reset-password",
+        "/staff/mfa-setup",
+        "/staff/mfa",
         "/_next",
         "/favicon.ico",
         "/memoriam-order",
@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
     // If user is not authenticated, redirect to login
     if (!session) {
         const url = request.nextUrl.clone();
-        url.pathname = "/refine/login";
+        url.pathname = "/staff/login";
         return NextResponse.redirect(url);
     }
 
@@ -50,12 +50,12 @@ export async function middleware(request: NextRequest) {
     if (factorsError) {
         console.error("Error fetching MFA factors:", factorsError);
         // In case of error, redirect to login for safety
-        return NextResponse.redirect(new URL("/refine/login", request.url));
+        return NextResponse.redirect(new URL("/staff/login", request.url));
     }
 
     // If no MFA factors are set up, redirect to MFA setup
     if (!factorsData.totp || factorsData.totp.length === 0) {
-        return NextResponse.redirect(new URL("/refine/mfa-setup", request.url));
+        return NextResponse.redirect(new URL("/staff/mfa-setup", request.url));
     }
 
     // Check MFA status for the current session
@@ -64,14 +64,14 @@ export async function middleware(request: NextRequest) {
 
     if (aalError) {
         console.error("Error checking MFA status:", aalError);
-        return NextResponse.redirect(new URL("/refine/login", request.url));
+        return NextResponse.redirect(new URL("/staff/login", request.url));
     }
 
     const { currentLevel, nextLevel } = aalData;
 
     // If MFA is required but not completed for this session, redirect to MFA verification
     if (currentLevel === "aal1" && nextLevel === "aal2") {
-        return NextResponse.redirect(new URL("/refine/mfa", request.url));
+        return NextResponse.redirect(new URL("/staff/mfa", request.url));
     }
 
     // If authenticated and MFA is completed (or not required), allow access
@@ -79,5 +79,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/refine/:path*"],
+    matcher: ["/staff/:path*"],
 };

@@ -38,10 +38,10 @@ export default function RefineLayout({
                         resources={[
                             {
                                 name: "memoriam_orders",
-                                list: "/refine/memoriam-orders",
-                                show: "/refine/memoriam-orders/show/:id",
-                                create: "/refine/memoriam-orders/create",
-                                edit: "/refine/memoriam-orders/edit/:id",
+                                list: "/staff/memoriam-orders",
+                                show: "/staff/memoriam-orders/show/:id",
+                                create: "/staff/memoriam-orders/create",
+                                edit: "/staff/memoriam-orders/edit/:id",
                                 meta: {
                                     canDelete: true,
                                 },

@@ -34,7 +34,7 @@ export const authProvider: AuthProvider = {
                 // No MFA factors set up, redirect to MFA setup
                 return {
                     success: true,
-                    redirectTo: "/refine/mfa-setup",
+                    redirectTo: "/staff/mfa-setup",
                 };
             }
 
@@ -55,14 +55,14 @@ export const authProvider: AuthProvider = {
                 // MFA is required
                 return {
                     success: true,
-                    redirectTo: "/refine/mfa", // Redirect to MFA verification page
+                    redirectTo: "/staff/mfa", // Redirect to MFA verification page
                 };
             }
 
             // MFA not required for this session, proceed normally
             return {
                 success: true,
-                redirectTo: "/refine/memoriam-orders",
+                redirectTo: "/staff/memoriam-orders",
             };
         }
 
@@ -84,7 +84,7 @@ export const authProvider: AuthProvider = {
 
         return {
             success: true,
-            redirectTo: "/refine/login",
+            redirectTo: "/staff/login",
         };
     },
     onError: async (error) => {
@@ -101,7 +101,7 @@ export const authProvider: AuthProvider = {
                 authenticated: false,
                 error: new Error(sessionError.message),
                 logout: true,
-                redirectTo: "/refine/login",
+                redirectTo: "/staff/login",
             };
         }
 
@@ -115,7 +115,7 @@ export const authProvider: AuthProvider = {
                     authenticated: false,
                     error: new Error(factorsError.message),
                     logout: true,
-                    redirectTo: "/refine/login",
+                    redirectTo: "/staff/login",
                 };
             }
 
@@ -125,7 +125,7 @@ export const authProvider: AuthProvider = {
                     authenticated: false,
                     error: new Error("MFA setup required"),
                     logout: false,
-                    redirectTo: "/refine/mfa-setup",
+                    redirectTo: "/staff/mfa-setup",
                 };
             }
 
@@ -137,7 +137,7 @@ export const authProvider: AuthProvider = {
                     authenticated: false,
                     error: new Error(aalError.message),
                     logout: true,
-                    redirectTo: "/refine/login",
+                    redirectTo: "/staff/login",
                 };
             }
 
@@ -158,7 +158,7 @@ export const authProvider: AuthProvider = {
                 authenticated: false,
                 error: new Error("MFA required"),
                 logout: false,
-                redirectTo: "/refine/mfa",
+                redirectTo: "/staff/mfa",
             };
         }
 
@@ -166,7 +166,7 @@ export const authProvider: AuthProvider = {
             authenticated: false,
             error: new Error("Not authenticated"),
             logout: true,
-            redirectTo: "/refine/login",
+            redirectTo: "/staff/login",
         };
     },
     getPermissions: async () => {

@@ -1,4 +1,4 @@
-// app/refine/mfa/page.tsx
+// app/staff/mfa/page.tsx
 
 "use client";
 
@@ -80,7 +80,7 @@ export default function MFA() {
                 }
 
                 // Redirect to the protected route
-                window.location.href = "/refine/memoriam-orders";
+                window.location.href = "/staff/memoriam-orders";
             }
         } catch (err: any) {
             setError(err.message);

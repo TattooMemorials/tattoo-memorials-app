@@ -61,7 +61,7 @@ The middleware runs on every request to protected routes and ensures:
 -   Users without MFA setup are redirected to the MFA setup page
 -   Users who haven't completed MFA for the current session are redirected to the MFA verification page
 
-### MFA Setup Page (`/refine/mfa-setup`)
+### MFA Setup Page (`/staff/mfa-setup`)
 
 This page allows users to:
 
@@ -69,7 +69,7 @@ This page allows users to:
 -   Set up new MFA factors
 -   Handle the MFA enrollment process
 
-### MFA Verification Page (`/refine/mfa`)
+### MFA Verification Page (`/staff/mfa`)
 
 This page is used for:
 
@@ -112,7 +112,7 @@ If authentication issues occur:
 
 1. Check the browser console for errors.
 2. Verify Supabase configuration and API keys.
-3. Ensure all required routes (`/refine/login`, `/refine/mfa-setup`, `/refine/mfa`) are properly set up.
+3. Ensure all required routes (`/staff/login`, `/staff/mfa-setup`, `/staff/mfa`) are properly set up.
 4. Review the Auth Provider and middleware for any logic errors.
 
 For any persistent issues, refer to the Supabase and Refine documentation or seek support from the respective communities.
