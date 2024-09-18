@@ -11,7 +11,8 @@
 
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
-export default function MFA({
+
+export default function EnableMFA({
     onEnrolled,
     onCancelled,
 }: {
