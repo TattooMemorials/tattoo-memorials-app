@@ -1,26 +1,4 @@
-// import { type NextRequest } from "next/server";
-// import { updateSession } from "@/utils/supabase/middleware";
-
-// export async function middleware(request: NextRequest) {
-//   return await updateSession(request);
-// }
-
-// export const config = {
-//   matcher: [
-//     /*
-//      * Match all request paths except:
-//      * - _next/static (static files)
-//      * - _next/image (image optimization files)
-//      * - favicon.ico (favicon file)
-//      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
-//      * Feel free to modify this pattern to include more paths.
-//      */
-//     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-//   ],
-// };
-
 // middleware.ts
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createClient } from "./utils/supabase/server";
@@ -41,11 +19,10 @@ export async function middleware(request: NextRequest) {
         "/refine/reset-password",
         "/refine/mfa-setup",
         "/refine/mfa",
-        "/_next", // Next.js internal paths
-        "/favicon.ico", // Favicon
+        "/_next",
+        "/favicon.ico",
         "/memoriam-order",
         "/living-order",
-        // Add other public paths or static assets as needed
     ];
 
     // Allow requests to public paths
@@ -58,17 +35,34 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // If user is authenticated, allow access
-    if (session) {
-        return NextResponse.next();
+    // If user is not authenticated, redirect to login
+    if (!session) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/refine/login";
+        return NextResponse.redirect(url);
     }
 
-    // If not authenticated, redirect to login
-    const url = request.nextUrl.clone();
-    url.pathname = "/refine/login";
-    return NextResponse.redirect(url);
+    // Check MFA status
+    const { data: aalData, error: aalError } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (aalError) {
+        // Handle error, possibly log it
+        console.error("Error checking MFA status:", aalError);
+        return NextResponse.redirect(new URL("/refine/login", request.url));
+    }
+
+    const { currentLevel, nextLevel } = aalData;
+
+    // If MFA is required but not completed, redirect to MFA page
+    if (currentLevel === "aal1" && nextLevel === "aal2") {
+        return NextResponse.redirect(new URL("/refine/mfa", request.url));
+    }
+
+    // If authenticated and MFA is completed (or not required), allow access
+    return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/refine/:path*"], // Apply middleware to all /refine/* routes
+    matcher: ["/refine/:path*"],
 };

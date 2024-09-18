@@ -77,7 +77,6 @@ export const authProvider: AuthProvider = {
         const { data } = await supabase.auth.getSession();
 
         if (data?.session) {
-            // Check if MFA is required
             const { data: aalData, error: aalError } =
                 await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
@@ -106,7 +105,7 @@ export const authProvider: AuthProvider = {
             return {
                 authenticated: false,
                 error: new Error("MFA required"),
-                logout: true,
+                logout: false, // Changed from true to false
                 redirectTo: "/refine/mfa",
             };
         }

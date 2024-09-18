@@ -3,7 +3,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import { useRouter } from "next/router";
 import { Button, Input, Form, Alert, Typography } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { Factor } from "@supabase/auth-js";
@@ -14,7 +13,6 @@ export default function MFA() {
     const [token, setToken] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
-    // const router = useRouter();
     const supabase = createClient();
 
     const [factors, setFactors] = useState<Factor[]>([]);
@@ -72,10 +70,18 @@ export default function MFA() {
                 return;
             }
 
-            setSuccess(true);
-            alert("success!");
-            // Redirect to the protected route
-            // router.push("/refine/memoriam-orders");
+            if (verifyData) {
+                // Refresh the session
+                const { data: sessionData, error: sessionError } =
+                    await supabase.auth.getSession();
+                if (sessionError) {
+                    setError(sessionError.message);
+                    return;
+                }
+
+                // Redirect to the protected route
+                window.location.href = "/refine/memoriam-orders";
+            }
         } catch (err: any) {
             setError(err.message);
             setSuccess(false);
