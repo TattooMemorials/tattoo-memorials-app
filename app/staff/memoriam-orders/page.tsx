@@ -9,10 +9,31 @@ import {
     FilterDropdown,
     CreateButton,
 } from "@refinedev/antd";
-import { Table, Space, Input, Button, Modal, Form, Typography } from "antd";
+import {
+    Table,
+    Space,
+    Input,
+    Button,
+    Modal,
+    Form,
+    Typography,
+    Select,
+    Dropdown,
+    Menu,
+} from "antd";
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
 import { useUpdate, useNavigation } from "@refinedev/core";
 import { useState } from "react";
+
+type EmailHistoryItem = {
+    sent_at: string;
+    email_type: string;
+};
+
+type EmailType = {
+    key: string;
+    label: string;
+};
 
 export default function MemoriamOrders() {
     const { tableProps, sorter, searchFormProps, filters } = useTable({
@@ -23,13 +44,36 @@ export default function MemoriamOrders() {
     const [isEmailHistoryModalVisible, setIsEmailHistoryModalVisible] =
         useState(false);
     const [currentRecord, setCurrentRecord] = useState<any>(null);
-    const [emailHistory, setEmailHistory] = useState<
-        { date: string; success: boolean }[]
-    >([]);
+    const [emailHistory, setEmailHistory] = useState<EmailHistoryItem[]>([]);
     const [form] = Form.useForm();
+    const [selectedEmailType, setSelectedEmailType] = useState(
+        "MEMORIAM_COMPLETION_REQUEST"
+    );
 
     const { mutate: updateRecord } = useUpdate();
     const { show } = useNavigation();
+
+    const emailTypes: EmailType[] = [
+        { key: "MEMORIAM_COMPLETION_REQUEST", label: "Completion Request" },
+        {
+            key: "ORDER_SUBMISSION_CONFIRMATION",
+            label: "Submission Confirmation",
+        },
+        { key: "INVOICE_AND_DOWNPAYMENT", label: "Invoice & Downpayment" },
+        {
+            key: "REMAINING_PAYMENT_REQUEST",
+            label: "Remaining Payment Request",
+        },
+    ];
+
+    const getEmailTypeLabel = (key: string): string => {
+        return emailTypes.find((type) => type.key === key)?.label || key;
+    };
+
+    const handleEmailTypeSelect = (record: any, emailType: string) => {
+        setSelectedEmailType(emailType);
+        handleSendEmail(record);
+    };
 
     const handleSendEmail = async (record: any) => {
         try {
@@ -56,17 +100,49 @@ export default function MemoriamOrders() {
     };
 
     const handleConfirmSendEmail = async () => {
+        // Check if this email type has been sent before
+        const hasSentBefore = emailHistory.some(
+            (email) => email.email_type === selectedEmailType
+        );
+
+        if (hasSentBefore) {
+            const confirmSend = window.confirm(
+                "This email type has been sent before. Are you sure you want to send it again?"
+            );
+            if (!confirmSend) {
+                return;
+            }
+        }
+
         try {
             const editUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
-            const emailSubject = "Complete Your Memoriam Order";
-            const emailMessage = `
-                <p>Hello,</p>
-                <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
-                <p><a href="${editUrl}">Click here to complete your order</a></p>
-                <p>${editUrl}</p>
-                <p>Thank you,</p>
-                <p>Tattoo Memorials Team</p>
-            `;
+            let emailSubject = "";
+            let emailMessage = "";
+
+            switch (selectedEmailType) {
+                case "MEMORIAM_COMPLETION_REQUEST":
+                    emailSubject = "Complete Your Memoriam Order";
+                    emailMessage = `
+                        <p>Hello,</p>
+                        <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
+                        <p><a href="${editUrl}">Click here to complete your order</a></p>
+                        <p>${editUrl}</p>
+                        <p>Thank you,</p>
+                        <p>Tattoo Memorials Team</p>
+                    `;
+                    break;
+                // Add cases for other email types here
+                default:
+                    emailSubject = "Memoriam Order Update";
+                    emailMessage = `
+                        <p>Hello,</p>
+                        <p>There's an update to your memoriam order. Please check the details by clicking the link below:</p>
+                        <p><a href="${editUrl}">View your order</a></p>
+                        <p>${editUrl}</p>
+                        <p>Thank you,</p>
+                        <p>Tattoo Memorials Team</p>
+                    `;
+            }
 
             const response = await fetch("/api/send-email", {
                 method: "POST",
@@ -79,7 +155,7 @@ export default function MemoriamOrders() {
                     message: emailMessage,
                     orderId: currentRecord.id,
                     orderType: "memoriam",
-                    emailType: "MEMORIAM_COMPLETION_REQUEST",
+                    emailType: selectedEmailType,
                 }),
             });
 
@@ -204,12 +280,33 @@ export default function MemoriamOrders() {
                                 recordItemId={record.id}
                                 type="primary"
                             />
-                            <Button
-                                icon={<MailOutlined />}
-                                size="small"
-                                onClick={() => handleSendEmail(record)}
-                                title="Send Email"
-                            />
+                            <Dropdown
+                                overlay={
+                                    <Menu>
+                                        {emailTypes.map((type) => (
+                                            <Menu.Item
+                                                key={type.key}
+                                                onClick={() =>
+                                                    handleEmailTypeSelect(
+                                                        record,
+                                                        type.key
+                                                    )
+                                                }
+                                            >
+                                                {type.label}
+                                            </Menu.Item>
+                                        ))}
+                                    </Menu>
+                                }
+                            >
+                                <Button
+                                    icon={<MailOutlined />}
+                                    size="small"
+                                    title="Send Email"
+                                >
+                                    Send Email
+                                </Button>
+                            </Dropdown>
                         </Space>
                     )}
                 />
@@ -241,7 +338,11 @@ export default function MemoriamOrders() {
                     {currentRecord?.email}.
                 </Typography.Paragraph>
                 <Table
-                    dataSource={emailHistory}
+                    dataSource={emailHistory.sort(
+                        (a, b) =>
+                            new Date(a.sent_at).getTime() -
+                            new Date(b.sent_at).getTime()
+                    )}
                     columns={[
                         {
                             title: "Date Sent",
@@ -253,10 +354,25 @@ export default function MemoriamOrders() {
                             title: "Email Type",
                             dataIndex: "email_type",
                             key: "email_type",
+                            render: (value) => getEmailTypeLabel(value),
                         },
                     ]}
                     pagination={false}
                 />
+                <Form layout="vertical" style={{ marginTop: "20px" }}>
+                    <Form.Item label="Select Email Type to Send">
+                        <Select
+                            value={selectedEmailType}
+                            onChange={(value) => setSelectedEmailType(value)}
+                        >
+                            {emailTypes.map((type) => (
+                                <Select.Option key={type.key} value={type.key}>
+                                    {type.label}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Form>
             </Modal>
 
             {/* Existing Email Modal */}
