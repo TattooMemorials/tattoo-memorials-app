@@ -9,9 +9,9 @@ import {
     FilterDropdown,
     CreateButton,
 } from "@refinedev/antd";
-import { Table, Space, Input, Button, Modal, Form } from "antd";
+import { Table, Space, Input, Button, Modal, Form, Typography } from "antd";
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
-import { useUpdate } from "@refinedev/core";
+import { useUpdate, useNavigation } from "@refinedev/core";
 import { useState } from "react";
 
 export default function MemoriamOrders() {
@@ -20,17 +20,81 @@ export default function MemoriamOrders() {
     });
 
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isEmailHistoryModalVisible, setIsEmailHistoryModalVisible] =
+        useState(false);
     const [currentRecord, setCurrentRecord] = useState<any>(null);
+    const [emailHistory, setEmailHistory] = useState<
+        { date: string; success: boolean }[]
+    >([]);
     const [form] = Form.useForm();
 
     const { mutate: updateRecord } = useUpdate();
+    const { show } = useNavigation();
 
-    const handleSendEmail = (record: any) => {
-        if (record.email) {
-            alert(`Email sent to ${record.email}`);
-        } else {
-            setCurrentRecord(record);
-            setIsModalVisible(true);
+    const handleSendEmail = async (record: any) => {
+        try {
+            const response = await fetch(
+                `/api/email-history?orderId=${record.id}&orderType=memoriam`
+            );
+            if (!response.ok) {
+                throw new Error("Failed to fetch email history");
+            }
+            const emailHistory = await response.json();
+            setEmailHistory(emailHistory);
+
+            if (record.email) {
+                setCurrentRecord(record);
+                setIsEmailHistoryModalVisible(true);
+            } else {
+                setCurrentRecord(record);
+                setIsModalVisible(true);
+            }
+        } catch (error) {
+            console.error("Error fetching email history:", error);
+            alert("Failed to fetch email history. Please try again.");
+        }
+    };
+
+    const handleConfirmSendEmail = async () => {
+        try {
+            const editUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
+            const emailSubject = "Complete Your Memoriam Order";
+            const emailMessage = `
+                <p>Hello,</p>
+                <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
+                <p><a href="${editUrl}">Click here to complete your order</a></p>
+                <p>${editUrl}</p>
+                <p>Thank you,</p>
+                <p>Tattoo Memorials Team</p>
+            `;
+
+            const response = await fetch("/api/send-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: currentRecord.email,
+                    subject: emailSubject,
+                    message: emailMessage,
+                    orderId: currentRecord.id,
+                    orderType: "memoriam",
+                    emailType: "MEMORIAM_COMPLETION_REQUEST",
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to send email");
+            }
+
+            alert(`Email sent successfully to ${currentRecord.email}`);
+            setIsEmailHistoryModalVisible(false);
+
+            // Refresh email history
+            await handleSendEmail(currentRecord);
+        } catch (error) {
+            console.error("Failed to send email:", error);
+            alert("Failed to send email. Please try again.");
         }
     };
 
@@ -44,11 +108,12 @@ export default function MemoriamOrders() {
                     values: { email: values.email },
                 },
                 {
-                    onSuccess: () => {
+                    onSuccess: async () => {
                         setIsModalVisible(false);
-                        alert(
-                            `Email address saved and email sent to ${values.email}`
-                        );
+                        await handleSendEmail({
+                            ...currentRecord,
+                            email: values.email,
+                        });
                         form.resetFields();
                     },
                     onError: (error: any) => {
@@ -149,6 +214,52 @@ export default function MemoriamOrders() {
                     )}
                 />
             </Table>
+
+            {/* Email History Modal */}
+            <Modal
+                title="Email History"
+                visible={isEmailHistoryModalVisible}
+                onCancel={() => setIsEmailHistoryModalVisible(false)}
+                footer={[
+                    <Button
+                        key="cancel"
+                        onClick={() => setIsEmailHistoryModalVisible(false)}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        key="send"
+                        type="primary"
+                        onClick={handleConfirmSendEmail}
+                    >
+                        Send Email
+                    </Button>,
+                ]}
+            >
+                <Typography.Paragraph>
+                    Email has been sent {emailHistory.length} times to{" "}
+                    {currentRecord?.email}.
+                </Typography.Paragraph>
+                <Table
+                    dataSource={emailHistory}
+                    columns={[
+                        {
+                            title: "Date Sent",
+                            dataIndex: "sent_at",
+                            key: "sent_at",
+                            render: (value) => new Date(value).toLocaleString(),
+                        },
+                        {
+                            title: "Email Type",
+                            dataIndex: "email_type",
+                            key: "email_type",
+                        },
+                    ]}
+                    pagination={false}
+                />
+            </Modal>
+
+            {/* Existing Email Modal */}
             <Modal
                 title="Enter Email Address"
                 visible={isModalVisible}
