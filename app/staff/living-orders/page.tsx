@@ -35,7 +35,7 @@ type EmailType = {
     label: string;
 };
 
-export default function MemoriamOrders() {
+export default function LivingOrders() {
     const { tableProps, sorter, searchFormProps, filters } = useTable({
         syncWithLocation: true,
     });
@@ -47,19 +47,12 @@ export default function MemoriamOrders() {
     const [emailHistory, setEmailHistory] = useState<EmailHistoryItem[]>([]);
     const [form] = Form.useForm();
     const [selectedEmailType, setSelectedEmailType] = useState(
-        "MEMORIAM_COMPLETION_REQUEST"
+        "INVOICE_AND_DOWNPAYMENT"
     );
-    const [price, setPrice] = useState<string>("");
-    const [downpaymentLink, setDownpaymentLink] = useState<string>("");
 
     const { mutate: updateRecord } = useUpdate();
 
     const emailTypes: EmailType[] = [
-        { key: "MEMORIAM_COMPLETION_REQUEST", label: "Completion Request" },
-        {
-            key: "ORDER_SUBMISSION_CONFIRMATION",
-            label: "Submission Confirmation",
-        },
         { key: "INVOICE_AND_DOWNPAYMENT", label: "Invoice & Downpayment" },
         {
             key: "REMAINING_PAYMENT_REQUEST",
@@ -79,7 +72,7 @@ export default function MemoriamOrders() {
     const handleSendEmail = async (record: any) => {
         try {
             const response = await fetch(
-                `/api/email-history?orderId=${record.id}&orderType=memoriam`
+                `/api/email-history?orderId=${record.id}&orderType=living`
             );
             if (!response.ok) {
                 throw new Error("Failed to fetch email history");
@@ -100,74 +93,40 @@ export default function MemoriamOrders() {
         }
     };
 
-    const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
-
     const handleConfirmSendEmail = async () => {
-        if (selectedEmailType === "INVOICE_AND_DOWNPAYMENT") {
-            setIsInvoiceModalVisible(true);
-            return;
+        // Check if this email type has been sent before
+        const hasSentBefore = emailHistory.some(
+            (email) => email.email_type === selectedEmailType
+        );
+
+        if (hasSentBefore) {
+            const confirmSend = window.confirm(
+                "This email type has been sent before. Are you sure you want to send it again?"
+            );
+            if (!confirmSend) {
+                return;
+            }
         }
 
         try {
-            const editUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
+            const editUrl = `https://app.tattoomemorials.com/living-order/${currentRecord.id}`;
             let emailSubject = "";
             let emailMessage = "";
 
             switch (selectedEmailType) {
-                case "MEMORIAM_COMPLETION_REQUEST":
-                    emailSubject = "Complete Your Memoriam Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
-                        <p><a href="${editUrl}">Click here to complete your order</a></p>
-                        <p>${editUrl}</p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                case "ORDER_SUBMISSION_CONFIRMATION":
-                    emailSubject = "Memoriam Order Update";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>There's an update to your memoriam order. Please check the details by clicking the link below:</p>
-                        <p><a href="${editUrl}">View your order</a></p>
-                        <p>${editUrl}</p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
                 case "INVOICE_AND_DOWNPAYMENT":
-                    emailSubject =
-                        "Invoice and Downpayment for Your Memoriam Order";
+                    emailSubject = "Quote for your Tattoo Memorials Order";
                     emailMessage = `
                         <p>Hello,</p>
-                        <p>Thank you for your memoriam order. Here are the details:</p>
-                        <p>Total Price: $${price}</p>
-                        <p>To proceed with your order, please make a downpayment using the link below:</p>
-                        <p><a href="${downpaymentLink}">Make Downpayment</a></p>
-                        <p>You can view your order details here: <a href="${editUrl}">View Order</a></p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
+                        <p>quote & invoice</p>
                     `;
                     break;
-                case "REMAINING_PAYMENT_REQUEST":
-                    emailSubject =
-                        "Remaining Payment Request for Your Memoriam Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>We hope this email finds you well. We're reaching out to remind you about the remaining payment for your memoriam order.</p>
-                        <p>To complete your order, please make the remaining payment using the link below:</p>
-                        <p><a href="${editUrl}">Make Payment</a></p>
-                        <p>${editUrl}</p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
+                // Add cases for other email types here
                 default:
-                    emailSubject = "Memoriam Order Update";
+                    emailSubject = "Tattoo Memorials Order Update";
                     emailMessage = `
                         <p>Hello,</p>
-                        <p>There's an update to your memoriam order. Please check the details by clicking the link below:</p>
+                        <p>There's an update to your tattoo memorial order. Please check the details by clicking the link below:</p>
                         <p><a href="${editUrl}">View your order</a></p>
                         <p>${editUrl}</p>
                         <p>Thank you,</p>
@@ -185,63 +144,7 @@ export default function MemoriamOrders() {
                     subject: emailSubject,
                     message: emailMessage,
                     orderId: currentRecord.id,
-                    orderType: "memoriam",
-                    emailType: selectedEmailType,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to send email");
-            }
-
-            alert(`Email sent successfully to ${currentRecord.email}`);
-            setIsEmailHistoryModalVisible(false);
-
-            // Refresh email history
-            await handleSendEmail(currentRecord);
-        } catch (error) {
-            console.error("Failed to send email:", error);
-            alert("Failed to send email. Please try again.");
-        }
-    };
-
-    const handleInvoiceModalOk = async () => {
-        setIsInvoiceModalVisible(false);
-
-        try {
-            const editUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
-            let emailSubject = "";
-            let emailMessage = "";
-
-            switch (selectedEmailType) {
-                case "INVOICE_AND_DOWNPAYMENT":
-                    emailSubject =
-                        "Invoice and Downpayment for Your Memoriam Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>Thank you for your memoriam order. Here are the details:</p>
-                        <p>Total Price: $${price}</p>
-                        <p>To proceed with your order, please make a downpayment using the link below:</p>
-                        <p><a href="${downpaymentLink}">Make Downpayment</a></p>
-                        <p>You can view your order details here: <a href="${editUrl}">View Order</a></p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                // ... other cases remain the same
-            }
-
-            const response = await fetch("/api/send-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: currentRecord.email,
-                    subject: emailSubject,
-                    message: emailMessage,
-                    orderId: currentRecord.id,
-                    orderType: "memoriam",
+                    orderType: "living",
                     emailType: selectedEmailType,
                 }),
             });
@@ -266,7 +169,7 @@ export default function MemoriamOrders() {
             const values = await form.validateFields();
             updateRecord(
                 {
-                    resource: "memoriam_orders",
+                    resource: "living_orders",
                     id: currentRecord.id,
                     values: { email: values.email },
                 },
@@ -292,12 +195,6 @@ export default function MemoriamOrders() {
     const handleModalCancel = () => {
         setIsModalVisible(false);
         form.resetFields();
-    };
-
-    const handleInvoiceModalCancel = () => {
-        setIsInvoiceModalVisible(false);
-        setPrice("");
-        setDownpaymentLink("");
     };
 
     return (
@@ -331,16 +228,6 @@ export default function MemoriamOrders() {
                 />
                 <Table.Column dataIndex="email" title="Email" />
                 <Table.Column dataIndex="phone" title="Phone" />
-                <Table.Column
-                    dataIndex="funeral_home_name"
-                    title="Funeral Home"
-                    filterDropdown={(props) => (
-                        <FilterDropdown {...props}>
-                            <Input />
-                        </FilterDropdown>
-                    )}
-                    filterIcon={<SearchOutlined />}
-                />
                 <Table.Column
                     dataIndex="date_loaded"
                     title="Date Loaded"
@@ -491,48 +378,6 @@ export default function MemoriamOrders() {
                         ]}
                     >
                         <Input />
-                    </Form.Item>
-                </Form>
-            </Modal>
-
-            {/* Invoice Modal */}
-            <Modal
-                title="Set Invoice Details"
-                visible={isInvoiceModalVisible}
-                onOk={handleInvoiceModalOk}
-                onCancel={handleInvoiceModalCancel}
-            >
-                <Form layout="vertical">
-                    <Form.Item
-                        name="price"
-                        label="Price"
-                        rules={[
-                            {
-                                required: true,
-                                message: "Please input the price!",
-                            },
-                        ]}
-                    >
-                        <Input
-                            prefix="$"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="downpaymentLink"
-                        label="Downpayment Link"
-                        rules={[
-                            {
-                                required: true,
-                                message: "Please input the downpayment link!",
-                            },
-                        ]}
-                    >
-                        <Input
-                            value={downpaymentLink}
-                            onChange={(e) => setDownpaymentLink(e.target.value)}
-                        />
                     </Form.Item>
                 </Form>
             </Modal>
