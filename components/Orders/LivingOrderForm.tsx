@@ -337,7 +337,11 @@ const LivingOrderForm: React.FC = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
+
                 body: JSON.stringify({
+                    orderId: result.orderId,
+                    orderType: "living",
+                    emailType: "ORDER_SUBMISSION_CONFIRMATION",
                     email: formData.email,
                     subject: `Tattoo Memorials Order Received`,
                     message: `

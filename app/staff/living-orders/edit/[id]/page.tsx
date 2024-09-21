@@ -25,33 +25,19 @@ const supabase = createClient();
 export default function EditPage() {
     const params = useParams();
     const id = params.id as string;
-    const { formProps, saveButtonProps, queryResult } = useForm<IMemoriamOrder>(
-        {
-            resource: "memoriam_orders",
-            id: id,
-            action: "edit",
-        }
-    );
-    const memoriamOrder = queryResult?.data?.data;
-
-    const [intakeFormUrl, setIntakeFormUrl] = useState<string | null>(null);
-    const [consentFormUrl, setConsentFormUrl] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (memoriamOrder?.intake_form_path) {
-            getPublicUrl(memoriamOrder.intake_form_path, setIntakeFormUrl);
-        }
-        if (memoriamOrder?.consent_form_path) {
-            getPublicUrl(memoriamOrder.consent_form_path, setConsentFormUrl);
-        }
-    }, [memoriamOrder]);
+    const { formProps, saveButtonProps, queryResult } = useForm<ILivingOrder>({
+        resource: "living_orders",
+        id: id,
+        action: "edit",
+    });
+    const livingOrder = queryResult?.data?.data;
 
     const getPublicUrl = async (
         path: string,
         setUrl: (url: string) => void
     ) => {
         const { data } = supabase.storage
-            .from("order-forms")
+            .from("order-images")
             .getPublicUrl(path);
         if (data?.publicUrl) {
             setUrl(data.publicUrl);
@@ -64,34 +50,15 @@ export default function EditPage() {
         }
     };
 
-    const handleDownload = async (url: string | null, fileName: string) => {
+    const handleDownload = (url: string | null, fileName: string) => {
         if (url) {
-            try {
-                const response = await fetch(url);
-                const contentType = response.headers.get("content-type");
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = blobUrl;
-                link.download = getFileNameWithExtension(fileName, contentType);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-            } catch (error) {
-                console.error("Error downloading file:", error);
-            }
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-    };
-
-    const getFileNameWithExtension = (
-        fileName: string,
-        contentType: string | null
-    ): string => {
-        if (!contentType) return fileName;
-        const extension = contentType.split("/").pop();
-        if (fileName.endsWith(`.${extension}`)) return fileName;
-        return `${fileName}.${extension}`;
     };
 
     return (
@@ -100,7 +67,7 @@ export default function EditPage() {
                 level={2}
                 style={{ textAlign: "center", marginBottom: "24px" }}
             >
-                Edit Memoriam Order
+                Edit Living Order
             </Title>
 
             <Card
@@ -111,65 +78,11 @@ export default function EditPage() {
                 <Row gutter={[16, 16]}>
                     <Col span={12}>
                         <Text strong>ID:</Text>
-                        <div>{memoriamOrder?.id}</div>
+                        <div>{livingOrder?.id}</div>
                     </Col>
                     <Col span={12}>
                         <Text strong>Date Loaded:</Text>
-                        <div>{memoriamOrder?.date_loaded?.toString()}</div>
-                    </Col>
-                    <Col span={12}>
-                        <Text strong>Intake Form:</Text>
-                        <div style={{ wordBreak: "break-all" }}>
-                            <Space style={{ marginLeft: "8px" }}>
-                                <Button
-                                    icon={<FileTextOutlined />}
-                                    onClick={() => handlePreview(intakeFormUrl)}
-                                    size="small"
-                                >
-                                    Preview
-                                </Button>
-                                <Button
-                                    icon={<DownloadOutlined />}
-                                    onClick={() =>
-                                        handleDownload(
-                                            intakeFormUrl,
-                                            "intake_form.pdf"
-                                        )
-                                    }
-                                    size="small"
-                                >
-                                    Download
-                                </Button>
-                            </Space>
-                        </div>
-                    </Col>
-                    <Col span={12}>
-                        <Text strong>Consent Form:</Text>
-                        <div style={{ wordBreak: "break-all" }}>
-                            <Space style={{ marginLeft: "8px" }}>
-                                <Button
-                                    icon={<FileTextOutlined />}
-                                    onClick={() =>
-                                        handlePreview(consentFormUrl)
-                                    }
-                                    size="small"
-                                >
-                                    Preview
-                                </Button>
-                                <Button
-                                    icon={<DownloadOutlined />}
-                                    onClick={() =>
-                                        handleDownload(
-                                            consentFormUrl,
-                                            "consent_form.pdf"
-                                        )
-                                    }
-                                    size="small"
-                                >
-                                    Download
-                                </Button>
-                            </Space>
-                        </div>
+                        <div>{livingOrder?.date_loaded?.toString()}</div>
                     </Col>
                 </Row>
             </Card>
@@ -247,28 +160,6 @@ export default function EditPage() {
 
                 <Divider />
 
-                <Title level={4}>Funeral Home Details</Title>
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Funeral Home Name"
-                            name="funeral_home_name"
-                        >
-                            <Input />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            label="Funeral Home Rep"
-                            name="funeral_home_rep"
-                        >
-                            <Input />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Divider />
-
                 <Title level={4}>Order Details</Title>
                 <Row gutter={16}>
                     <Col span={12}>
@@ -309,7 +200,7 @@ export default function EditPage() {
     );
 }
 
-export interface IMemoriamOrder {
+export interface ILivingOrder {
     id: string;
     first_name: string;
     last_name: string;
@@ -325,8 +216,6 @@ export interface IMemoriamOrder {
     alteration_notes?: string;
     inspiration_notes?: string;
     altered: boolean;
-    funeral_home_name?: string;
-    funeral_home_rep?: string;
     intake_form_path?: string;
     consent_form_path?: string;
 }

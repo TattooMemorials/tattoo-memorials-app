@@ -56,10 +56,6 @@ export default function MemoriamOrders() {
 
     const emailTypes: EmailType[] = [
         { key: "MEMORIAM_COMPLETION_REQUEST", label: "Completion Request" },
-        {
-            key: "ORDER_SUBMISSION_CONFIRMATION",
-            label: "Submission Confirmation",
-        },
         { key: "INVOICE_AND_DOWNPAYMENT", label: "Invoice & Downpayment" },
         {
             key: "REMAINING_PAYMENT_REQUEST",
@@ -103,6 +99,20 @@ export default function MemoriamOrders() {
     const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
 
     const handleConfirmSendEmail = async () => {
+        // Check if this email type has been sent before
+        const hasSentBefore = emailHistory.some(
+            (email) => email.email_type === selectedEmailType
+        );
+
+        if (hasSentBefore) {
+            const confirmSend = window.confirm(
+                "This email type has been sent before. Are you sure you want to send it again?"
+            );
+            if (!confirmSend) {
+                return;
+            }
+        }
+
         if (selectedEmailType === "INVOICE_AND_DOWNPAYMENT") {
             setIsInvoiceModalVisible(true);
             return;
