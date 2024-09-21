@@ -49,8 +49,10 @@ export default function MemoriamOrders() {
     const [selectedEmailType, setSelectedEmailType] = useState(
         "MEMORIAM_COMPLETION_REQUEST"
     );
-    const [price, setPrice] = useState<string>("");
     const [downpaymentLink, setDownpaymentLink] =
+        useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
+
+    const [remainingPaymentLink, setRemainingPaymentLink] =
         useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
 
     const { mutate: updateRecord } = useUpdate();
@@ -97,8 +99,6 @@ export default function MemoriamOrders() {
         }
     };
 
-    const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
-
     const handleConfirmSendEmail = async () => {
         // Check if this email type has been sent before
         const hasSentBefore = emailHistory.some(
@@ -114,121 +114,55 @@ export default function MemoriamOrders() {
             }
         }
 
-        if (selectedEmailType === "INVOICE_AND_DOWNPAYMENT") {
-            setIsInvoiceModalVisible(true);
-            return;
-        }
-
         try {
-            const editUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
+            const orderUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
             let emailSubject = "";
             let emailMessage = "";
 
             switch (selectedEmailType) {
-                case "MEMORIAM_COMPLETION_REQUEST":
-                    emailSubject = "Complete Your Memoriam Order";
+                case "REMAINING_PAYMENT_REQUEST":
+                    emailSubject =
+                        "Remaining Payment Request for Your Tattoo Memorial Order";
                     emailMessage = `
                         <p>Hello,</p>
-                        <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
-                        <p><a href="${editUrl}">Click here to complete your order</a></p>
-                        <p>${editUrl}</p>
+                        <p>Thank you for your tattoo memorial order. Here are the details:</p>
+                        <p>Total Price: $${currentRecord.total_price}</p>
+                        <p>Remaining Balance: $${
+                            currentRecord.total_price -
+                            currentRecord.downpayment_price
+                        }</p>
+                        <p>To proceed with your order, please make a downpayment using the link below:</p>
+                        <p><a href="${remainingPaymentLink}">Make Remaining Payment</a></p>
+                        <p>You can view your order details here: <a href="${orderUrl}">View Order</a></p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
                     `;
                     break;
                 case "INVOICE_AND_DOWNPAYMENT":
                     emailSubject =
-                        "Invoice and Downpayment for Your Memoriam Order";
+                        "Invoice and Downpayment for Your Tattoo Memorial  Order";
                     emailMessage = `
                         <p>Hello,</p>
-                        <p>Thank you for your memoriam order. Here are the details:</p>
-                        <p>Total Price: $${price}</p>
+                        <p>Thank you for your tattoo memorial order. Here are the details:</p>
+                        <p>Total Price: $${currentRecord.total_price}</p>
+                        <p>Downpayment: $${currentRecord.downpayment_price}</p>
                         <p>To proceed with your order, please make a downpayment using the link below:</p>
                         <p><a href="${downpaymentLink}">Make Downpayment</a></p>
-                        <p>You can view your order details here: <a href="${editUrl}">View Order</a></p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                case "REMAINING_PAYMENT_REQUEST":
-                    emailSubject =
-                        "Remaining Payment Request for Your Memoriam Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>We hope this email finds you well. We're reaching out to remind you about the remaining payment for your memoriam order.</p>
-                        <p>To complete your order, please make the remaining payment using the link below:</p>
-                        <p><a href="${editUrl}">Make Payment</a></p>
-                        <p>${editUrl}</p>
+                        <p>You can view your order details here: <a href="${orderUrl}">View Order</a></p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
                     `;
                     break;
                 default:
-                    emailSubject = "Memoriam Order Update";
+                    emailSubject = "Tattoo Memorial Order Update";
                     emailMessage = `
                         <p>Hello,</p>
-                        <p>There's an update to your memoriam order. Please check the details by clicking the link below:</p>
-                        <p><a href="${editUrl}">View your order</a></p>
-                        <p>${editUrl}</p>
+                        <p>There's an update to your tattoo memorial order. Please check the details by clicking the link below:</p>
+                        <p><a href="${orderUrl}">View your order</a></p>
+                        <p>${orderUrl}</p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
                     `;
-            }
-
-            const response = await fetch("/api/send-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: currentRecord.email,
-                    subject: emailSubject,
-                    message: emailMessage,
-                    orderId: currentRecord.id,
-                    orderType: "memoriam",
-                    emailType: selectedEmailType,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to send email");
-            }
-
-            alert(`Email sent successfully to ${currentRecord.email}`);
-            setIsEmailHistoryModalVisible(false);
-
-            // Refresh email history
-            await handleSendEmail(currentRecord);
-        } catch (error) {
-            console.error("Failed to send email:", error);
-            alert("Failed to send email. Please try again.");
-        }
-    };
-
-    const handleInvoiceModalOk = async () => {
-        setIsInvoiceModalVisible(false);
-
-        try {
-            const editUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
-            let emailSubject = "";
-            let emailMessage = "";
-
-            switch (selectedEmailType) {
-                case "INVOICE_AND_DOWNPAYMENT":
-                    emailSubject =
-                        "Invoice and Downpayment for Your Memoriam Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>Thank you for your memoriam order. Here are the details:</p>
-                        <p>Total Price: $${price}</p>
-                        <p>To proceed with your order, please make a downpayment using the link below:</p>
-                        <p><a href="${downpaymentLink}">Make Downpayment</a></p>
-                        <p>You can view your order details here: <a href="${editUrl}">View Order</a></p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                // ... other cases remain the same
             }
 
             const response = await fetch("/api/send-email", {
@@ -292,11 +226,6 @@ export default function MemoriamOrders() {
     const handleModalCancel = () => {
         setIsModalVisible(false);
         form.resetFields();
-    };
-
-    const handleInvoiceModalCancel = () => {
-        setIsInvoiceModalVisible(false);
-        setPrice("");
     };
 
     return (
@@ -490,33 +419,6 @@ export default function MemoriamOrders() {
                         ]}
                     >
                         <Input />
-                    </Form.Item>
-                </Form>
-            </Modal>
-
-            {/* Invoice Modal */}
-            <Modal
-                title="Set Invoice Details"
-                visible={isInvoiceModalVisible}
-                onOk={handleInvoiceModalOk}
-                onCancel={handleInvoiceModalCancel}
-            >
-                <Form layout="vertical">
-                    <Form.Item
-                        name="price"
-                        label="Price"
-                        rules={[
-                            {
-                                required: true,
-                                message: "Please input the price!",
-                            },
-                        ]}
-                    >
-                        <Input
-                            prefix="$"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                        />
                     </Form.Item>
                 </Form>
             </Modal>
