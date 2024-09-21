@@ -50,15 +50,34 @@ export default function EditPage() {
         }
     };
 
-    const handleDownload = (url: string | null, fileName: string) => {
+    const handleDownload = async (url: string | null, fileName: string) => {
         if (url) {
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            try {
+                const response = await fetch(url);
+                const contentType = response.headers.get("content-type");
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = blobUrl;
+                link.download = getFileNameWithExtension(fileName, contentType);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (error) {
+                console.error("Error downloading file:", error);
+            }
         }
+    };
+
+    const getFileNameWithExtension = (
+        fileName: string,
+        contentType: string | null
+    ): string => {
+        if (!contentType) return fileName;
+        const extension = contentType.split("/").pop();
+        if (fileName.endsWith(`.${extension}`)) return fileName;
+        return `${fileName}.${extension}`;
     };
 
     return (
