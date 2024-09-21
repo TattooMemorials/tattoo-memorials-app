@@ -50,7 +50,8 @@ export default function MemoriamOrders() {
         "MEMORIAM_COMPLETION_REQUEST"
     );
     const [price, setPrice] = useState<string>("");
-    const [downpaymentLink, setDownpaymentLink] = useState<string>("");
+    const [downpaymentLink, setDownpaymentLink] =
+        useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
 
     const { mutate: updateRecord } = useUpdate();
 
@@ -130,17 +131,6 @@ export default function MemoriamOrders() {
                         <p>Hello,</p>
                         <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
                         <p><a href="${editUrl}">Click here to complete your order</a></p>
-                        <p>${editUrl}</p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                case "ORDER_SUBMISSION_CONFIRMATION":
-                    emailSubject = "Memoriam Order Update";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>There's an update to your memoriam order. Please check the details by clicking the link below:</p>
-                        <p><a href="${editUrl}">View your order</a></p>
                         <p>${editUrl}</p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
@@ -307,7 +297,6 @@ export default function MemoriamOrders() {
     const handleInvoiceModalCancel = () => {
         setIsInvoiceModalVisible(false);
         setPrice("");
-        setDownpaymentLink("");
     };
 
     return (
@@ -527,21 +516,6 @@ export default function MemoriamOrders() {
                             prefix="$"
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="downpaymentLink"
-                        label="Downpayment Link"
-                        rules={[
-                            {
-                                required: true,
-                                message: "Please input the downpayment link!",
-                            },
-                        ]}
-                    >
-                        <Input
-                            value={downpaymentLink}
-                            onChange={(e) => setDownpaymentLink(e.target.value)}
                         />
                     </Form.Item>
                 </Form>

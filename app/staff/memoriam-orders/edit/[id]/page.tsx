@@ -271,6 +271,21 @@ export default function EditPage() {
 
                 <Title level={4}>Order Details</Title>
                 <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            label="Downpayment Price"
+                            name="downpayment_price"
+                        >
+                            <Input />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item label="Total Price" name="total_price">
+                            <Input />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
                             label="As Is"
@@ -325,6 +340,8 @@ export interface IMemoriamOrder {
     alteration_notes?: string;
     inspiration_notes?: string;
     altered: boolean;
+    downpayment_price?: number;
+    total_price?: number;
     funeral_home_name?: string;
     funeral_home_rep?: string;
     intake_form_path?: string;
