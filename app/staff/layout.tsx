@@ -46,6 +46,16 @@ export default function RefineLayout({
                                     canDelete: true,
                                 },
                             },
+                            {
+                                name: "living_orders",
+                                list: "/staff/living-orders",
+                                show: "/staff/living-orders/show/:id",
+                                create: "/staff/living-orders/create",
+                                edit: "/staff/living-orders/edit/:id",
+                                meta: {
+                                    canDelete: true,
+                                },
+                            },
                         ]}
                         options={{ syncWithLocation: true }}
                     >

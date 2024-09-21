@@ -291,7 +291,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
             return;
         }
 
-        const token = await executeRecaptcha("submitLivingOrderForm");
+        const token = await executeRecaptcha("submitMemoriamOrderEditForm");
         setToken(token);
 
         const recaptchaResponse = await fetch("/api/verify-recaptcha", {
@@ -356,16 +356,18 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                 // Handle error (e.g., show error message to user)
             }
 
-            if (tattooEnv === "production") {
-                const emailResponse = await fetch("/api/send-email", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email: formData.email,
-                        subject: `Tattoo Memorials Order Received`,
-                        message: `
+            const emailResponse = await fetch("/api/send-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    orderType: "memoriam",
+                    emailType: "ORDER_SUBMISSION_CONFIRMATION",
+                    email: formData.email,
+                    subject: `Tattoo Memorials Order Received`,
+                    message: `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -404,7 +406,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     </body>
     </html>
             `,
-                        TextBody: `
+                    TextBody: `
     We have received your Tattoo Memorials order.
     
     Order ID:
@@ -418,8 +420,8 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     Mailing Address:
     ${formData.streetAddress}
     ${formData.streetAddress2 ? formData.streetAddress2 + "\n" : ""}${
-                            formData.city
-                        }, ${formData.state} ${formData.postalCode}
+                        formData.city
+                    }, ${formData.state} ${formData.postalCode}
     
     Order Details:
     Medium: ${Object.entries(formData)
@@ -449,9 +451,8 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     Thank you,
     Tattoo Memorials Auto-Notification System
             `,
-                    }),
-                });
-            }
+                }),
+            });
         } catch (error) {
             setErrorMessage(
                 "Error submitting form. Please reload the page and try again."

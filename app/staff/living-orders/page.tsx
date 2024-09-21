@@ -35,7 +35,7 @@ type EmailType = {
     label: string;
 };
 
-export default function MemoriamOrders() {
+export default function LivingOrders() {
     const { tableProps, sorter, searchFormProps, filters } = useTable({
         syncWithLocation: true,
     });
@@ -47,8 +47,9 @@ export default function MemoriamOrders() {
     const [emailHistory, setEmailHistory] = useState<EmailHistoryItem[]>([]);
     const [form] = Form.useForm();
     const [selectedEmailType, setSelectedEmailType] = useState(
-        "MEMORIAM_COMPLETION_REQUEST"
+        "INVOICE_AND_DOWNPAYMENT"
     );
+
     const [downpaymentLink, setDownpaymentLink] =
         useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
 
@@ -58,7 +59,6 @@ export default function MemoriamOrders() {
     const { mutate: updateRecord } = useUpdate();
 
     const emailTypes: EmailType[] = [
-        { key: "MEMORIAM_COMPLETION_REQUEST", label: "Completion Request" },
         { key: "INVOICE_AND_DOWNPAYMENT", label: "Invoice & Downpayment" },
         {
             key: "REMAINING_PAYMENT_REQUEST",
@@ -78,7 +78,7 @@ export default function MemoriamOrders() {
     const handleSendEmail = async (record: any) => {
         try {
             const response = await fetch(
-                `/api/email-history?orderId=${record.id}&orderType=memoriam`
+                `/api/email-history?orderId=${record.id}&orderType=living`
             );
             if (!response.ok) {
                 throw new Error("Failed to fetch email history");
@@ -115,7 +115,7 @@ export default function MemoriamOrders() {
         }
 
         try {
-            const orderUrl = `https://app.tattoomemorials.com/memoriam-order/${currentRecord.id}`;
+            const orderUrl = `https://app.tattoomemorials.com/living-order/${currentRecord.id}`;
             let emailSubject = "";
             let emailMessage = "";
 
@@ -175,7 +175,7 @@ export default function MemoriamOrders() {
                     subject: emailSubject,
                     message: emailMessage,
                     orderId: currentRecord.id,
-                    orderType: "memoriam",
+                    orderType: "living",
                     emailType: selectedEmailType,
                 }),
             });
@@ -200,7 +200,7 @@ export default function MemoriamOrders() {
             const values = await form.validateFields();
             updateRecord(
                 {
-                    resource: "memoriam_orders",
+                    resource: "living_orders",
                     id: currentRecord.id,
                     values: { email: values.email },
                 },
@@ -259,16 +259,6 @@ export default function MemoriamOrders() {
                 />
                 <Table.Column dataIndex="email" title="Email" />
                 <Table.Column dataIndex="phone" title="Phone" />
-                <Table.Column
-                    dataIndex="funeral_home_name"
-                    title="Funeral Home"
-                    filterDropdown={(props) => (
-                        <FilterDropdown {...props}>
-                            <Input />
-                        </FilterDropdown>
-                    )}
-                    filterIcon={<SearchOutlined />}
-                />
                 <Table.Column
                     dataIndex="date_loaded"
                     title="Date Loaded"
