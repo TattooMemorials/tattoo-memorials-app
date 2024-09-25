@@ -17,6 +17,7 @@ import {
 import { FileTextOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Medium } from "@/components/Orders/MemoriamOrderFormEdit";
 
 const { Text, Title } = Typography;
 
@@ -337,6 +338,7 @@ export interface IMemoriamOrder {
     postal_code?: string;
     date_loaded?: Date;
     as_is: boolean;
+    medium: Medium;
     alteration_notes?: string;
     inspiration_notes?: string;
     altered: boolean;
