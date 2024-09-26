@@ -12,6 +12,7 @@ import {
     Button,
     Image,
     Modal,
+    Divider,
 } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import { createClient } from "@/utils/supabase/client";
@@ -187,8 +188,9 @@ export default function OrderShow() {
                     <Descriptions.Item label="Postal Code">
                         {record?.postal_code}
                     </Descriptions.Item>
-                    <Descriptions.Item label="As Is">
-                        {record?.as_is ? "Yes" : "No"}
+                    <Divider />
+                    <Descriptions.Item label="Medium">
+                        {record?.medium}
                     </Descriptions.Item>
                     <Descriptions.Item label="Altered">
                         {record?.altered ? "Yes" : "No"}

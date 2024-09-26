@@ -18,6 +18,7 @@ import { FileTextOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import stripe from "@/utils/stripe/server";
+import { Medium } from "@/components/Orders/LivingOrderForm";
 
 const { Text, Title } = Typography;
 
@@ -301,6 +302,7 @@ export interface ILivingOrder {
     postal_code?: string;
     date_loaded?: Date;
     as_is: boolean;
+    medium: Medium;
     alteration_notes?: string;
     inspiration_notes?: string;
     altered: boolean;
