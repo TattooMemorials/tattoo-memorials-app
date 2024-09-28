@@ -22,7 +22,7 @@ import {
     Menu,
 } from "antd";
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
-import { useUpdate, useNavigation } from "@refinedev/core";
+import { useUpdate, useNavigation, useMany, useList } from "@refinedev/core";
 import { useState } from "react";
 
 type EmailHistoryItem = {
@@ -39,6 +39,20 @@ export default function LivingOrders() {
     const { tableProps, sorter, searchFormProps, filters } = useTable({
         syncWithLocation: true,
     });
+
+    // Fetch all invoices
+    const { data: invoicesData, isLoading: isLoadingInvoices } = useList({
+        resource: "invoices",
+        queryOptions: {
+            enabled: !!tableProps?.dataSource,
+        },
+    });
+
+    // Create a map of order ID to invoice status
+    const invoiceStatusMap = invoicesData?.data?.reduce((acc, invoice) => {
+        acc[invoice.order_id] = invoice.status;
+        return acc;
+    }, {});
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isEmailHistoryModalVisible, setIsEmailHistoryModalVisible] =
@@ -237,12 +251,28 @@ export default function LivingOrders() {
 
     return (
         <List headerButtons={<CreateButton />}>
-            <Table {...tableProps} rowKey="id">
+            <Table
+                {...tableProps}
+                rowKey="id"
+                dataSource={tableProps.dataSource?.map((order) => ({
+                    ...order,
+                    invoice_status:
+                        invoiceStatusMap && order.id
+                            ? invoiceStatusMap[order.id]
+                            : "No Invoice",
+                }))}
+            >
                 <Table.Column
                     dataIndex="id"
                     title="ID"
                     sorter
                     defaultSortOrder={getDefaultSortOrder("id", sorter)}
+                />
+                <Table.Column
+                    dataIndex="invoice_status"
+                    title="Invoice Status"
+                    render={(value) => value || "No Invoice"}
+                    sorter
                 />
                 <Table.Column
                     dataIndex="first_name"
