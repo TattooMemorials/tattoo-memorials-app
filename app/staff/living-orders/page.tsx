@@ -46,24 +46,12 @@ export default function LivingOrders() {
     const [currentRecord, setCurrentRecord] = useState<any>(null);
     const [emailHistory, setEmailHistory] = useState<EmailHistoryItem[]>([]);
     const [form] = Form.useForm();
-    const [selectedEmailType, setSelectedEmailType] = useState(
-        "INVOICE_AND_DOWNPAYMENT"
-    );
-
-    const [downpaymentLink, setDownpaymentLink] =
-        useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
-
-    const [remainingPaymentLink, setRemainingPaymentLink] =
-        useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
+    const [selectedEmailType, setSelectedEmailType] = useState("SEND INVOICE");
 
     const { mutate: updateRecord } = useUpdate();
 
     const emailTypes: EmailType[] = [
-        { key: "INVOICE_AND_DOWNPAYMENT", label: "Invoice & Downpayment" },
-        {
-            key: "REMAINING_PAYMENT_REQUEST",
-            label: "Remaining Payment Request",
-        },
+        { key: "SEND_INVOICE", label: "Invoice and Payment Link" },
     ];
 
     const getEmailTypeLabel = (key: string): string => {
@@ -114,84 +102,57 @@ export default function LivingOrders() {
             }
         }
 
+        // create the stripe invoice before we send our email. The invoice will have the payment link.
         try {
-            const orderUrl = `https://app.tattoomemorials.com/living-order/${currentRecord.id}`;
-            let emailSubject = "";
-            let emailMessage = "";
+            const invoiceResult = await createStripeInvoice();
 
-            switch (selectedEmailType) {
-                case "REMAINING_PAYMENT_REQUEST":
-                    emailSubject =
-                        "Remaining Payment Request for Your Tattoo Memorial Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>Thank you for your tattoo memorial order. Here are the details:</p>
-                        <p>Total Price: $${currentRecord.total_price}</p>
-                        <p>Remaining Balance: $${
-                            currentRecord.total_price -
-                            currentRecord.downpayment_price
-                        }</p>
-                        <p>To proceed with your order, please make a downpayment using the link below:</p>
-                        <p><a href="${remainingPaymentLink}">Make Remaining Payment</a></p>
-                        <p>You can view your order details here: <a href="${orderUrl}">View Order</a></p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                case "INVOICE_AND_DOWNPAYMENT":
-                    emailSubject =
-                        "Invoice and Downpayment for Your Tattoo Memorial  Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>Thank you for your tattoo memorial order. Here are the details:</p>
-                        <p>Total Price: $${currentRecord.total_price}</p>
-                        <p>Downpayment: $${currentRecord.downpayment_price}</p>
-                        <p>To proceed with your order, please make a downpayment using the link below:</p>
-                        <p><a href="${downpaymentLink}">Make Downpayment</a></p>
-                        <p>You can view your order details here: <a href="${orderUrl}">View Order</a></p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                default:
-                    emailSubject = "Tattoo Memorial Order Update";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>There's an update to your tattoo memorial order. Please check the details by clicking the link below:</p>
-                        <p><a href="${orderUrl}">View your order</a></p>
-                        <p>${orderUrl}</p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
+            if (!invoiceResult.success) {
+                return;
             }
 
-            const response = await fetch("/api/send-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: currentRecord.email,
-                    subject: emailSubject,
-                    message: emailMessage,
-                    orderId: currentRecord.id,
-                    orderType: "living",
-                    emailType: selectedEmailType,
-                }),
-            });
+            try {
+                const orderUrl = `https://app.tattoomemorials.com/living-order/${currentRecord.id}`;
+                const emailSubject = "Tattoo Memorial Order Invoice & Payment";
+                const emailMessage = `
+                            <p>Hello,</p>
+                            <p>Thank you for your tattoo memorial order.
+                            <p>To proceed with your order, please pay using the link below:</p>
+                            <p><a href="${invoiceResult.invoiceUrl}">View Invoice & Pay</a></p>
+                            <p>You can view your original order details here: <a href="${orderUrl}">View Order</a></p>
+                            <p>Thank you,</p>
+                            <p>Tattoo Memorials Team</p>
+                        `;
 
-            if (!response.ok) {
-                throw new Error("Failed to send email");
+                const response = await fetch("/api/send-email", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: currentRecord.email,
+                        subject: emailSubject,
+                        message: emailMessage,
+                        orderId: currentRecord.id,
+                        orderType: "living",
+                        emailType: selectedEmailType,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to send email");
+                }
+
+                alert(`Email sent successfully to ${currentRecord.email}`);
+                setIsEmailHistoryModalVisible(false);
+
+                // Refresh email history
+                await handleSendEmail(currentRecord);
+            } catch (error) {
+                console.error("Failed to send email:", error);
+                alert("Failed to send email. Please try again.");
             }
-
-            alert(`Email sent successfully to ${currentRecord.email}`);
-            setIsEmailHistoryModalVisible(false);
-
-            // Refresh email history
-            await handleSendEmail(currentRecord);
         } catch (error) {
-            console.error("Failed to send email:", error);
-            alert("Failed to send email. Please try again.");
+            console.error(error);
         }
     };
 
@@ -226,6 +187,51 @@ export default function LivingOrders() {
     const handleModalCancel = () => {
         setIsModalVisible(false);
         form.resetFields();
+    };
+
+    const createStripeInvoice = async () => {
+        try {
+            const invoiceData = {
+                customerName:
+                    (currentRecord?.first_name || "") +
+                    " " +
+                    (currentRecord?.last_name || ""),
+                customerEmail: currentRecord?.email || "",
+                amount: (currentRecord?.total_price || 0) * 100, // Convert to cents
+                description: `Invoice for order ${currentRecord?.id || ""}`,
+                customerAddress: {
+                    city: currentRecord?.city,
+                    country: "US",
+                    line1: currentRecord?.street_address,
+                    line2: currentRecord?.street_address2,
+                    postal_code: currentRecord?.postal_code,
+                    state: currentRecord?.state,
+                },
+            };
+
+            if (invoiceData.amount === 0) {
+                alert("You must enter a price for the order.");
+                return;
+            }
+
+            const response = await fetch("/api/stripe/invoice", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(invoiceData),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                console.log("Invoice created successfully:", data.invoiceId);
+            } else {
+                console.error("Failed to create invoice:", data.error);
+            }
+            return data;
+        } catch (error) {
+            console.error("Error calling Stripe API:", error);
+        }
     };
 
     return (

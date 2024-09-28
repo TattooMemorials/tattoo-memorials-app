@@ -169,9 +169,6 @@ export default function OrderShow() {
                     <Descriptions.Item label="Date Loaded">
                         {record?.date_loaded?.toString()}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Downpayment Price">
-                        ${record?.downpayment_price}
-                    </Descriptions.Item>
                     <Descriptions.Item label="Total Price">
                         ${record?.total_price}
                     </Descriptions.Item>

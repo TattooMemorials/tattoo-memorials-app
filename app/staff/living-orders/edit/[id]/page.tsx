@@ -12,11 +12,9 @@ import {
     Card,
     Typography,
     Divider,
-    Space,
 } from "antd";
-import { FileTextOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import stripe from "@/utils/stripe/server";
 import { Medium } from "@/components/Orders/LivingOrderForm";
 
 const { Text, Title } = Typography;
@@ -183,14 +181,6 @@ export default function EditPage() {
                 <Title level={4}>Order Details</Title>
                 <Row gutter={16}>
                     <Col span={8}>
-                        <Form.Item
-                            label="Downpayment Price"
-                            name="downpayment_price"
-                        >
-                            <Input />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
                         <Form.Item label="Total Price" name="total_price">
                             <Input />
                         </Form.Item>
@@ -252,7 +242,6 @@ export interface ILivingOrder {
     alteration_notes?: string;
     inspiration_notes?: string;
     altered: boolean;
-    downpayment_price?: number;
     total_price?: number;
     intake_form_path?: string;
     consent_form_path?: string;

@@ -49,21 +49,12 @@ export default function MemoriamOrders() {
     const [selectedEmailType, setSelectedEmailType] = useState(
         "MEMORIAM_COMPLETION_REQUEST"
     );
-    const [downpaymentLink, setDownpaymentLink] =
-        useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
-
-    const [remainingPaymentLink, setRemainingPaymentLink] =
-        useState<string>("www.stripe.com"); // TODO: dynamically create a stripe payment link
 
     const { mutate: updateRecord } = useUpdate();
 
     const emailTypes: EmailType[] = [
         { key: "MEMORIAM_COMPLETION_REQUEST", label: "Completion Request" },
-        { key: "INVOICE_AND_DOWNPAYMENT", label: "Invoice & Downpayment" },
-        {
-            key: "REMAINING_PAYMENT_REQUEST",
-            label: "Remaining Payment Request",
-        },
+        { key: "SEND_INVOICE", label: "Invoice & Payment Link" },
     ];
 
     const getEmailTypeLabel = (key: string): string => {
@@ -120,49 +111,17 @@ export default function MemoriamOrders() {
             let emailMessage = "";
 
             switch (selectedEmailType) {
-                case "REMAINING_PAYMENT_REQUEST":
-                    emailSubject =
-                        "Remaining Payment Request for Your Tattoo Memorial Order";
+                case "SEND_INVOICE":
+                    emailSubject = "Invoice for Your Tattoo Memorial  Order";
                     emailMessage = `
                         <p>Hello,</p>
                         <p>Thank you for your tattoo memorial order. Here are the details:</p>
                         <p>Total Price: $${currentRecord.total_price}</p>
-                        <p>Remaining Balance: $${
-                            currentRecord.total_price -
-                            currentRecord.downpayment_price
-                        }</p>
-                        <p>To proceed with your order, please make a downpayment using the link below:</p>
-                        <p><a href="${remainingPaymentLink}">Make Remaining Payment</a></p>
                         <p>You can view your order details here: <a href="${orderUrl}">View Order</a></p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
                     `;
                     break;
-                case "INVOICE_AND_DOWNPAYMENT":
-                    emailSubject =
-                        "Invoice and Downpayment for Your Tattoo Memorial  Order";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>Thank you for your tattoo memorial order. Here are the details:</p>
-                        <p>Total Price: $${currentRecord.total_price}</p>
-                        <p>Downpayment: $${currentRecord.downpayment_price}</p>
-                        <p>To proceed with your order, please make a downpayment using the link below:</p>
-                        <p><a href="${downpaymentLink}">Make Downpayment</a></p>
-                        <p>You can view your order details here: <a href="${orderUrl}">View Order</a></p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
-                    break;
-                default:
-                    emailSubject = "Tattoo Memorial Order Update";
-                    emailMessage = `
-                        <p>Hello,</p>
-                        <p>There's an update to your tattoo memorial order. Please check the details by clicking the link below:</p>
-                        <p><a href="${orderUrl}">View your order</a></p>
-                        <p>${orderUrl}</p>
-                        <p>Thank you,</p>
-                        <p>Tattoo Memorials Team</p>
-                    `;
             }
 
             const response = await fetch("/api/send-email", {
