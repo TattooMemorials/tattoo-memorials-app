@@ -3,15 +3,14 @@ import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import stripe from "@/utils/stripe/server";
 import { createClient } from "@/utils/supabase/server";
-
-// Create a single Supabase client for the entire file
-const supabase = createClient();
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
     const endpointSecret = process.env.STRIPE_SECRET_WEBHOOK_KEY!;
     const sig = headers().get("stripe-signature") as string;
     let event: Stripe.Event;
+
     try {
         event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
     } catch (err) {
@@ -20,19 +19,27 @@ export async function POST(request: NextRequest) {
         });
     }
 
+    // Initialize Supabase client inside the request context
+    const supabase = createClient();
+
     try {
         switch (event.type) {
             case "invoice.created":
             case "invoice.finalized":
                 await handleInvoiceCreatedOrFinalized(
+                    supabase,
                     event.data.object as Stripe.Invoice
                 );
                 break;
             case "invoice.paid":
-                await handleInvoicePaid(event.data.object as Stripe.Invoice);
+                await handleInvoicePaid(
+                    supabase,
+                    event.data.object as Stripe.Invoice
+                );
                 break;
             case "invoice.payment_failed":
                 await handleInvoicePaymentFailed(
+                    supabase,
                     event.data.object as Stripe.Invoice
                 );
                 break;
@@ -50,7 +57,10 @@ export async function POST(request: NextRequest) {
     });
 }
 
-async function handleInvoiceCreatedOrFinalized(invoice: Stripe.Invoice) {
+async function handleInvoiceCreatedOrFinalized(
+    supabase: SupabaseClient,
+    invoice: Stripe.Invoice
+) {
     const orderId = invoice.metadata?.order_id;
 
     if (!orderId) {
@@ -75,7 +85,10 @@ async function handleInvoiceCreatedOrFinalized(invoice: Stripe.Invoice) {
     if (error) throw error;
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice) {
+async function handleInvoicePaid(
+    supabase: SupabaseClient,
+    invoice: Stripe.Invoice
+) {
     const { error } = await supabase
         .from("invoices")
         .update({
@@ -92,7 +105,10 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     if (error) throw error;
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentFailed(
+    supabase: SupabaseClient,
+    invoice: Stripe.Invoice
+) {
     const { error } = await supabase
         .from("invoices")
         .update({
