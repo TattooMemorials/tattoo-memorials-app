@@ -4,6 +4,9 @@ import { headers } from "next/headers";
 import stripe from "@/utils/stripe/server";
 import { createClient } from "@/utils/supabase/server";
 
+// Create a single Supabase client for the entire file
+const supabase = createClient();
+
 export async function POST(request: NextRequest) {
     const body = await request.text();
     const endpointSecret = process.env.STRIPE_SECRET_WEBHOOK_KEY!;
@@ -17,74 +20,49 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    const supabase = createClient();
-
-    switch (event.type) {
-        case "invoice.created":
-            handleInvoiceCreatedOrFinalized(event.data.object);
-            break;
-        case "invoice.deleted":
-            // todo
-            break;
-        case "invoice.finalization_failed":
-            // todo
-            break;
-        case "invoice.finalized":
-            handleInvoiceCreatedOrFinalized(event.data.object);
-            break;
-        case "invoice.marked_uncollectible":
-            // todo
-            break;
-        case "invoice.overdue":
-            // todo
-            break;
-        case "invoice.paid":
-            handleInvoicePaid(event.data.object);
-            break;
-        case "invoice.payment_action_required":
-            // todo
-            break;
-        case "invoice.payment_failed":
-            handleInvoicePaymentFailed(event.data.object);
-            break;
-        case "invoice.payment_succeeded":
-            // todo
-            break;
-        case "invoice.sent":
-            // todo
-            break;
-        case "invoice.upcoming":
-            // todo
-            break;
-        case "invoice.updated":
-            // todo
-            break;
-        case "invoice.voided":
-            // todo
-            break;
-        case "invoice.will_be_due":
-            // todo
-            break;
-        default:
-            console.log(`Unhandled event type ${event.type}`);
+    try {
+        switch (event.type) {
+            case "invoice.created":
+            case "invoice.finalized":
+                await handleInvoiceCreatedOrFinalized(
+                    event.data.object as Stripe.Invoice
+                );
+                break;
+            case "invoice.paid":
+                await handleInvoicePaid(event.data.object as Stripe.Invoice);
+                break;
+            case "invoice.payment_failed":
+                await handleInvoicePaymentFailed(
+                    event.data.object as Stripe.Invoice
+                );
+                break;
+            // ... other cases ...
+            default:
+                console.log(`Unhandled event type ${event.type}`);
+        }
+    } catch (error) {
+        console.error("Error processing webhook:", error);
+        return new Response("Error processing webhook", { status: 500 });
     }
-    return new Response("RESPONSE EXECUTE", {
+
+    return new Response("Webhook processed successfully", {
         status: 200,
     });
 }
+
 async function handleInvoiceCreatedOrFinalized(invoice: Stripe.Invoice) {
-    const supabase = createClient();
     const orderId = invoice.metadata?.order_id;
 
     if (!orderId) {
         console.error("No order_id found in invoice metadata");
         return;
     }
-    const { data, error } = await supabase.from("invoices").upsert(
+
+    const { error } = await supabase.from("invoices").upsert(
         {
             stripe_invoice_id: invoice.id,
             order_id: orderId,
-            amount: invoice.total,
+            amount: invoice.amount_due,
             status: invoice.status,
             created_at: new Date(invoice.created * 1000).toISOString(),
             updated_at: new Date().toISOString(),
@@ -94,12 +72,11 @@ async function handleInvoiceCreatedOrFinalized(invoice: Stripe.Invoice) {
         }
     );
 
-    if (error) console.error("Error updating invoice:", error);
+    if (error) throw error;
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
-    const supabase = createClient();
-    const { data, error } = await supabase
+    const { error } = await supabase
         .from("invoices")
         .update({
             status: "paid",
@@ -112,12 +89,11 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
         })
         .eq("stripe_invoice_id", invoice.id);
 
-    if (error) console.error("Error updating invoice:", error);
+    if (error) throw error;
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-    const supabase = createClient();
-    const { data, error } = await supabase
+    const { error } = await supabase
         .from("invoices")
         .update({
             status: "payment_failed",
@@ -125,5 +101,5 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
         })
         .eq("stripe_invoice_id", invoice.id);
 
-    if (error) console.error("Error updating invoice:", error);
+    if (error) throw error;
 }
