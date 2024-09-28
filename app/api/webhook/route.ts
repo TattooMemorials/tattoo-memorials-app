@@ -4,8 +4,6 @@ import { headers } from "next/headers";
 import stripe from "@/utils/stripe/server";
 import { createClient } from "@/utils/supabase/server";
 
-const supabase = createClient();
-
 export async function POST(request: NextRequest) {
     const body = await request.text();
     const endpointSecret = process.env.STRIPE_SECRET_WEBHOOK_KEY!;
@@ -18,6 +16,8 @@ export async function POST(request: NextRequest) {
             status: 400,
         });
     }
+
+    const supabase = createClient();
 
     switch (event.type) {
         case "invoice.created":
@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
     });
 }
 async function handleInvoiceCreatedOrFinalized(invoice: Stripe.Invoice) {
+    const supabase = createClient();
     const orderId = invoice.metadata?.order_id;
 
     if (!orderId) {
@@ -97,6 +98,7 @@ async function handleInvoiceCreatedOrFinalized(invoice: Stripe.Invoice) {
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
+    const supabase = createClient();
     const { data, error } = await supabase
         .from("invoices")
         .update({
@@ -114,6 +116,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+    const supabase = createClient();
     const { data, error } = await supabase
         .from("invoices")
         .update({
