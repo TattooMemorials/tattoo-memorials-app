@@ -20,6 +20,7 @@ import {
     Select,
     Dropdown,
     Menu,
+    Badge,
 } from "antd";
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
 import { useUpdate, useNavigation, useMany, useList } from "@refinedev/core";
@@ -33,6 +34,33 @@ type EmailHistoryItem = {
 type EmailType = {
     key: string;
     label: string;
+};
+
+// Define a type for invoice status
+type InvoiceStatus =
+    | "paid"
+    | "unpaid"
+    | "draft"
+    | "void"
+    | "uncollectible"
+    | "No Invoice";
+
+// Define a function to get badge color based on status
+const getBadgeColor = (status: InvoiceStatus): string => {
+    switch (status) {
+        case "paid":
+            return "green";
+        case "unpaid":
+            return "red";
+        case "draft":
+            return "blue";
+        case "void":
+            return "gray";
+        case "uncollectible":
+            return "orange";
+        default:
+            return "gray";
+    }
 };
 
 export default function LivingOrders() {
@@ -263,15 +291,11 @@ export default function LivingOrders() {
                 }))}
             >
                 <Table.Column
-                    dataIndex="id"
-                    title="ID"
-                    sorter
-                    defaultSortOrder={getDefaultSortOrder("id", sorter)}
-                />
-                <Table.Column
                     dataIndex="invoice_status"
                     title="Invoice Status"
-                    render={(value) => value || "No Invoice"}
+                    render={(value: InvoiceStatus) => (
+                        <Badge color={getBadgeColor(value)} text={value} />
+                    )}
                     sorter
                 />
                 <Table.Column
@@ -295,10 +319,9 @@ export default function LivingOrders() {
                     filterIcon={<SearchOutlined />}
                 />
                 <Table.Column dataIndex="email" title="Email" />
-                <Table.Column dataIndex="phone" title="Phone" />
                 <Table.Column
                     dataIndex="date_loaded"
-                    title="Date Loaded"
+                    title="Order Date"
                     render={(value) => new Date(value).toLocaleDateString()}
                     sorter
                 />
@@ -306,6 +329,12 @@ export default function LivingOrders() {
                     dataIndex="as_is"
                     title="As Is"
                     render={(value) => (value ? "Yes" : "No")}
+                />
+                <Table.Column dataIndex="medium" title="Medium" />
+                <Table.Column
+                    dataIndex="total_price"
+                    title="Price"
+                    render={(value) => (value ? `$${value}` : "")}
                 />
                 <Table.Column
                     title="Actions"
