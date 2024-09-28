@@ -12,11 +12,8 @@ import {
     Card,
     Typography,
     Divider,
-    Space,
 } from "antd";
-import { FileTextOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import stripe from "@/utils/stripe/server";
 import { Medium } from "@/components/Orders/LivingOrderForm";
 
@@ -80,52 +77,6 @@ export default function EditPage() {
         const extension = contentType.split("/").pop();
         if (fileName.endsWith(`.${extension}`)) return fileName;
         return `${fileName}.${extension}`;
-    };
-
-    const testStripeInvoices = async () => {
-        console.log("starting invoice process.");
-        const product = await stripe.products.create({
-            name: "Test Invoice",
-        });
-
-        console.log("product: ", product.id);
-
-        const price = await stripe.prices.create({
-            product: product.id,
-            unit_amount: 1000,
-            currency: "usd",
-        });
-
-        console.log("price: ", price.id);
-
-        const customer = await stripe.customers.create({
-            name: "Dan Stripesman",
-            email: "dan@tinner.tech",
-            description: "Stripe test customer for invoices",
-        });
-
-        console.log("customer: ", customer.id);
-
-        const invoice = await stripe.invoices.create({
-            customer: customer.id,
-            collection_method: "send_invoice",
-            days_until_due: 30,
-        });
-
-        console.log("invoice: ", invoice.id);
-
-        const invoiceItem = await stripe.invoiceItems.create({
-            customer: customer.id,
-            price: price.id,
-            invoice: invoice.id,
-        });
-
-        console.log("invoiceItem: ", invoiceItem.id);
-
-        const sentInvoice = await stripe.invoices.sendInvoice(invoice.id);
-
-        console.log("sentInvoice: ", sentInvoice.id);
-        console.log("end of invoice process.");
     };
 
     return (
@@ -230,14 +181,6 @@ export default function EditPage() {
                 <Title level={4}>Order Details</Title>
                 <Row gutter={16}>
                     <Col span={8}>
-                        <Form.Item
-                            label="Downpayment Price"
-                            name="downpayment_price"
-                        >
-                            <Input />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
                         <Form.Item label="Total Price" name="total_price">
                             <Input />
                         </Form.Item>
@@ -277,13 +220,6 @@ export default function EditPage() {
                         Save Changes
                     </Button>
                 </Form.Item>
-                <Button
-                    type="primary"
-                    size="large"
-                    onClick={testStripeInvoices}
-                >
-                    Test
-                </Button>
             </Form>
         </Card>
     );
@@ -306,7 +242,6 @@ export interface ILivingOrder {
     alteration_notes?: string;
     inspiration_notes?: string;
     altered: boolean;
-    downpayment_price?: number;
     total_price?: number;
     intake_form_path?: string;
     consent_form_path?: string;
