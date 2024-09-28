@@ -4,10 +4,11 @@ import stripe from "@/utils/stripe/server";
 export async function POST(request: NextRequest) {
     try {
         const {
+            orderId,
             customerName,
             customerEmail,
             amount, // cents
-            description,
+            medium,
             customerAddress,
         } = await request.json();
 
@@ -25,6 +26,9 @@ export async function POST(request: NextRequest) {
             customer: customer.id,
             collection_method: "send_invoice",
             days_until_due: 1,
+            metadata: {
+                order_id: orderId,
+            },
         });
 
         console.log("Invoice created:", invoice.id);
@@ -32,7 +36,7 @@ export async function POST(request: NextRequest) {
         const invoiceItem = await stripe.invoiceItems.create({
             customer: customer.id,
             amount: amount, // cents
-            description: description,
+            description: medium,
             invoice: invoice.id,
         });
 

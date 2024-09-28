@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import stripe from "@/utils/stripe/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -16,13 +17,11 @@ export async function POST(request: NextRequest) {
         });
     }
 
+    const supabase = createClient();
+
     switch (event.type) {
         case "invoice.created":
-            // todo
-            console.log(
-                "invoice created for account: ",
-                event.data.object.account_name
-            );
+            handleInvoiceCreatedOrFinalized(event.data.object);
             break;
         case "invoice.deleted":
             // todo
@@ -31,7 +30,7 @@ export async function POST(request: NextRequest) {
             // todo
             break;
         case "invoice.finalized":
-            // todo
+            handleInvoiceCreatedOrFinalized(event.data.object);
             break;
         case "invoice.marked_uncollectible":
             // todo
@@ -40,18 +39,13 @@ export async function POST(request: NextRequest) {
             // todo
             break;
         case "invoice.paid":
-            // todo
-            console.log("invoice paid: ", event.data.object.amount_paid);
+            handleInvoicePaid(event.data.object);
             break;
         case "invoice.payment_action_required":
             // todo
             break;
         case "invoice.payment_failed":
-            // todo
-            console.log(
-                "invoice payment failed: ",
-                event.data.object.amount_paid
-            );
+            handleInvoicePaymentFailed(event.data.object);
             break;
         case "invoice.payment_succeeded":
             // todo
@@ -77,4 +71,59 @@ export async function POST(request: NextRequest) {
     return new Response("RESPONSE EXECUTE", {
         status: 200,
     });
+}
+async function handleInvoiceCreatedOrFinalized(invoice: Stripe.Invoice) {
+    const supabase = createClient();
+    const orderId = invoice.metadata?.order_id;
+
+    if (!orderId) {
+        console.error("No order_id found in invoice metadata");
+        return;
+    }
+    const { data, error } = await supabase.from("invoices").upsert(
+        {
+            stripe_invoice_id: invoice.id,
+            order_id: orderId,
+            amount: invoice.total,
+            status: invoice.status,
+            created_at: new Date(invoice.created * 1000).toISOString(),
+            updated_at: new Date().toISOString(),
+        },
+        {
+            onConflict: "stripe_invoice_id",
+        }
+    );
+
+    if (error) console.error("Error updating invoice:", error);
+}
+
+async function handleInvoicePaid(invoice: Stripe.Invoice) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+        .from("invoices")
+        .update({
+            status: "paid",
+            paid_at: invoice.status_transitions.paid_at
+                ? new Date(
+                      invoice.status_transitions.paid_at * 1000
+                  ).toISOString()
+                : null,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("stripe_invoice_id", invoice.id);
+
+    if (error) console.error("Error updating invoice:", error);
+}
+
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+        .from("invoices")
+        .update({
+            status: "payment_failed",
+            updated_at: new Date().toISOString(),
+        })
+        .eq("stripe_invoice_id", invoice.id);
+
+    if (error) console.error("Error updating invoice:", error);
 }

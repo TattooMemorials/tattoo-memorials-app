@@ -192,13 +192,14 @@ export default function LivingOrders() {
     const createStripeInvoice = async () => {
         try {
             const invoiceData = {
+                orderId: currentRecord.id,
                 customerName:
                     (currentRecord?.first_name || "") +
                     " " +
                     (currentRecord?.last_name || ""),
                 customerEmail: currentRecord?.email || "",
                 amount: (currentRecord?.total_price || 0) * 100, // Convert to cents
-                description: `Invoice for order ${currentRecord?.id || ""}`,
+                medium: currentRecord.medium,
                 customerAddress: {
                     city: currentRecord?.city,
                     country: "US",
