@@ -48,6 +48,10 @@ export async function POST(request: NextRequest) {
             break;
         case "invoice.payment_failed":
             // todo
+            console.log(
+                "invoice payment failed: ",
+                event.data.object.amount_paid
+            );
             break;
         case "invoice.payment_succeeded":
             // todo
