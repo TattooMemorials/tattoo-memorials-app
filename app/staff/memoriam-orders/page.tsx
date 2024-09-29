@@ -20,10 +20,12 @@ import {
     Select,
     Dropdown,
     Menu,
+    Badge,
 } from "antd";
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
-import { useUpdate, useNavigation } from "@refinedev/core";
+import { useUpdate, useNavigation, useList } from "@refinedev/core";
 import { useState } from "react";
+import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
 
 type EmailHistoryItem = {
     sent_at: string;
@@ -40,6 +42,20 @@ export default function MemoriamOrders() {
         syncWithLocation: true,
     });
 
+    // Fetch all invoices
+    const { data: invoicesData, isLoading: isLoadingInvoices } = useList({
+        resource: "invoices",
+        queryOptions: {
+            enabled: !!tableProps?.dataSource,
+        },
+    });
+
+    // Create a map of order ID to invoice status
+    const invoiceStatusMap = invoicesData?.data?.reduce((acc, invoice) => {
+        acc[invoice.order_id] = invoice.status;
+        return acc;
+    }, {});
+
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isEmailHistoryModalVisible, setIsEmailHistoryModalVisible] =
         useState(false);
@@ -54,7 +70,7 @@ export default function MemoriamOrders() {
 
     const emailTypes: EmailType[] = [
         { key: "MEMORIAM_COMPLETION_REQUEST", label: "Completion Request" },
-        { key: "SEND_INVOICE", label: "Invoice & Payment Link" },
+        { key: "SEND_INVOICE", label: "Invoice and Payment Link" },
     ];
 
     const getEmailTypeLabel = (key: string): string => {
@@ -111,16 +127,32 @@ export default function MemoriamOrders() {
             let emailMessage = "";
 
             switch (selectedEmailType) {
-                case "SEND_INVOICE":
-                    emailSubject = "Invoice for Your Tattoo Memorial  Order";
+                case "MEMORIAM_COMPLETION_REQUEST":
+                    emailSubject = "Complete Your Memoriam Order";
                     emailMessage = `
                         <p>Hello,</p>
-                        <p>Thank you for your tattoo memorial order. Here are the details:</p>
-                        <p>Total Price: $${currentRecord.total_price}</p>
-                        <p>You can view your order details here: <a href="${orderUrl}">View Order</a></p>
+                        <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
+                        <p><a href="${orderUrl}">Click here to complete your order</a></p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
                     `;
+                    break;
+                case "SEND_INVOICE":
+                    const invoiceResult = await createStripeInvoice();
+
+                    if (!invoiceResult.success) {
+                        return;
+                    }
+                    emailSubject = "Invoice for Your Tattoo Memorial  Order";
+                    emailMessage = `
+                            <p>Hello,</p>
+                            <p>Thank you for your tattoo memorial order.
+                            <p>To proceed with your order, please pay using the link below:</p>
+                            <p><a href="${invoiceResult.invoiceUrl}">View Invoice & Pay</a></p>
+                            <p>You can view your original order details here: <a href="${orderUrl}">View Order</a></p>
+                            <p>Thank you,</p>
+                            <p>Tattoo Memorials Team</p>
+                        `;
                     break;
             }
 
@@ -187,14 +219,75 @@ export default function MemoriamOrders() {
         form.resetFields();
     };
 
+    const createStripeInvoice = async () => {
+        try {
+            const invoiceData = {
+                orderId: currentRecord.id,
+                customerName:
+                    (currentRecord?.first_name || "") +
+                    " " +
+                    (currentRecord?.last_name || ""),
+                customerEmail: currentRecord?.email || "",
+                amount: (currentRecord?.total_price || 0) * 100, // Convert to cents
+                medium: currentRecord.medium,
+                customerAddress: {
+                    city: currentRecord?.city,
+                    country: "US",
+                    line1: currentRecord?.street_address,
+                    line2: currentRecord?.street_address2,
+                    postal_code: currentRecord?.postal_code,
+                    state: currentRecord?.state,
+                },
+            };
+
+            if (invoiceData.amount === 0) {
+                alert("You must enter a price for the order.");
+                return;
+            }
+
+            const response = await fetch("/api/stripe/invoice", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(invoiceData),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                console.log("Invoice created successfully:", data.invoiceId);
+            } else {
+                console.error("Failed to create invoice:", data.error);
+            }
+            return data;
+        } catch (error) {
+            console.error("Error calling Stripe API:", error);
+        }
+    };
+
     return (
         <List headerButtons={<CreateButton />}>
-            <Table {...tableProps} rowKey="id">
+            <Table
+                {...tableProps}
+                rowKey="id"
+                dataSource={tableProps.dataSource?.map((order) => ({
+                    ...order,
+                    invoice_status:
+                        invoiceStatusMap && order.id
+                            ? invoiceStatusMap[order.id]
+                            : "No Invoice",
+                }))}
+            >
                 <Table.Column
-                    dataIndex="id"
-                    title="ID"
+                    dataIndex="invoice_status"
+                    title="Invoice Status"
+                    render={(value: InvoiceStatus) => (
+                        <Badge
+                            color={getBadgeColor(value)}
+                            text={value || "No Invoice"}
+                        />
+                    )}
                     sorter
-                    defaultSortOrder={getDefaultSortOrder("id", sorter)}
                 />
                 <Table.Column
                     dataIndex="first_name"
@@ -217,78 +310,81 @@ export default function MemoriamOrders() {
                     filterIcon={<SearchOutlined />}
                 />
                 <Table.Column dataIndex="email" title="Email" />
-                <Table.Column dataIndex="phone" title="Phone" />
-                <Table.Column
-                    dataIndex="funeral_home_name"
-                    title="Funeral Home"
-                    filterDropdown={(props) => (
-                        <FilterDropdown {...props}>
-                            <Input />
-                        </FilterDropdown>
-                    )}
-                    filterIcon={<SearchOutlined />}
-                />
                 <Table.Column
                     dataIndex="date_loaded"
-                    title="Date Loaded"
+                    title="Order Date"
                     render={(value) => new Date(value).toLocaleDateString()}
                     sorter
                 />
+
                 <Table.Column
                     dataIndex="as_is"
                     title="As Is"
                     render={(value) => (value ? "Yes" : "No")}
                 />
+                <Table.Column dataIndex="medium" title="Medium" />
+                <Table.Column
+                    dataIndex="total_price"
+                    title="Price"
+                    render={(value) => (value ? `$${value}` : "")}
+                />
                 <Table.Column
                     title="Actions"
                     dataIndex="actions"
-                    render={(_, record: any) => (
-                        <Space>
-                            <EditButton
-                                hideText
-                                size="small"
-                                recordItemId={record.id}
-                            />
-                            <ShowButton
-                                hideText
-                                size="small"
-                                recordItemId={record.id}
-                            />
-                            <DeleteButton
-                                hideText
-                                size="small"
-                                recordItemId={record.id}
-                                type="primary"
-                            />
-                            <Dropdown
-                                overlay={
-                                    <Menu>
-                                        {emailTypes.map((type) => (
-                                            <Menu.Item
-                                                key={type.key}
-                                                onClick={() =>
-                                                    handleEmailTypeSelect(
-                                                        record,
-                                                        type.key
-                                                    )
-                                                }
-                                            >
-                                                {type.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu>
-                                }
-                            >
-                                <Button
-                                    icon={<MailOutlined />}
+                    render={(_, record: any) => {
+                        const isPaid = record.invoice_status === "paid";
+                        return (
+                            <Space>
+                                <EditButton
+                                    hideText
                                     size="small"
-                                    title="Send Email"
+                                    recordItemId={record.id}
+                                    disabled={isPaid}
+                                />
+                                <ShowButton
+                                    hideText
+                                    size="small"
+                                    recordItemId={record.id}
+                                />
+                                <DeleteButton
+                                    hideText
+                                    size="small"
+                                    recordItemId={record.id}
+                                    type="primary"
+                                />
+                                <Dropdown
+                                    overlay={
+                                        <Menu>
+                                            {emailTypes.map((type) => (
+                                                <Menu.Item
+                                                    key={type.key}
+                                                    onClick={() =>
+                                                        handleEmailTypeSelect(
+                                                            record,
+                                                            type.key
+                                                        )
+                                                    }
+                                                    disabled={isPaid}
+                                                >
+                                                    {type.label}
+                                                </Menu.Item>
+                                            ))}
+                                        </Menu>
+                                    }
+                                    disabled={isPaid}
                                 >
-                                    Send Email
-                                </Button>
-                            </Dropdown>
-                        </Space>
-                    )}
+                                    <Button
+                                        icon={<MailOutlined />}
+                                        size="small"
+                                        title="Send Email"
+                                        disabled={isPaid}
+                                    >
+                                        Send Email
+                                    </Button>
+                                </Dropdown>
+                            </Space>
+                        );
+                    }}
                 />
             </Table>
 

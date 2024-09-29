@@ -25,6 +25,7 @@ import {
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
 import { useUpdate, useNavigation, useMany, useList } from "@refinedev/core";
 import { useState } from "react";
+import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
 
 type EmailHistoryItem = {
     sent_at: string;
@@ -34,33 +35,6 @@ type EmailHistoryItem = {
 type EmailType = {
     key: string;
     label: string;
-};
-
-// Define a type for invoice status
-type InvoiceStatus =
-    | "paid"
-    | "unpaid"
-    | "draft"
-    | "void"
-    | "uncollectible"
-    | "No Invoice";
-
-// Define a function to get badge color based on status
-const getBadgeColor = (status: InvoiceStatus): string => {
-    switch (status) {
-        case "paid":
-            return "green";
-        case "unpaid":
-            return "red";
-        case "draft":
-            return "blue";
-        case "void":
-            return "gray";
-        case "uncollectible":
-            return "orange";
-        default:
-            return "gray";
-    }
 };
 
 export default function LivingOrders() {
@@ -294,7 +268,10 @@ export default function LivingOrders() {
                     dataIndex="invoice_status"
                     title="Invoice Status"
                     render={(value: InvoiceStatus) => (
-                        <Badge color={getBadgeColor(value)} text={value} />
+                        <Badge
+                            color={getBadgeColor(value)}
+                            text={value || "No Invoice"}
+                        />
                     )}
                     sorter
                 />
@@ -339,53 +316,60 @@ export default function LivingOrders() {
                 <Table.Column
                     title="Actions"
                     dataIndex="actions"
-                    render={(_, record: any) => (
-                        <Space>
-                            <EditButton
-                                hideText
-                                size="small"
-                                recordItemId={record.id}
-                            />
-                            <ShowButton
-                                hideText
-                                size="small"
-                                recordItemId={record.id}
-                            />
-                            <DeleteButton
-                                hideText
-                                size="small"
-                                recordItemId={record.id}
-                                type="primary"
-                            />
-                            <Dropdown
-                                overlay={
-                                    <Menu>
-                                        {emailTypes.map((type) => (
-                                            <Menu.Item
-                                                key={type.key}
-                                                onClick={() =>
-                                                    handleEmailTypeSelect(
-                                                        record,
-                                                        type.key
-                                                    )
-                                                }
-                                            >
-                                                {type.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu>
-                                }
-                            >
-                                <Button
-                                    icon={<MailOutlined />}
+                    render={(_, record: any) => {
+                        const isPaid = record.invoice_status === "paid";
+                        return (
+                            <Space>
+                                <EditButton
+                                    hideText
                                     size="small"
-                                    title="Send Email"
+                                    recordItemId={record.id}
+                                    disabled={isPaid}
+                                />
+                                <ShowButton
+                                    hideText
+                                    size="small"
+                                    recordItemId={record.id}
+                                />
+                                <DeleteButton
+                                    hideText
+                                    size="small"
+                                    recordItemId={record.id}
+                                    type="primary"
+                                />
+                                <Dropdown
+                                    overlay={
+                                        <Menu>
+                                            {emailTypes.map((type) => (
+                                                <Menu.Item
+                                                    key={type.key}
+                                                    onClick={() =>
+                                                        handleEmailTypeSelect(
+                                                            record,
+                                                            type.key
+                                                        )
+                                                    }
+                                                    disabled={isPaid}
+                                                >
+                                                    {type.label}
+                                                </Menu.Item>
+                                            ))}
+                                        </Menu>
+                                    }
+                                    disabled={isPaid}
                                 >
-                                    Send Email
-                                </Button>
-                            </Dropdown>
-                        </Space>
-                    )}
+                                    <Button
+                                        icon={<MailOutlined />}
+                                        size="small"
+                                        title="Send Email"
+                                        disabled={isPaid}
+                                    >
+                                        Send Email
+                                    </Button>
+                                </Dropdown>
+                            </Space>
+                        );
+                    }}
                 />
             </Table>
 
