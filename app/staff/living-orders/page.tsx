@@ -59,6 +59,14 @@ export default function LivingOrders() {
     const { tableProps, sorter, searchFormProps, filters } = useTable<Order>({
         syncWithLocation: true,
         liveMode: "auto",
+        sorters: {
+            initial: [
+                {
+                    field: "date_loaded",
+                    order: "desc",
+                },
+            ],
+        },
     });
 
     const [invoiceStatusMap, setInvoiceStatusMap] = useState<InvoiceStatusMap>(
@@ -341,7 +349,11 @@ export default function LivingOrders() {
                     dataIndex="date_loaded"
                     title="Order Date"
                     render={(value) => new Date(value).toLocaleDateString()}
-                    sorter
+                    sorter={{ multiple: 1 }}
+                    defaultSortOrder={getDefaultSortOrder(
+                        "date_loaded",
+                        sorter
+                    )}
                 />
                 <Table.Column
                     dataIndex="as_is"
