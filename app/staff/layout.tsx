@@ -2,7 +2,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { Refine } from "@refinedev/core";
 import routerProvider from "@refinedev/nextjs-router";
-import { dataProvider } from "@refinedev/supabase";
+import { dataProvider, liveProvider } from "@refinedev/supabase";
 import { RefineThemes, ThemedLayoutV2, ThemedTitleV2 } from "@refinedev/antd";
 import { App as AntdApp, ConfigProvider } from "antd";
 import { Suspense } from "react";
@@ -34,6 +34,7 @@ export default function RefineLayout({
                     <Refine
                         routerProvider={routerProvider}
                         dataProvider={dataProvider(supabaseClient)}
+                        liveProvider={liveProvider(supabaseClient)}
                         authProvider={authProvider}
                         resources={[
                             {

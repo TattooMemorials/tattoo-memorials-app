@@ -23,9 +23,25 @@ import {
     Badge,
 } from "antd";
 import { MailOutlined, SearchOutlined } from "@ant-design/icons";
-import { useUpdate, useNavigation, useList } from "@refinedev/core";
-import { useState } from "react";
+import {
+    useUpdate,
+    useNavigation,
+    useList,
+    useSubscription,
+} from "@refinedev/core";
+import { useEffect, useState } from "react";
 import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
+
+import { createClient } from "@/utils/supabase/client";
+import { BaseKey } from "@refinedev/core";
+
+// Define types
+type InvoiceStatusMap = Record<BaseKey, InvoiceStatus>;
+
+type Order = {
+    id: BaseKey;
+    // ... other order properties
+};
 
 type EmailHistoryItem = {
     sent_at: string;
@@ -38,23 +54,54 @@ type EmailType = {
 };
 
 export default function MemoriamOrders() {
-    const { tableProps, sorter, searchFormProps, filters } = useTable({
+    const supabase = createClient();
+
+    const { tableProps, sorter, searchFormProps, filters } = useTable<Order>({
         syncWithLocation: true,
+        liveMode: "auto",
     });
 
-    // Fetch all invoices
+    const [invoiceStatusMap, setInvoiceStatusMap] = useState<InvoiceStatusMap>(
+        {}
+    );
+
+    // Fetch all invoices with live mode enabled
     const { data: invoicesData, isLoading: isLoadingInvoices } = useList({
         resource: "invoices",
         queryOptions: {
-            enabled: !!tableProps?.dataSource,
+            enabled: true,
         },
+        liveMode: "auto",
     });
 
-    // Create a map of order ID to invoice status
-    const invoiceStatusMap = invoicesData?.data?.reduce((acc, invoice) => {
-        acc[invoice.order_id] = invoice.status;
-        return acc;
-    }, {});
+    // Update invoiceStatusMap when invoices data changes
+    useEffect(() => {
+        if (invoicesData?.data) {
+            const newMap = invoicesData.data.reduce((acc, invoice) => {
+                if (invoice.order_id) {
+                    acc[invoice.order_id] = invoice.status;
+                }
+                return acc;
+            }, {} as InvoiceStatusMap);
+            setInvoiceStatusMap((prevMap) => ({ ...prevMap, ...newMap }));
+        }
+    }, [invoicesData]);
+
+    // Subscribe to invoice changes
+    useSubscription({
+        channel: "invoices",
+        types: ["INSERT", "UPDATE"],
+        onLiveEvent: (event) => {
+            console.log("invoices live event: ", event);
+            const { type, payload } = event;
+            if ((type === "INSERT" || type === "UPDATE") && payload.order_id) {
+                setInvoiceStatusMap((prevMap) => ({
+                    ...prevMap,
+                    [payload.order_id]: payload.status,
+                }));
+            }
+        },
+    });
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isEmailHistoryModalVisible, setIsEmailHistoryModalVisible] =
@@ -266,26 +313,20 @@ export default function MemoriamOrders() {
     };
 
     return (
-        <List headerButtons={<CreateButton />}>
+        <List canCreate={false}>
             <Table
                 {...tableProps}
                 rowKey="id"
                 dataSource={tableProps.dataSource?.map((order) => ({
                     ...order,
-                    invoice_status:
-                        invoiceStatusMap && order.id
-                            ? invoiceStatusMap[order.id]
-                            : "No Invoice",
+                    invoice_status: invoiceStatusMap[order.id] || "No Invoice",
                 }))}
             >
                 <Table.Column
                     dataIndex="invoice_status"
                     title="Invoice Status"
                     render={(value: InvoiceStatus) => (
-                        <Badge
-                            color={getBadgeColor(value)}
-                            text={value || "No Invoice"}
-                        />
+                        <Badge color={getBadgeColor(value)} text={value} />
                     )}
                     sorter
                 />
