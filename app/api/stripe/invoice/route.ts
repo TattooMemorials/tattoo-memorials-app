@@ -18,6 +18,9 @@ export async function POST(request: NextRequest) {
             name: customerName,
             email: customerEmail,
             address: customerAddress,
+            tax: {
+                validate_location: "immediately",
+            },
         });
 
         console.log("Customer created:", customer.id);
@@ -28,6 +31,9 @@ export async function POST(request: NextRequest) {
             days_until_due: 1,
             metadata: {
                 order_id: orderId,
+            },
+            automatic_tax: {
+                enabled: true,
             },
         });
 
