@@ -380,7 +380,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
         
         <p style="background-color: #edf2f7; padding: 10px; border-radius: 5px; font-weight: bold;">Order ID: ${orderId}</p>
     
-        <h2 style="color: #2c5282; margin-top: 20px;">Personal Information</h2>
+        <h2 style="color: #2c5282; margin-top: 20px;">Authorized Representative</h2>
         <p><strong>Name:</strong> ${formData.firstName} ${formData.lastName}</p>
         <p><strong>Email:</strong> ${formData.email}</p>
         <p><strong>Phone:</strong> ${formData.phone}</p>
@@ -412,7 +412,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     Order ID:
     ${orderId}
     
-    Personal Information:
+    Authorized Representative:
     Name: ${formData.firstName} ${formData.lastName}
     Email: ${formData.email}
     Phone: ${formData.phone}

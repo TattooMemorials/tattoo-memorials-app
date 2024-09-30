@@ -106,7 +106,7 @@ export default function EditPage() {
             </Card>
 
             <Form {...formProps} layout="vertical">
-                <Title level={4}>Personal Information</Title>
+                <Title level={4}>Customer</Title>
                 <Row gutter={16}>
                     <Col span={8}>
                         <Form.Item

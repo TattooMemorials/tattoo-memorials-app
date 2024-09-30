@@ -96,7 +96,7 @@ const LivingFormConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
                             <div className="mb-6">
                                 <h3 className="font-semibold text-black mb-2">
-                                    Personal Information:
+                                    Customer:
                                 </h3>
                                 <p>
                                     Name: {formData.firstName}{" "}

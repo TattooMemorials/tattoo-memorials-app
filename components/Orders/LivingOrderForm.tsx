@@ -359,7 +359,7 @@ const LivingOrderForm: React.FC = () => {
         result.orderId
     }</p>
 
-    <h2 style="color: #2c5282; margin-top: 20px;">Personal Information</h2>
+    <h2 style="color: #2c5282; margin-top: 20px;">Customer</h2>
     <p><strong>Name:</strong> ${formData.firstName} ${formData.lastName}</p>
     <p><strong>Email:</strong> ${formData.email}</p>
     <p><strong>Phone:</strong> ${formData.phone}</p>
@@ -391,7 +391,7 @@ We have received your Tattoo Memorials order.
 Order ID:
 ${result.orderId}
 
-Personal Information:
+Customer:
 Name: ${formData.firstName} ${formData.lastName}
 Email: ${formData.email}
 Phone: ${formData.phone}
