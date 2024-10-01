@@ -54,8 +54,6 @@ type EmailType = {
 };
 
 export default function LivingOrders() {
-    const supabase = createClient();
-
     const { tableProps, sorter, searchFormProps, filters } = useTable<Order>({
         syncWithLocation: true,
         liveMode: "auto",

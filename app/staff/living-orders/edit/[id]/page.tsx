@@ -12,10 +12,10 @@ import {
     Card,
     Typography,
     Divider,
+    Select,
 } from "antd";
 import { useParams } from "next/navigation";
-import stripe from "@/utils/stripe/server";
-import { Medium } from "@/components/Orders/LivingOrderForm";
+import { Medium, MEDIUMS } from "@/components/Orders/LivingOrderForm";
 
 const { Text, Title } = Typography;
 
@@ -30,54 +30,6 @@ export default function EditPage() {
         action: "edit",
     });
     const livingOrder = queryResult?.data?.data;
-
-    const getPublicUrl = async (
-        path: string,
-        setUrl: (url: string) => void
-    ) => {
-        const { data } = supabase.storage
-            .from("order-images")
-            .getPublicUrl(path);
-        if (data?.publicUrl) {
-            setUrl(data.publicUrl);
-        }
-    };
-
-    const handlePreview = (url: string | null) => {
-        if (url) {
-            window.open(url, "_blank");
-        }
-    };
-
-    const handleDownload = async (url: string | null, fileName: string) => {
-        if (url) {
-            try {
-                const response = await fetch(url);
-                const contentType = response.headers.get("content-type");
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = blobUrl;
-                link.download = getFileNameWithExtension(fileName, contentType);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-            } catch (error) {
-                console.error("Error downloading file:", error);
-            }
-        }
-    };
-
-    const getFileNameWithExtension = (
-        fileName: string,
-        contentType: string | null
-    ): string => {
-        if (!contentType) return fileName;
-        const extension = contentType.split("/").pop();
-        if (fileName.endsWith(`.${extension}`)) return fileName;
-        return `${fileName}.${extension}`;
-    };
 
     return (
         <Card style={{ margin: "24px" }}>
@@ -180,6 +132,26 @@ export default function EditPage() {
 
                 <Title level={4}>Order Details</Title>
                 <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            label="Medium"
+                            name="medium"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please select a medium",
+                                },
+                            ]}
+                        >
+                            <Select>
+                                {Object.values(MEDIUMS).map((medium) => (
+                                    <Select.Option key={medium} value={medium}>
+                                        {medium}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                    </Col>
                     <Col span={8}>
                         <Form.Item label="Total Price" name="total_price">
                             <Input />
