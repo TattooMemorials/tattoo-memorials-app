@@ -44,7 +44,7 @@ export default function RefineLayout({
                                 create: "/staff/memoriam-orders/create",
                                 edit: "/staff/memoriam-orders/edit/:id",
                                 meta: {
-                                    canDelete: true,
+                                    canDelete: false,
                                 },
                             },
                             {
@@ -54,7 +54,7 @@ export default function RefineLayout({
                                 create: "/staff/living-orders/create",
                                 edit: "/staff/living-orders/edit/:id",
                                 meta: {
-                                    canDelete: true,
+                                    canDelete: false,
                                 },
                             },
                         ]}

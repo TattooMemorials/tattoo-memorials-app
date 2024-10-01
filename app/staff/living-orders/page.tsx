@@ -382,12 +382,12 @@ export default function LivingOrders() {
                                     size="small"
                                     recordItemId={record.id}
                                 />
-                                <DeleteButton
+                                {/* <DeleteButton
                                     hideText
                                     size="small"
                                     recordItemId={record.id}
                                     type="primary"
-                                />
+                                /> */}
                                 <Dropdown
                                     overlay={
                                         <Menu>
