@@ -4,10 +4,8 @@ import {
     useTable,
     EditButton,
     ShowButton,
-    DeleteButton,
     getDefaultSortOrder,
     FilterDropdown,
-    CreateButton,
 } from "@refinedev/antd";
 import {
     Table,
@@ -28,25 +26,16 @@ import {
     MailOutlined,
     SearchOutlined,
 } from "@ant-design/icons";
-import {
-    useUpdate,
-    useNavigation,
-    useList,
-    useSubscription,
-} from "@refinedev/core";
-import { useEffect, useState } from "react";
+import { useUpdate } from "@refinedev/core";
+import { useState } from "react";
 import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
 
-import { createClient } from "@/utils/supabase/client";
 import { BaseKey } from "@refinedev/core";
 import { useOrderDelete } from "@/utils/hooks/order-delete";
-
-// Define types
-type InvoiceStatusMap = Record<BaseKey, InvoiceStatus>;
+import { useLiveInvoiceUpdates } from "@/utils/hooks/live-invoice-updates";
 
 type Order = {
     id: BaseKey;
-    // ... other order properties
 };
 
 type EmailHistoryItem = {
@@ -73,47 +62,7 @@ export default function MemoriamOrders() {
         },
     });
 
-    const [invoiceStatusMap, setInvoiceStatusMap] = useState<InvoiceStatusMap>(
-        {}
-    );
-
-    // Fetch all invoices with live mode enabled
-    const { data: invoicesData, isLoading: isLoadingInvoices } = useList({
-        resource: "invoices",
-        queryOptions: {
-            enabled: true,
-        },
-        liveMode: "auto",
-    });
-
-    // Update invoiceStatusMap when invoices data changes
-    useEffect(() => {
-        if (invoicesData?.data) {
-            const newMap = invoicesData.data.reduce((acc, invoice) => {
-                if (invoice.order_id) {
-                    acc[invoice.order_id] = invoice.status;
-                }
-                return acc;
-            }, {} as InvoiceStatusMap);
-            setInvoiceStatusMap((prevMap) => ({ ...prevMap, ...newMap }));
-        }
-    }, [invoicesData]);
-
-    // Subscribe to invoice changes
-    useSubscription({
-        channel: "invoices",
-        types: ["INSERT", "UPDATE"],
-        onLiveEvent: (event) => {
-            console.log("invoices live event: ", event);
-            const { type, payload } = event;
-            if ((type === "INSERT" || type === "UPDATE") && payload.order_id) {
-                setInvoiceStatusMap((prevMap) => ({
-                    ...prevMap,
-                    [payload.order_id]: payload.status,
-                }));
-            }
-        },
-    });
+    const { invoiceStatusMap } = useLiveInvoiceUpdates();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isEmailHistoryModalVisible, setIsEmailHistoryModalVisible] =

@@ -42,12 +42,21 @@ export async function POST(request: Request) {
         }
 
         // Send email
-        await postmarkClient.sendEmail({
-            From: "communications@tattoomemorials.com",
-            To: email,
-            Subject: subject,
-            HtmlBody: message,
-        });
+        if (process.env.NEXT_PUBLIC_TATTOO_ENV === "dev") {
+            await postmarkClient.sendEmail({
+                From: "dan@tinner.tech", // TODO: remove before going live
+                To: email,
+                Subject: subject,
+                HtmlBody: message,
+            });
+        } else {
+            await postmarkClient.sendEmail({
+                From: "communications@tattoomemorials.com",
+                To: email,
+                Subject: subject,
+                HtmlBody: message,
+            });
+        }
 
         // Record the email in the order_emails table
         const { error } = await supabase.from("order_emails").insert({
