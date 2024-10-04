@@ -21,19 +21,27 @@ import {
     Dropdown,
     Menu,
     Badge,
+    Popconfirm,
+    message,
 } from "antd";
-import { MailOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+    DeleteOutlined,
+    MailOutlined,
+    SearchOutlined,
+} from "@ant-design/icons";
 import {
     useUpdate,
     useNavigation,
     useMany,
     useList,
     useSubscription,
+    useDelete,
 } from "@refinedev/core";
 import { useEffect, useState } from "react";
 import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
 import { createClient } from "@/utils/supabase/client";
 import { BaseKey } from "@refinedev/core";
+import { useOrderDelete } from "@/utils/hooks/order-delete";
 
 // Define types
 type InvoiceStatusMap = Record<BaseKey, InvoiceStatus>;
@@ -54,6 +62,7 @@ type EmailType = {
 };
 
 export default function LivingOrders() {
+    const supabase = createClient();
     const { tableProps, sorter, searchFormProps, filters } = useTable<Order>({
         syncWithLocation: true,
         liveMode: "auto",
@@ -304,6 +313,8 @@ export default function LivingOrders() {
         }
     };
 
+    const { handleDelete } = useOrderDelete();
+
     return (
         <List canCreate={false}>
             <Table
@@ -382,12 +393,20 @@ export default function LivingOrders() {
                                     size="small"
                                     recordItemId={record.id}
                                 />
-                                {/* <DeleteButton
-                                    hideText
-                                    size="small"
-                                    recordItemId={record.id}
-                                    type="primary"
-                                /> */}
+                                <Popconfirm
+                                    title="Are you sure?"
+                                    onConfirm={() =>
+                                        handleDelete(record.id, "living_orders")
+                                    }
+                                    okText="Yes"
+                                    cancelText="No"
+                                >
+                                    <Button
+                                        icon={<DeleteOutlined />}
+                                        size="small"
+                                        danger
+                                    />
+                                </Popconfirm>
                                 <Dropdown
                                     overlay={
                                         <Menu>

@@ -21,8 +21,13 @@ import {
     Dropdown,
     Menu,
     Badge,
+    Popconfirm,
 } from "antd";
-import { MailOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+    DeleteOutlined,
+    MailOutlined,
+    SearchOutlined,
+} from "@ant-design/icons";
 import {
     useUpdate,
     useNavigation,
@@ -34,6 +39,7 @@ import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
 
 import { createClient } from "@/utils/supabase/client";
 import { BaseKey } from "@refinedev/core";
+import { useOrderDelete } from "@/utils/hooks/order-delete";
 
 // Define types
 type InvoiceStatusMap = Record<BaseKey, InvoiceStatus>;
@@ -318,6 +324,8 @@ export default function MemoriamOrders() {
         }
     };
 
+    const { handleDelete } = useOrderDelete();
+
     return (
         <List canCreate={false}>
             <Table
@@ -397,12 +405,23 @@ export default function MemoriamOrders() {
                                     size="small"
                                     recordItemId={record.id}
                                 />
-                                {/* <DeleteButton
-                                    hideText
-                                    size="small"
-                                    recordItemId={record.id}
-                                    type="primary"
-                                /> */}
+                                <Popconfirm
+                                    title="Are you sure?"
+                                    onConfirm={() =>
+                                        handleDelete(
+                                            record.id,
+                                            "memoriam_orders"
+                                        )
+                                    }
+                                    okText="Yes"
+                                    cancelText="No"
+                                >
+                                    <Button
+                                        icon={<DeleteOutlined />}
+                                        size="small"
+                                        danger
+                                    />
+                                </Popconfirm>
                                 <Dropdown
                                     overlay={
                                         <Menu>
