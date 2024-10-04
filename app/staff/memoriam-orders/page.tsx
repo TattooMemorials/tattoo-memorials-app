@@ -33,6 +33,7 @@ import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
 import { BaseKey } from "@refinedev/core";
 import { useOrderDelete } from "@/utils/hooks/order-delete";
 import { useLiveInvoiceUpdates } from "@/utils/hooks/live-invoice-updates";
+import { useStripeInvoice } from "@/utils/hooks/stripe-invoice";
 
 type Order = {
     id: BaseKey;
@@ -146,21 +147,33 @@ export default function MemoriamOrders() {
                     `;
                     break;
                 case "SEND_INVOICE":
-                    const invoiceResult = await createStripeInvoice();
-
-                    if (!invoiceResult.success) {
+                    if (
+                        !currentRecord.total_price ||
+                        currentRecord.total_price === 0
+                    ) {
+                        alert("You must enter a price for the order.");
                         return;
                     }
-                    emailSubject = "Invoice for Your Tattoo Memorial  Order";
+
+                    const invoiceResult = await createInvoice(currentRecord);
+
+                    if (!invoiceResult.success) {
+                        alert(
+                            `Failed to create invoice: ${invoiceResult.error}`
+                        );
+                        return;
+                    }
+
+                    emailSubject = "Invoice for Your Tattoo Memorial Order";
                     emailMessage = `
-                            <p>Hello,</p>
-                            <p>Thank you for your tattoo memorial order.
-                            <p>To proceed with your order, please pay using the link below:</p>
-                            <p><a href="${invoiceResult.invoiceUrl}">View Invoice & Pay</a></p>
-                            <p>You can view your original order details here: <a href="${orderUrl}">View Order</a></p>
-                            <p>Thank you,</p>
-                            <p>Tattoo Memorials Team</p>
-                        `;
+                        <p>Hello,</p>
+                        <p>Thank you for your tattoo memorial order.</p>
+                        <p>To proceed with your order, please pay using the link below:</p>
+                        <p><a href="${invoiceResult.invoiceUrl}">View Invoice & Pay</a></p>
+                        <p>You can view your original order details here: <a href="${orderUrl}">View Order</a></p>
+                        <p>Thank you,</p>
+                        <p>Tattoo Memorials Team</p>
+                    `;
                     break;
             }
 
@@ -227,51 +240,11 @@ export default function MemoriamOrders() {
         form.resetFields();
     };
 
-    const createStripeInvoice = async () => {
-        try {
-            const invoiceData = {
-                orderId: currentRecord.id,
-                customerName:
-                    (currentRecord?.first_name || "") +
-                    " " +
-                    (currentRecord?.last_name || ""),
-                customerEmail: currentRecord?.email || "",
-                amount: (currentRecord?.total_price || 0) * 100, // Convert to cents
-                medium: currentRecord.medium,
-                customerAddress: {
-                    city: currentRecord?.city,
-                    country: "US",
-                    line1: currentRecord?.street_address,
-                    line2: currentRecord?.street_address2,
-                    postal_code: currentRecord?.postal_code,
-                    state: currentRecord?.state,
-                },
-            };
-
-            if (invoiceData.amount === 0) {
-                alert("You must enter a price for the order.");
-                return;
-            }
-
-            const response = await fetch("/api/stripe/invoice", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(invoiceData),
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                console.log("Invoice created successfully:", data.invoiceId);
-            } else {
-                console.error("Failed to create invoice:", data.error);
-            }
-            return data;
-        } catch (error) {
-            console.error("Error calling Stripe API:", error);
-        }
-    };
+    const {
+        createInvoice,
+        isLoading: isCreatingInvoice,
+        error: invoiceError,
+    } = useStripeInvoice();
 
     const { handleDelete } = useOrderDelete();
 
