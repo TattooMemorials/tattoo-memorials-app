@@ -19,8 +19,6 @@ import { Medium, MEDIUMS } from "@/components/Orders/LivingOrderForm";
 
 const { Text, Title } = Typography;
 
-const supabase = createClient();
-
 export default function EditPage() {
     const params = useParams();
     const id = params.id as string;

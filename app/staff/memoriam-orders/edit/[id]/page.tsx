@@ -274,16 +274,7 @@ export default function EditPage() {
                 <Title level={4}>Order Details</Title>
                 <Row gutter={16}>
                     <Col span={8}>
-                        <Form.Item
-                            label="Medium"
-                            name="medium"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Please select a medium",
-                                },
-                            ]}
-                        >
+                        <Form.Item label="Medium" name="medium">
                             <Select>
                                 {Object.values(MEDIUMS).map((medium) => (
                                     <Select.Option key={medium} value={medium}>
@@ -291,6 +282,11 @@ export default function EditPage() {
                                     </Select.Option>
                                 ))}
                             </Select>
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item label="Total Price" name="total_price">
+                            <Input />
                         </Form.Item>
                     </Col>
                 </Row>
