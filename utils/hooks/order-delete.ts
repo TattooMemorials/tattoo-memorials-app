@@ -4,76 +4,32 @@ import { createClient } from "@/utils/supabase/client";
 
 type OrderType = "living_orders" | "memoriam_orders";
 
+interface DeleteError {
+    operation: string;
+    error: any;
+}
+
 export const useOrderDelete = () => {
     const { mutate: deleteOne } = useDelete();
     const supabase = createClient();
 
-    const handleDelete = async (id: BaseKey, orderType: OrderType) => {
-        try {
-            // 1. Delete associated objects from Supabase storage (images and forms if applicable)
-            if (orderType === "living_orders") {
-                await deleteStorageObjects(id, "order-images");
-            } else if (orderType === "memoriam_orders") {
-                await deleteStorageObjects(id, "order-images");
-                await deleteStorageObjects(id, "order-forms");
-            }
-
-            // 2. Delete the record from the *_orders table
-            deleteOne({
-                resource: orderType,
-                id,
-            });
-
-            // 3. Delete the records from invoices table
-            const { error: deleteInvoiceError } = await supabase
-                .from("invoices")
-                .delete()
-                .eq("order_id", id);
-
-            if (deleteInvoiceError) {
-                console.error("Error deleting invoices:", deleteInvoiceError);
-                throw deleteInvoiceError;
-            }
-
-            // 4. Delete the records from order_emails table
-            const { error: deleteOrderEmailRecordsError } = await supabase
-                .from("order_emails")
-                .delete()
-                .eq("order_id", id);
-
-            if (deleteOrderEmailRecordsError) {
-                console.error(
-                    "Error deleting order emails:",
-                    deleteOrderEmailRecordsError
-                );
-                throw deleteOrderEmailRecordsError;
-            }
-
-            message.success("Order and associated files deleted successfully");
-        } catch (error) {
-            console.error("Error deleting record and files:", error);
-            message.error("Failed to delete record and associated files");
-        }
-    };
-
-    const deleteStorageObjects = async (
+    const deleteAssociatedFiles = async (
         orderId: BaseKey,
         bucketName: string
-    ) => {
+    ): Promise<DeleteError[]> => {
         const folderPath = `${orderId}`;
+        const errors: DeleteError[] = [];
 
         try {
-            // 1. List all files in the folder
             const { data, error } = await supabase.storage
                 .from(bucketName)
                 .list(folderPath);
 
             if (error) {
-                console.error("Error listing files:", error);
-                throw error;
+                errors.push({ operation: "listing files", error });
+                return errors;
             }
 
-            // 2. Delete all files in the folder
             if (data && data.length > 0) {
                 const filesToDelete = data.map(
                     (file) => `${folderPath}/${file.name}`
@@ -83,26 +39,100 @@ export const useOrderDelete = () => {
                     .remove(filesToDelete);
 
                 if (deleteError) {
-                    console.error("Error deleting files:", deleteError);
-                    throw deleteError;
+                    errors.push({
+                        operation: "deleting files",
+                        error: deleteError,
+                    });
                 }
             }
 
-            // 3. Delete the empty folder
             const { error: deleteFolderError } = await supabase.storage
                 .from(bucketName)
                 .remove([folderPath]);
 
             if (deleteFolderError) {
-                console.error("Error deleting folder:", deleteFolderError);
-                throw deleteFolderError;
+                errors.push({
+                    operation: "deleting folder",
+                    error: deleteFolderError,
+                });
+            }
+        } catch (error) {
+            errors.push({ operation: "deleteAssociatedFiles", error });
+        }
+
+        return errors;
+    };
+
+    const handleDelete = async (id: BaseKey, orderType: OrderType) => {
+        const errors: DeleteError[] = [];
+
+        try {
+            // Delete associated files
+            if (orderType === "living_orders") {
+                errors.push(
+                    ...(await deleteAssociatedFiles(id, "order-images"))
+                );
+            } else if (orderType === "memoriam_orders") {
+                errors.push(
+                    ...(await deleteAssociatedFiles(id, "order-images"))
+                );
+                errors.push(
+                    ...(await deleteAssociatedFiles(id, "order-forms"))
+                );
             }
 
-            console.log(`Successfully deleted folder: ${folderPath}`);
+            // Delete the main order record
+            try {
+                deleteOne({
+                    resource: orderType,
+                    id,
+                });
+            } catch (error) {
+                errors.push({ operation: "deleting main record", error });
+            }
+
+            // Delete associated records
+            const { error: deleteInvoiceError } = await supabase
+                .from("invoices")
+                .delete()
+                .eq("order_id", id);
+
+            if (deleteInvoiceError) {
+                errors.push({
+                    operation: "deleting invoices",
+                    error: deleteInvoiceError,
+                });
+            }
+
+            const { error: deleteOrderEmailRecordsError } = await supabase
+                .from("order_emails")
+                .delete()
+                .eq("order_id", id);
+
+            if (deleteOrderEmailRecordsError) {
+                errors.push({
+                    operation: "deleting order emails",
+                    error: deleteOrderEmailRecordsError,
+                });
+            }
+
+            // Handle errors
+            if (errors.length > 0) {
+                console.error("Errors occurred during deletion:", errors);
+                message.warning(
+                    "Order deleted partially. Some associated data may remain."
+                );
+            } else {
+                message.success(
+                    "Order and all associated data deleted successfully"
+                );
+            }
         } catch (error) {
-            console.error("Error in deleteAssociatedImages:", error);
-            throw error;
+            console.error("Unexpected error during deletion:", error);
+            message.error("An unexpected error occurred during deletion");
         }
+
+        return errors;
     };
 
     return { handleDelete };
