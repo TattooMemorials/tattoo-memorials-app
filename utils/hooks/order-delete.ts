@@ -9,6 +9,23 @@ interface DeleteError {
     error: any;
 }
 
+/**
+ * Custom hook for deleting orders and associated data.
+ *
+ * This hook handles the deletion of living_orders or memoriam_orders,
+ * including associated files in Supabase storage and related records
+ * in other tables (invoices, order_emails).
+ *
+ * It uses a soft error handling approach, attempting all delete operations
+ * and collecting errors rather than stopping at the first error encountered.
+ * This allows for partial deletions in case of failures in some operations.
+ *
+ * Usage:
+ * const { handleDelete } = useOrderDelete();
+ * await handleDelete(orderId, "living_orders");
+ *
+ * @returns {Object} An object containing the handleDelete function.
+ */
 export const useOrderDelete = () => {
     const { mutate: deleteOne } = useDelete();
     const supabase = createClient();
