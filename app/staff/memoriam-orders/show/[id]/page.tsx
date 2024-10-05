@@ -21,7 +21,7 @@ import { message } from "antd";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const supabase = createClient();
 

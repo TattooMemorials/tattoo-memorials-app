@@ -1,14 +1,13 @@
 "use client";
 
 import { Show } from "@refinedev/antd";
-import { useShow, useOne } from "@refinedev/core";
+import { useShow } from "@refinedev/core";
 import {
     Typography,
     Row,
     Col,
     Card,
     Descriptions,
-    Space,
     Button,
     Image,
     Modal,
@@ -22,7 +21,7 @@ import { message } from "antd";
 import JSZip from "jszip";
 import saveAs from "file-saver";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const supabase = createClient();
 
