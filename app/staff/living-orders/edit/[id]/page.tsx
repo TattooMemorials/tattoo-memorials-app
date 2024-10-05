@@ -224,16 +224,7 @@ export default function EditPage() {
                 <Title level={4}>Order Details</Title>
                 <Row gutter={16}>
                     <Col span={8}>
-                        <Form.Item
-                            label="Medium"
-                            name="medium"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Please select a medium",
-                                },
-                            ]}
-                        >
+                        <Form.Item label="Medium" name="medium">
                             <Select>
                                 {Object.values(MEDIUMS).map((medium) => (
                                     <Select.Option key={medium} value={medium}>
@@ -349,22 +340,31 @@ export default function EditPage() {
                                     />,
                                 ]}
                             >
-                                <Image
-                                    src={`${
-                                        supabase.storage
-                                            .from("order-images")
-                                            .getPublicUrl(
-                                                `${livingOrder?.id}/${image}`
-                                            ).data.publicUrl
-                                    }`}
-                                    alt={image}
+                                <div
                                     style={{
-                                        maxWidth: "100%",
-                                        maxHeight: "150px",
-                                        objectFit: "contain",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        height: "150px",
                                     }}
-                                    preview={false}
-                                />
+                                >
+                                    <Image
+                                        src={`${
+                                            supabase.storage
+                                                .from("order-images")
+                                                .getPublicUrl(
+                                                    `${livingOrder?.id}/${image}`
+                                                ).data.publicUrl
+                                        }`}
+                                        alt={image}
+                                        style={{
+                                            maxWidth: "100%",
+                                            maxHeight: "150px",
+                                            objectFit: "contain",
+                                        }}
+                                        preview={false}
+                                    />
+                                </div>
                             </Card>
                         </Col>
                     ))}
