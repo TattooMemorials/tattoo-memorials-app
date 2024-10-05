@@ -13,13 +13,15 @@ import {
     Modal,
     Divider,
 } from "antd";
-import { FileTextOutlined } from "@ant-design/icons";
+import { FileTextOutlined, FileZipOutlined } from "@ant-design/icons";
 import { createClient } from "@/utils/supabase/client";
 import { IMemoriamOrder } from "../../edit/[id]/page";
 import { useState, useEffect } from "react";
 import { message } from "antd";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const supabase = createClient();
 
@@ -152,6 +154,30 @@ export default function OrderShow() {
         loadAllPreviews();
     }, [record]);
 
+    const downloadAllFiles = async () => {
+        if (!record) return;
+
+        const zip = new JSZip();
+        const promises = [];
+
+        // Add forms to zip
+        for (const [key, preview] of Object.entries(filePreviews)) {
+            const response = await fetch(preview.url);
+            const blob = await response.blob();
+            const fileName = `${key}.${preview.isImage ? "jpg" : "pdf"}`;
+            zip.file(fileName, blob);
+        }
+
+        try {
+            const content = await zip.generateAsync({ type: "blob" });
+            saveAs(content, `order_${record.id}_documents.zip`);
+            message.success("All files downloaded successfully");
+        } catch (error) {
+            console.error("Error creating zip file:", error);
+            message.error("Failed to download files");
+        }
+    };
+
     return (
         <Show isLoading={isLoading}>
             <Card>
@@ -220,6 +246,13 @@ export default function OrderShow() {
                 >
                     Order Documents
                 </Title>
+                <Button
+                    icon={<FileZipOutlined />}
+                    onClick={downloadAllFiles}
+                    style={{ marginBottom: "16px" }}
+                >
+                    Download All Documents
+                </Button>
                 <Row gutter={[16, 16]}>
                     {Object.entries(filePreviews).map(([key, preview]) => (
                         <Col key={key} xs={24} sm={12} md={8} lg={6}>

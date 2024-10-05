@@ -4,10 +4,8 @@ import {
     useTable,
     EditButton,
     ShowButton,
-    DeleteButton,
     getDefaultSortOrder,
     FilterDropdown,
-    CreateButton,
 } from "@refinedev/antd";
 import {
     Table,
@@ -21,41 +19,27 @@ import {
     Dropdown,
     Menu,
     Badge,
+    Popconfirm,
 } from "antd";
-import { MailOutlined, SearchOutlined } from "@ant-design/icons";
 import {
-    useUpdate,
-    useNavigation,
-    useMany,
-    useList,
-    useSubscription,
-} from "@refinedev/core";
-import { useEffect, useState } from "react";
+    DeleteOutlined,
+    MailOutlined,
+    SearchOutlined,
+} from "@ant-design/icons";
+import { useUpdate } from "@refinedev/core";
+import { useState } from "react";
 import { getBadgeColor, InvoiceStatus } from "@/utils/stripe/common";
-import { createClient } from "@/utils/supabase/client";
 import { BaseKey } from "@refinedev/core";
-
-// Define types
-type InvoiceStatusMap = Record<BaseKey, InvoiceStatus>;
+import { useOrderDelete } from "@/utils/hooks/order-delete";
+import { useLiveInvoiceUpdates } from "@/utils/hooks/live-invoice-updates";
+import { useStripeInvoice } from "@/utils/hooks/stripe-invoice";
+import { useOrderEmail } from "@/utils/hooks/order-email";
 
 type Order = {
     id: BaseKey;
-    // ... other order properties
-};
-
-type EmailHistoryItem = {
-    sent_at: string;
-    email_type: string;
-};
-
-type EmailType = {
-    key: string;
-    label: string;
 };
 
 export default function LivingOrders() {
-    const supabase = createClient();
-
     const { tableProps, sorter, searchFormProps, filters } = useTable<Order>({
         syncWithLocation: true,
         liveMode: "auto",
@@ -69,161 +53,47 @@ export default function LivingOrders() {
         },
     });
 
-    const [invoiceStatusMap, setInvoiceStatusMap] = useState<InvoiceStatusMap>(
-        {}
-    );
+    const { invoiceStatusMap } = useLiveInvoiceUpdates();
+    const { handleDelete } = useOrderDelete();
+    const {
+        createInvoice,
+        isLoading: isCreatingInvoice,
+        error: invoiceError,
+    } = useStripeInvoice();
 
-    // Fetch all invoices with live mode enabled
-    const { data: invoicesData, isLoading: isLoadingInvoices } = useList({
-        resource: "invoices",
-        queryOptions: {
-            enabled: true,
-        },
-        liveMode: "auto",
-    });
+    const [currentRecord, setCurrentRecord] = useState<any>(null);
 
-    // Update invoiceStatusMap when invoices data changes
-    useEffect(() => {
-        if (invoicesData?.data) {
-            const newMap = invoicesData.data.reduce((acc, invoice) => {
-                if (invoice.order_id) {
-                    acc[invoice.order_id] = invoice.status;
-                }
-                return acc;
-            }, {} as InvoiceStatusMap);
-            setInvoiceStatusMap((prevMap) => ({ ...prevMap, ...newMap }));
-        }
-    }, [invoicesData]);
-
-    // Subscribe to invoice changes
-    useSubscription({
-        channel: "invoices",
-        types: ["INSERT", "UPDATE"],
-        onLiveEvent: (event) => {
-            console.log("invoices live event: ", event);
-            const { type, payload } = event;
-            if ((type === "INSERT" || type === "UPDATE") && payload.order_id) {
-                setInvoiceStatusMap((prevMap) => ({
-                    ...prevMap,
-                    [payload.order_id]: payload.status,
-                }));
-            }
-        },
-    });
+    const {
+        emailHistory,
+        isEmailHistoryModalVisible,
+        selectedEmailType,
+        emailTypes,
+        setIsEmailHistoryModalVisible,
+        setSelectedEmailType,
+        getEmailTypeLabel,
+        handleSendEmail,
+        handleConfirmSendEmail,
+    } = useOrderEmail("living");
 
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [isEmailHistoryModalVisible, setIsEmailHistoryModalVisible] =
-        useState(false);
-    const [currentRecord, setCurrentRecord] = useState<any>(null);
-    const [emailHistory, setEmailHistory] = useState<EmailHistoryItem[]>([]);
     const [form] = Form.useForm();
-    const [selectedEmailType, setSelectedEmailType] = useState("SEND INVOICE");
 
     const { mutate: updateRecord } = useUpdate();
 
-    const emailTypes: EmailType[] = [
-        { key: "SEND_INVOICE", label: "Invoice and Payment Link" },
-    ];
-
-    const getEmailTypeLabel = (key: string): string => {
-        return emailTypes.find((type) => type.key === key)?.label || key;
-    };
-
     const handleEmailTypeSelect = (record: any, emailType: string) => {
+        setCurrentRecord(record);
         setSelectedEmailType(emailType);
         handleSendEmail(record);
     };
 
-    const handleSendEmail = async (record: any) => {
-        try {
-            const response = await fetch(
-                `/api/email-history?orderId=${record.id}&orderType=living`
+    const onConfirmSendEmail = () => {
+        if (currentRecord) {
+            handleConfirmSendEmail(
+                currentRecord,
+                createInvoice,
+                (orderId) =>
+                    `https://app.tattoomemorials.com/living-order/${orderId}`
             );
-            if (!response.ok) {
-                throw new Error("Failed to fetch email history");
-            }
-            const emailHistory = await response.json();
-            setEmailHistory(emailHistory);
-
-            if (record.email) {
-                setCurrentRecord(record);
-                setIsEmailHistoryModalVisible(true);
-            } else {
-                setCurrentRecord(record);
-                setIsModalVisible(true);
-            }
-        } catch (error) {
-            console.error("Error fetching email history:", error);
-            alert("Failed to fetch email history. Please try again.");
-        }
-    };
-
-    const handleConfirmSendEmail = async () => {
-        // Check if this email type has been sent before
-        const hasSentBefore = emailHistory.some(
-            (email) => email.email_type === selectedEmailType
-        );
-
-        if (hasSentBefore) {
-            const confirmSend = window.confirm(
-                "This email type has been sent before. Are you sure you want to send it again?"
-            );
-            if (!confirmSend) {
-                return;
-            }
-        }
-
-        // create the stripe invoice before we send our email. The invoice will have the payment link.
-        try {
-            const invoiceResult = await createStripeInvoice();
-
-            if (!invoiceResult.success) {
-                return;
-            }
-
-            try {
-                const orderUrl = `https://app.tattoomemorials.com/living-order/${currentRecord.id}`;
-                const emailSubject = "Tattoo Memorial Order Invoice & Payment";
-                const emailMessage = `
-                            <p>Hello,</p>
-                            <p>Thank you for your tattoo memorial order.
-                            <p>To proceed with your order, please pay using the link below:</p>
-                            <p><a href="${invoiceResult.invoiceUrl}">View Invoice & Pay</a></p>
-                            <p>You can view your original order details here: <a href="${orderUrl}">View Order</a></p>
-                            <p>Thank you,</p>
-                            <p>Tattoo Memorials Team</p>
-                        `;
-
-                const response = await fetch("/api/send-email", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email: currentRecord.email,
-                        subject: emailSubject,
-                        message: emailMessage,
-                        orderId: currentRecord.id,
-                        orderType: "living",
-                        emailType: selectedEmailType,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to send email");
-                }
-
-                alert(`Email sent successfully to ${currentRecord.email}`);
-                setIsEmailHistoryModalVisible(false);
-
-                // Refresh email history
-                await handleSendEmail(currentRecord);
-            } catch (error) {
-                console.error("Failed to send email:", error);
-                alert("Failed to send email. Please try again.");
-            }
-        } catch (error) {
-            console.error(error);
         }
     };
 
@@ -241,7 +111,9 @@ export default function LivingOrders() {
                         setIsModalVisible(false);
                         await handleSendEmail({
                             ...currentRecord,
+                            id: currentRecord.id,
                             email: values.email,
+                            total_price: currentRecord.total_price,
                         });
                         form.resetFields();
                     },
@@ -258,52 +130,6 @@ export default function LivingOrders() {
     const handleModalCancel = () => {
         setIsModalVisible(false);
         form.resetFields();
-    };
-
-    const createStripeInvoice = async () => {
-        try {
-            const invoiceData = {
-                orderId: currentRecord.id,
-                customerName:
-                    (currentRecord?.first_name || "") +
-                    " " +
-                    (currentRecord?.last_name || ""),
-                customerEmail: currentRecord?.email || "",
-                amount: (currentRecord?.total_price || 0) * 100, // Convert to cents
-                medium: currentRecord.medium,
-                customerAddress: {
-                    city: currentRecord?.city,
-                    country: "US",
-                    line1: currentRecord?.street_address,
-                    line2: currentRecord?.street_address2,
-                    postal_code: currentRecord?.postal_code,
-                    state: currentRecord?.state,
-                },
-            };
-
-            if (invoiceData.amount === 0) {
-                alert("You must enter a price for the order.");
-                return;
-            }
-
-            const response = await fetch("/api/stripe/invoice", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(invoiceData),
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                console.log("Invoice created successfully:", data.invoiceId);
-            } else {
-                console.error("Failed to create invoice:", data.error);
-            }
-            return data;
-        } catch (error) {
-            console.error("Error calling Stripe API:", error);
-        }
     };
 
     return (
@@ -384,12 +210,20 @@ export default function LivingOrders() {
                                     size="small"
                                     recordItemId={record.id}
                                 />
-                                <DeleteButton
-                                    hideText
-                                    size="small"
-                                    recordItemId={record.id}
-                                    type="primary"
-                                />
+                                <Popconfirm
+                                    title="Are you sure?"
+                                    onConfirm={() =>
+                                        handleDelete(record.id, "living_orders")
+                                    }
+                                    okText="Yes"
+                                    cancelText="No"
+                                >
+                                    <Button
+                                        icon={<DeleteOutlined />}
+                                        size="small"
+                                        danger
+                                    />
+                                </Popconfirm>
                                 <Dropdown
                                     overlay={
                                         <Menu>
@@ -441,7 +275,7 @@ export default function LivingOrders() {
                     <Button
                         key="send"
                         type="primary"
-                        onClick={handleConfirmSendEmail}
+                        onClick={onConfirmSendEmail}
                     >
                         Send Email
                     </Button>,
