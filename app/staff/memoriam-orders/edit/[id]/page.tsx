@@ -342,7 +342,7 @@ export default function EditPage() {
                                             onClick={() =>
                                                 handleDownload(
                                                     intakeFormUrl,
-                                                    "intake_form"
+                                                    `${memoriamOrder?.id}-intake-form`
                                                 )
                                             }
                                         />
@@ -419,7 +419,7 @@ export default function EditPage() {
                                             onClick={() =>
                                                 handleDownload(
                                                     consentFormUrl,
-                                                    "consent_form"
+                                                    `${memoriamOrder?.id}-consent-form`
                                                 )
                                             }
                                         />
@@ -676,6 +676,21 @@ export default function EditPage() {
                                                             `${memoriamOrder?.id}/${image}`
                                                         ).data.publicUrl
                                                 }`
+                                            )
+                                        }
+                                    />,
+                                    <DownloadOutlined
+                                        key="download"
+                                        onClick={() =>
+                                            handleDownload(
+                                                `${
+                                                    supabase.storage
+                                                        .from("order-images")
+                                                        .getPublicUrl(
+                                                            `${memoriamOrder?.id}/${image}`
+                                                        ).data.publicUrl
+                                                }`,
+                                                `${memoriamOrder?.id}/${image}`
                                             )
                                         }
                                     />,
