@@ -17,7 +17,6 @@ import {
     message,
     Image,
     Modal,
-    Space,
 } from "antd";
 import { useParams } from "next/navigation";
 import { Medium, MEDIUMS } from "@/components/Orders/LivingOrderForm";
@@ -25,7 +24,6 @@ import {
     UploadOutlined,
     DeleteOutlined,
     EyeOutlined,
-    FileTextOutlined,
     DownloadOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
@@ -62,12 +60,7 @@ export default function EditPage() {
     useEffect(() => {
         if (memoriamOrder?.id) {
             fetchOrderImages(memoriamOrder.id);
-        }
-        if (memoriamOrder?.intake_form_path) {
-            getPublicUrl(memoriamOrder.intake_form_path, setIntakeFormUrl);
-        }
-        if (memoriamOrder?.consent_form_path) {
-            getPublicUrl(memoriamOrder.consent_form_path, setConsentFormUrl);
+            fetchOrderForms(memoriamOrder);
         }
     }, [memoriamOrder]);
 
@@ -84,15 +77,35 @@ export default function EditPage() {
         setOrderImages(data.map((file) => file.name));
     };
 
-    const getPublicUrl = async (
-        path: string,
-        setUrl: (url: string) => void
-    ) => {
-        const { data } = supabase.storage
-            .from("order-forms")
-            .getPublicUrl(path);
-        if (data?.publicUrl) {
-            setUrl(data.publicUrl);
+    const refetchOrder = async () => {
+        const { data, error } = await supabase
+            .from("memoriam_orders")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+        if (error) {
+            console.error("Error refetching order:", error);
+        } else if (data) {
+            // Update the memoriamOrder state
+            if (queryResult) {
+                queryResult.refetch();
+            }
+        }
+    };
+
+    const fetchOrderForms = async (order: IMemoriamOrder) => {
+        if (order.intake_form_path) {
+            const { data: intakeUrl } = supabase.storage
+                .from("order-forms")
+                .getPublicUrl(order.intake_form_path);
+            setIntakeFormUrl(intakeUrl.publicUrl);
+        }
+        if (order.consent_form_path) {
+            const { data: consentUrl } = supabase.storage
+                .from("order-forms")
+                .getPublicUrl(order.consent_form_path);
+            setConsentFormUrl(consentUrl.publicUrl);
         }
     };
 
@@ -126,6 +139,85 @@ export default function EditPage() {
         } catch (error) {
             console.error("Error deleting image:", error);
             message.error("Failed to delete image");
+        }
+    };
+
+    const handleFormDelete = async (formType: "intake" | "consent") => {
+        try {
+            const path =
+                formType === "intake"
+                    ? memoriamOrder?.intake_form_path
+                    : memoriamOrder?.consent_form_path;
+            if (!path) return;
+
+            const { error } = await supabase.storage
+                .from("order-forms")
+                .remove([path]);
+
+            if (error) throw error;
+
+            // Update the database to remove the form path
+            const { error: updateError } = await supabase
+                .from("memoriam_orders")
+                .update({ [`${formType}_form_path`]: null })
+                .eq("id", memoriamOrder?.id);
+
+            if (updateError) throw updateError;
+
+            message.success(
+                `${
+                    formType.charAt(0).toUpperCase() + formType.slice(1)
+                } form deleted successfully`
+            );
+
+            // Update local state
+            if (formType === "intake") {
+                setIntakeFormUrl(null);
+            } else {
+                setConsentFormUrl(null);
+            }
+
+            // Refetch the order to update memoriamOrder state
+            refetchOrder();
+        } catch (error) {
+            console.error(`Error deleting ${formType} form:`, error);
+            message.error(`Failed to delete ${formType} form`);
+        }
+    };
+
+    const handleFormUpload = async (
+        formType: "intake" | "consent",
+        file: File
+    ) => {
+        try {
+            const fileName = `${formType}_form_${Date.now()}`;
+            const filePath = `${memoriamOrder?.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("order-forms")
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // Update the database with the new form path
+            const { error: updateError } = await supabase
+                .from("memoriam_orders")
+                .update({ [`${formType}_form_path`]: filePath })
+                .eq("id", memoriamOrder?.id);
+
+            if (updateError) throw updateError;
+
+            message.success(
+                `${
+                    formType.charAt(0).toUpperCase() + formType.slice(1)
+                } form uploaded successfully`
+            );
+
+            // Refetch the order to update memoriamOrder state and form URLs
+            refetchOrder();
+        } catch (error) {
+            console.error(`Error uploading ${formType} form:`, error);
+            message.error(`Failed to upload ${formType} form`);
         }
     };
 
@@ -193,58 +285,177 @@ export default function EditPage() {
                         <Text strong>Date Loaded:</Text>
                         <div>{memoriamOrder?.date_loaded?.toString()}</div>
                     </Col>
-                    <Col span={12}>
-                        <Text strong>Intake Form:</Text>
-                        <div style={{ wordBreak: "break-all" }}>
-                            <Space style={{ marginLeft: "8px" }}>
-                                <Button
-                                    icon={<FileTextOutlined />}
-                                    onClick={() => handlePreview(intakeFormUrl)}
-                                    size="small"
-                                >
-                                    Preview
-                                </Button>
-                                <Button
-                                    icon={<DownloadOutlined />}
-                                    onClick={() =>
-                                        handleDownload(
-                                            intakeFormUrl,
-                                            "intake_form.pdf"
-                                        )
+                    <Col span={24}>
+                        <Text strong>Order Forms:</Text>
+                        <Upload
+                            beforeUpload={(file) => {
+                                handleFormUpload("intake", file);
+                                return false;
+                            }}
+                            showUploadList={false}
+                        ></Upload>
+                        <div
+                            style={{
+                                marginTop: "16px",
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "16px",
+                            }}
+                        >
+                            <Card
+                                hoverable
+                                style={{ width: 240 }}
+                                cover={
+                                    <div
+                                        style={{
+                                            height: 150,
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            background: "#f0f0f0",
+                                        }}
+                                    >
+                                        <Image
+                                            src={`${intakeFormUrl}`}
+                                            alt={`intake form`}
+                                            style={{
+                                                maxWidth: "100%",
+                                                maxHeight: "150px",
+                                                objectFit: "contain",
+                                            }}
+                                            preview={false}
+                                        />
+                                    </div>
+                                }
+                                actions={[
+                                    intakeFormUrl && (
+                                        <EyeOutlined
+                                            key="view"
+                                            onClick={() =>
+                                                handlePreview(intakeFormUrl)
+                                            }
+                                        />
+                                    ),
+                                    intakeFormUrl && (
+                                        <DownloadOutlined
+                                            key="download"
+                                            onClick={() =>
+                                                handleDownload(
+                                                    intakeFormUrl,
+                                                    "intake_form"
+                                                )
+                                            }
+                                        />
+                                    ),
+                                    intakeFormUrl ? (
+                                        <DeleteOutlined
+                                            key="delete"
+                                            onClick={() =>
+                                                handleFormDelete("intake")
+                                            }
+                                        />
+                                    ) : (
+                                        <Upload
+                                            beforeUpload={(file) => {
+                                                handleFormUpload(
+                                                    "intake",
+                                                    file
+                                                );
+                                                return false;
+                                            }}
+                                            showUploadList={false}
+                                        >
+                                            <UploadOutlined />
+                                        </Upload>
+                                    ),
+                                ].filter(Boolean)}
+                            >
+                                <Card.Meta
+                                    title="Intake Form"
+                                    description={
+                                        intakeFormUrl
+                                            ? "Uploaded"
+                                            : "Not uploaded"
                                     }
-                                    size="small"
-                                >
-                                    Download
-                                </Button>
-                            </Space>
-                        </div>
-                    </Col>
-                    <Col span={12}>
-                        <Text strong>Consent Form:</Text>
-                        <div style={{ wordBreak: "break-all" }}>
-                            <Space style={{ marginLeft: "8px" }}>
-                                <Button
-                                    icon={<FileTextOutlined />}
-                                    onClick={() =>
-                                        handlePreview(consentFormUrl)
+                                />
+                            </Card>
+                            <Card
+                                hoverable
+                                style={{ width: 240 }}
+                                cover={
+                                    <div
+                                        style={{
+                                            height: 150,
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            background: "#f0f0f0",
+                                        }}
+                                    >
+                                        <Image
+                                            src={`${consentFormUrl}`}
+                                            alt={`consent form`}
+                                            style={{
+                                                maxWidth: "100%",
+                                                maxHeight: "150px",
+                                                objectFit: "contain",
+                                            }}
+                                            preview={false}
+                                        />
+                                    </div>
+                                }
+                                actions={[
+                                    consentFormUrl && (
+                                        <EyeOutlined
+                                            key="view"
+                                            onClick={() =>
+                                                handlePreview(consentFormUrl)
+                                            }
+                                        />
+                                    ),
+                                    consentFormUrl && (
+                                        <DownloadOutlined
+                                            key="download"
+                                            onClick={() =>
+                                                handleDownload(
+                                                    consentFormUrl,
+                                                    "consent_form"
+                                                )
+                                            }
+                                        />
+                                    ),
+                                    consentFormUrl ? (
+                                        <DeleteOutlined
+                                            key="delete"
+                                            onClick={() =>
+                                                handleFormDelete("consent")
+                                            }
+                                        />
+                                    ) : (
+                                        <Upload
+                                            beforeUpload={(file) => {
+                                                handleFormUpload(
+                                                    "consent",
+                                                    file
+                                                );
+                                                return false;
+                                            }}
+                                            showUploadList={false}
+                                        >
+                                            <UploadOutlined />
+                                        </Upload>
+                                    ),
+                                ].filter(Boolean)}
+                            >
+                                <Card.Meta
+                                    title="Consent Form"
+                                    description={
+                                        consentFormUrl
+                                            ? "Uploaded"
+                                            : "Not uploaded"
                                     }
-                                    size="small"
-                                >
-                                    Preview
-                                </Button>
-                                <Button
-                                    icon={<DownloadOutlined />}
-                                    onClick={() =>
-                                        handleDownload(
-                                            consentFormUrl,
-                                            "consent_form.pdf"
-                                        )
-                                    }
-                                    size="small"
-                                >
-                                    Download
-                                </Button>
-                            </Space>
+                                />
+                            </Card>
                         </div>
                     </Col>
                 </Row>
