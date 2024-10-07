@@ -62,6 +62,7 @@ export default function LivingOrders() {
     } = useStripeInvoice();
 
     const [currentRecord, setCurrentRecord] = useState<any>(null);
+    const [customNote, setCustomNote] = useState("");
 
     const {
         emailHistory,
@@ -83,6 +84,7 @@ export default function LivingOrders() {
     const handleEmailTypeSelect = (record: any, emailType: string) => {
         setCurrentRecord(record);
         setSelectedEmailType(emailType);
+        setCustomNote(""); // Reset custom note when selecting a new email type
         handleSendEmail(record);
     };
 
@@ -92,7 +94,8 @@ export default function LivingOrders() {
                 currentRecord,
                 createInvoice,
                 (orderId) =>
-                    `https://app.tattoomemorials.com/living-order/${orderId}`
+                    `https://app.tattoomemorials.com/living-order/${orderId}`,
+                customNote // Pass the custom note to the email sending function
             );
         }
     };
@@ -319,6 +322,14 @@ export default function LivingOrders() {
                                 </Select.Option>
                             ))}
                         </Select>
+                    </Form.Item>
+                    <Form.Item label="Custom Note (Optional)">
+                        <Input.TextArea
+                            rows={4}
+                            value={customNote}
+                            onChange={(e) => setCustomNote(e.target.value)}
+                            placeholder="Enter any additional information you'd like to include in the email..."
+                        />
                     </Form.Item>
                 </Form>
             </Modal>
