@@ -13,6 +13,7 @@ interface OrderRecord {
     street_address2?: string;
     postal_code?: string;
     state?: string;
+    photograph_disposition?: string;
 }
 
 interface InvoiceResult {
@@ -64,6 +65,7 @@ export const useStripeInvoice = () => {
                 postal_code: orderRecord.postal_code || "",
                 state: orderRecord.state || "",
             },
+            photographDisposition: orderRecord.photograph_disposition,
         };
 
         try {
