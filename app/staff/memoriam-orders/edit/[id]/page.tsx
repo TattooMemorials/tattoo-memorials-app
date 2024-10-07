@@ -622,6 +622,29 @@ export default function EditPage() {
                             />
                         </Form.Item>
                     </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Photograph Disposition"
+                            name="photograph_disposition"
+                        >
+                            <Select
+                                value={memoriamOrder?.photograph_disposition}
+                            >
+                                <Select.Option
+                                    key={"DELETE_AFTER_ORDER"}
+                                    value={"DELETE_AFTER_ORDER"}
+                                >
+                                    Delete after Order
+                                </Select.Option>
+                                <Select.Option
+                                    key={"RETAIN_1_YEAR"}
+                                    value={"RETAIN_1_YEAR"}
+                                >
+                                    Retain for One Year
+                                </Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
                 </Row>
 
                 {!isAsIs && (
@@ -775,4 +798,5 @@ export interface IMemoriamOrder {
     funeral_home_rep?: string;
     intake_form_path?: string;
     consent_form_path?: string;
+    photograph_disposition: "DELETE_AFTER_ORDER" | "RETAIN_1_YEAR" | null;
 }

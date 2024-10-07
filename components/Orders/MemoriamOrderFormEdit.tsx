@@ -8,6 +8,7 @@ import ProgressBar from "./ProgressBar";
 import { formatPhoneNumber } from "@/utils/common/format";
 import OrderDetails from "./OrderDetails";
 import SomethingWentWrong from "../Common/SomethingWentWrong";
+import React from "react";
 
 export type Medium =
     | "Acrylic"
@@ -49,6 +50,7 @@ export interface MemoriamFormData {
     alterationNotes?: string | null;
     inspirationNotes?: string;
     medium: Medium | null;
+    photograph_disposition: "DELETE_AFTER_ORDER" | "RETAIN_1_YEAR" | null;
 }
 
 interface MemoriamOrderFormEditProps {
@@ -79,6 +81,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
         alterationNotes: "",
         inspirationNotes: "",
         medium: null,
+        photograph_disposition: null,
     };
 
     const totalSteps = 3;
@@ -90,6 +93,8 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [photoDispositionConfirmation, setPhotoDispositionConfirmation] =
+        useState<"accept" | "decline" | null>(null);
 
     // Fetch order data from Supabase
     useEffect(() => {
@@ -119,6 +124,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         alterationNotes: data.alteration_notes || "",
                         inspirationNotes: data.inspiration_notes || "",
                         medium: (data.medium as Medium) || null,
+                        photograph_disposition: data.photograph_disposition,
                     });
                     setIsOrderComplete(data.is_complete); // TODO: remove hardcoded status. need to add `status` to the order tables in Supabase
                 }
@@ -181,6 +187,11 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
         if (step === 3) {
             if (!formData.asIs && !formData.altered) {
                 alert("Please select either 'As Is' or 'Altered'.");
+                return false;
+            }
+
+            if (!photoDispositionConfirmation) {
+                alert("Please confirm your choice to retain the photograph.");
                 return false;
             }
 
@@ -285,6 +296,10 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     };
 
     const submitForm = async () => {
+        if (!validateCurrentStep()) {
+            return; // Exit if validation fails
+        }
+
         // Handle Google reCAPTCHA v3
         if (!executeRecaptcha) {
             console.log("Execute recaptcha not yet available");
@@ -320,6 +335,15 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
         try {
             setIsModalOpen(true);
 
+            let tempPhotoDisposition = formData.photograph_disposition;
+            if (formData.photograph_disposition === "RETAIN_1_YEAR") {
+                if (photoDispositionConfirmation === "decline") {
+                    // User declined to retain the photo, so update the formData
+                    tempPhotoDisposition = "DELETE_AFTER_ORDER";
+                }
+                // If 'accept', we don't need to change anything as it's already set to "RETAIN_1_YEAR"
+            }
+
             // Handle form submission logic here
             // This should update the existing order in Supabase instead of creating a new one
             try {
@@ -341,6 +365,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         inspiration_notes: formData.inspirationNotes,
                         medium: formData.medium,
                         is_complete: true,
+                        photograph_disposition: tempPhotoDisposition,
                     })
                     .eq("id", orderId);
 
@@ -662,100 +687,166 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
             )}
 
             {step === 3 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div
-                        className={`relative flex flex-col justify-between border border-black rounded-md p-4 cursor-pointer transition ${
-                            formData.asIs
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("asIs")}
-                    >
-                        <div>
-                            <span className="font-bold text-lg">As Is</span>
-                            <p className="text-sm mt-2">
-                                The artwork created will be the same size and
-                                color as the original with no augmentation.
-                            </p>
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div
+                            className={`relative flex flex-col justify-between border border-black rounded-md p-4 cursor-pointer transition ${
+                                formData.asIs
+                                    ? "bg-navy-500 text-white"
+                                    : "bg-tan-500 text-black"
+                            }`}
+                            onClick={() => toggleCheckbox("asIs")}
+                        >
+                            <div>
+                                <span className="font-bold text-lg">As Is</span>
+                                <p className="text-sm mt-2">
+                                    The artwork created will be the same size
+                                    and color as the original with no
+                                    augmentation.
+                                </p>
+                            </div>
+                            {formData.asIs && (
+                                <span className="absolute top-2 right-2 text-xl">
+                                    ✓
+                                </span>
+                            )}
                         </div>
-                        {formData.asIs && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
-                        )}
-                    </div>
 
-                    <div
-                        className={`relative flex flex-col justify-between border border-black rounded-md p-4 cursor-pointer transition ${
-                            formData.altered
-                                ? "bg-navy-500 text-white"
-                                : "bg-tan-500 text-black"
-                        }`}
-                        onClick={() => toggleCheckbox("altered")}
-                    >
-                        <div>
-                            <span className="font-bold text-lg">Altered</span>
-                            <p className="text-sm mt-2">
-                                The artwork created can be altered in size,
-                                color, and with any additional augmentations
-                                specified below.
-                            </p>
+                        <div
+                            className={`relative flex flex-col justify-between border border-black rounded-md p-4 cursor-pointer transition ${
+                                formData.altered
+                                    ? "bg-navy-500 text-white"
+                                    : "bg-tan-500 text-black"
+                            }`}
+                            onClick={() => toggleCheckbox("altered")}
+                        >
+                            <div>
+                                <span className="font-bold text-lg">
+                                    Altered
+                                </span>
+                                <p className="text-sm mt-2">
+                                    The artwork created can be altered in size,
+                                    color, and with any additional augmentations
+                                    specified below.
+                                </p>
+                            </div>
+                            {formData.altered && (
+                                <span className="absolute top-2 right-2 text-xl">
+                                    ✓
+                                </span>
+                            )}
                         </div>
+
                         {formData.altered && (
-                            <span className="absolute top-2 right-2 text-xl">
-                                ✓
-                            </span>
+                            <div className="col-span-1 sm:col-span-2 mt-6 p-4 border border-black rounded-md bg-tan-500 text-white">
+                                <h2 className="text-lg font-semibold mb-4 text-black">
+                                    Please describe the augmentations below. Be
+                                    sure to include the dimensions in inches for
+                                    size alterations.
+                                </h2>
+
+                                <h3 className="text-md font-medium mb-2 text-black">
+                                    What would you like to change?
+                                </h3>
+                                <textarea
+                                    className="rounded-md px-4 py-3 bg-tan-500 w-full border border-black mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
+                                    placeholder="Describe the changes you would like..."
+                                    value={formData.alterationNotes || ""}
+                                    onChange={(e) =>
+                                        updateFormData(
+                                            "alterationNotes",
+                                            e.target.value
+                                        )
+                                    }
+                                    required
+                                />
+
+                                <h2 className="text-lg font-semibold mb-4 text-black">
+                                    Do you have any examples or inspiration you
+                                    can share with us that will help us better
+                                    understand the direction you wish us to take
+                                    for your artistic representation?
+                                </h2>
+
+                                <h3 className="text-md font-medium mb-2 text-black">
+                                    Pinterest, YouTube, URL, etc.
+                                </h3>
+                                <textarea
+                                    className="rounded-md px-4 py-3 bg-tan-500 w-full border border-black mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
+                                    placeholder="Provide links or descriptions..."
+                                    value={formData.inspirationNotes || ""}
+                                    onChange={(e) =>
+                                        updateFormData(
+                                            "inspirationNotes",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                            </div>
                         )}
                     </div>
-
-                    {formData.altered && (
-                        <div className="col-span-1 sm:col-span-2 mt-6 p-4 border border-black rounded-md bg-tan-500 text-white">
-                            <h2 className="text-lg font-semibold mb-4 text-black">
-                                Please describe the augmentations below. Be sure
-                                to include the dimensions in inches for size
-                                alterations.
-                            </h2>
-
-                            <h3 className="text-md font-medium mb-2 text-black">
-                                What would you like to change?
-                            </h3>
-                            <textarea
-                                className="rounded-md px-4 py-3 bg-tan-500 w-full border border-black mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
-                                placeholder="Describe the changes you would like..."
-                                value={formData.alterationNotes || ""}
-                                onChange={(e) =>
-                                    updateFormData(
-                                        "alterationNotes",
-                                        e.target.value
-                                    )
-                                }
-                                required
-                            />
-
-                            <h2 className="text-lg font-semibold mb-4 text-black">
-                                Do you have any examples or inspiration you can
-                                share with us that will help us better
-                                understand the direction you wish us to take for
-                                your artistic representation?
-                            </h2>
-
-                            <h3 className="text-md font-medium mb-2 text-black">
-                                Pinterest, YouTube, URL, etc.
-                            </h3>
-                            <textarea
-                                className="rounded-md px-4 py-3 bg-tan-500 w-full border border-black mb-4 sm:mb-6 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
-                                placeholder="Provide links or descriptions..."
-                                value={formData.inspirationNotes || ""}
-                                onChange={(e) =>
-                                    updateFormData(
-                                        "inspirationNotes",
-                                        e.target.value
-                                    )
-                                }
-                            />
+                    {formData.photograph_disposition === "RETAIN_1_YEAR" && (
+                        <div>
+                            <p>
+                                I previously consented that I wish for Tattoo
+                                Memorials to retain and store the photographs of
+                                my loved one for one year to create additional
+                                art at some future date. I understand the fee
+                                for this service is $25.
+                            </p>
+                            <div className="flex flex-col space-y-2">
+                                <div className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        id="acceptRetainPhoto"
+                                        name="photoDispositionConfirmation"
+                                        value="accept"
+                                        checked={
+                                            photoDispositionConfirmation ===
+                                            "accept"
+                                        }
+                                        onChange={() =>
+                                            setPhotoDispositionConfirmation(
+                                                "accept"
+                                            )
+                                        }
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="acceptRetainPhoto"
+                                        className="ml-2 text-black"
+                                    >
+                                        Accept
+                                    </label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        id="declineRetainPhoto"
+                                        name="photoDispositionConfirmation"
+                                        value="decline"
+                                        checked={
+                                            photoDispositionConfirmation ===
+                                            "decline"
+                                        }
+                                        onChange={() =>
+                                            setPhotoDispositionConfirmation(
+                                                "decline"
+                                            )
+                                        }
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="declineRetainPhoto"
+                                        className="ml-2 text-black"
+                                    >
+                                        Decline
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     )}
-                </div>
+                </>
             )}
 
             <div className="flex justify-between mt-4">
