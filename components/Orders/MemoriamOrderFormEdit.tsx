@@ -785,6 +785,13 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         Submit
                     </button>
                 )}
+                <a
+                    href="https://www.tattoomemorials.com/pricing"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    Click here to view our pricing page.
+                </a>
             </div>
             <LivingFormConfirmationModal
                 isOpen={isModalOpen}
