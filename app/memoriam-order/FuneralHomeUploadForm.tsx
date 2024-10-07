@@ -25,10 +25,25 @@ const FuneralHomeUploadForm: React.FC = () => {
     const [images, setImages] = useState<File[]>([]);
     const [isFormValid, setIsFormValid] = useState(false);
     const [email, setEmail] = useState<string>("");
+    const [duplicateFileError, setDuplicateFileError] = useState<string | null>(
+        null
+    );
 
-    // Add this useEffect hook to check form validity
+    // Modify the useEffect hook to check for duplicates
     useEffect(() => {
-        setIsFormValid(!!intakeForm && !!consentForm && images.length > 0);
+        const hasDuplicateFiles =
+            intakeForm && consentForm && intakeForm.name === consentForm.name;
+        setDuplicateFileError(
+            hasDuplicateFiles
+                ? "The Intake Form and Consent Form cannot be the same file. Please select different files."
+                : null
+        );
+        setIsFormValid(
+            !!intakeForm &&
+                !!consentForm &&
+                images.length > 0 &&
+                !hasDuplicateFiles
+        );
     }, [intakeForm, consentForm, images]);
 
     const handleImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -65,6 +80,20 @@ const FuneralHomeUploadForm: React.FC = () => {
                     );
                 }
                 break;
+        }
+    };
+
+    const handleIntakeFormChange = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target && event.target.files) {
+            const newFile = event.target.files[0];
+            setIntakeForm(newFile);
+        }
+    };
+
+    const handleConsentFormChange = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target && event.target.files) {
+            const newFile = event.target.files[0];
+            setConsentForm(newFile);
         }
     };
 
@@ -294,6 +323,15 @@ const FuneralHomeUploadForm: React.FC = () => {
             onSubmit={handleSubmit}
             className="flex flex-col w-full gap-6 text-foreground bg-tan-500 p-8 rounded-lg"
         >
+            {duplicateFileError && (
+                <div
+                    className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"
+                    role="alert"
+                >
+                    <p>{duplicateFileError}</p>
+                </div>
+            )}
+
             {/* Intake Form Upload */}
             <div className="flex flex-col mb-4">
                 <label className="text-lg text-black mb-2">
@@ -312,11 +350,7 @@ const FuneralHomeUploadForm: React.FC = () => {
                     <input
                         id="intakeForm"
                         type="file"
-                        onChange={(event) => {
-                            if (event.target && event.target.files) {
-                                setIntakeForm(event.target.files[0]);
-                            }
-                        }}
+                        onChange={handleIntakeFormChange}
                         className="hidden"
                     />
                 </div>
@@ -353,11 +387,7 @@ const FuneralHomeUploadForm: React.FC = () => {
                     <input
                         id="consentForm"
                         type="file"
-                        onChange={(event) => {
-                            if (event.target && event.target.files) {
-                                setConsentForm(event.target.files[0]);
-                            }
-                        }}
+                        onChange={handleConsentFormChange}
                         className="hidden"
                     />
                 </div>

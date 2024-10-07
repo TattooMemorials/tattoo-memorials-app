@@ -67,8 +67,6 @@ export async function POST(request: Request) {
 
         const { formData } = await request.json();
 
-        // TODO: Validate formData here
-
         const result = await submitMemoriamForm(formData, supabase);
 
         if (result.success) {
@@ -128,8 +126,6 @@ export async function DELETE(request: Request) {
         const supabase = createClient();
 
         const { orderId } = await request.json();
-
-        // TODO: Validate formData here
 
         const result = await deleteOrder(orderId, supabase);
 
