@@ -64,6 +64,7 @@ export default function MemoriamOrders() {
     const [currentRecord, setCurrentRecord] = useState<any>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
+    const [customNote, setCustomNote] = useState("");
 
     const { mutate: updateRecord } = useUpdate();
 
@@ -83,6 +84,7 @@ export default function MemoriamOrders() {
         setCurrentRecord(record);
         setSelectedEmailType(emailType);
         handleSendEmail(record);
+        setCustomNote("");
     };
 
     const onConfirmSendEmail = () => {
@@ -91,7 +93,8 @@ export default function MemoriamOrders() {
                 currentRecord,
                 createInvoice,
                 (orderId) =>
-                    `https://app.tattoomemorials.com/memoriam-order/${orderId}`
+                    `https://app.tattoomemorials.com/memoriam-order/${orderId}`,
+                customNote
             );
         }
     };
@@ -321,6 +324,14 @@ export default function MemoriamOrders() {
                                 </Select.Option>
                             ))}
                         </Select>
+                    </Form.Item>
+                    <Form.Item label="Custom Note (Optional)">
+                        <Input.TextArea
+                            rows={4}
+                            value={customNote}
+                            onChange={(e) => setCustomNote(e.target.value)}
+                            placeholder="Enter any additional information you'd like to include in the email..."
+                        />
                     </Form.Item>
                 </Form>
             </Modal>

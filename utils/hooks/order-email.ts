@@ -93,7 +93,8 @@ export const useOrderEmail = (orderType: "living" | "memoriam") => {
     const handleConfirmSendEmail = async (
         record: OrderRecord,
         createInvoice: (record: OrderRecord) => Promise<any>,
-        getOrderUrl: (orderId: BaseKey) => string
+        getOrderUrl: (orderId: BaseKey) => string,
+        customNote?: string
     ) => {
         const hasSentBefore = emailHistory.some(
             (email) => email.email_type === selectedEmailType
@@ -120,8 +121,10 @@ export const useOrderEmail = (orderType: "living" | "memoriam") => {
                         <p>Hello,</p>
                         <p>A new memoriam order has been created. You can view and edit the order details by clicking the link below:</p>
                         <p><a href="${orderUrl}">Click here to complete your order</a></p>
+                        <p>${customNote}</p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
+                       
                     `;
                     break;
                 case "SEND_INVOICE":
@@ -152,8 +155,10 @@ export const useOrderEmail = (orderType: "living" | "memoriam") => {
                             invoiceResult.invoiceUrl
                         }">View Invoice & Pay</a></p>
                         <p>You can view your original order details here: <a href="${orderUrl}">View Order</a></p>
+                        <p>${customNote}</p>
                         <p>Thank you,</p>
                         <p>Tattoo Memorials Team</p>
+                        
                     `;
                     break;
             }
