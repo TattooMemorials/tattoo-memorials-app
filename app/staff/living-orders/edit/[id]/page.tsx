@@ -20,7 +20,12 @@ import {
 } from "antd";
 import { useParams } from "next/navigation";
 import { Medium, MEDIUMS } from "@/components/Orders/LivingOrderForm";
-import { UploadOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+    UploadOutlined,
+    DeleteOutlined,
+    EyeOutlined,
+    DownloadOutlined,
+} from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import React from "react";
 
@@ -104,6 +109,36 @@ export default function EditPage() {
         } catch (error) {
             console.error("Error deleting image:", error);
             message.error("Failed to delete image");
+        }
+    };
+
+    const getFileNameWithExtension = (
+        fileName: string,
+        contentType: string | null
+    ): string => {
+        if (!contentType) return fileName;
+        const extension = contentType.split("/").pop();
+        if (fileName.endsWith(`.${extension}`)) return fileName;
+        return `${fileName}.${extension}`;
+    };
+
+    const handleDownload = async (url: string | null, fileName: string) => {
+        if (url) {
+            try {
+                const response = await fetch(url);
+                const contentType = response.headers.get("content-type");
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = blobUrl;
+                link.download = getFileNameWithExtension(fileName, contentType);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (error) {
+                console.error("Error downloading file:", error);
+            }
         }
     };
 
@@ -331,6 +366,21 @@ export default function EditPage() {
                                                             `${livingOrder?.id}/${image}`
                                                         ).data.publicUrl
                                                 }`
+                                            )
+                                        }
+                                    />,
+                                    <DownloadOutlined
+                                        key="download"
+                                        onClick={() =>
+                                            handleDownload(
+                                                `${
+                                                    supabase.storage
+                                                        .from("order-images")
+                                                        .getPublicUrl(
+                                                            `${livingOrder?.id}/${image}`
+                                                        ).data.publicUrl
+                                                }`,
+                                                `${livingOrder?.id}/${image}`
                                             )
                                         }
                                     />,
