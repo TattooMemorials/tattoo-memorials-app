@@ -70,8 +70,6 @@ export async function POST(request: Request) {
 
         const { formData } = await request.json();
 
-        // TODO: Validate formData here
-
         const result = await submitLivingForm(formData, supabase);
 
         if (result.success) {

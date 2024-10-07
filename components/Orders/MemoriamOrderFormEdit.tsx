@@ -126,7 +126,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         medium: (data.medium as Medium) || null,
                         photograph_disposition: data.photograph_disposition,
                     });
-                    setIsOrderComplete(data.is_complete); // TODO: remove hardcoded status. need to add `status` to the order tables in Supabase
+                    setIsOrderComplete(data.is_complete);
                 }
             } catch (error) {
                 setError("Failed to fetch order data");

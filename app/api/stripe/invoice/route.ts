@@ -10,9 +10,8 @@ export async function POST(request: NextRequest) {
             amount, // cents
             medium,
             customerAddress,
+            photographDisposition,
         } = await request.json();
-
-        console.log("Starting invoice process for:", customerName);
 
         const customer = await stripe.customers.create({
             name: customerName,
@@ -22,8 +21,6 @@ export async function POST(request: NextRequest) {
                 validate_location: "immediately",
             },
         });
-
-        console.log("Customer created:", customer.id);
 
         const invoice = await stripe.invoices.create({
             customer: customer.id,
@@ -37,8 +34,6 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        console.log("Invoice created:", invoice.id);
-
         const invoiceItem = await stripe.invoiceItems.create({
             customer: customer.id,
             amount: amount, // cents
@@ -46,11 +41,16 @@ export async function POST(request: NextRequest) {
             invoice: invoice.id,
         });
 
-        console.log("Invoice item created:", invoiceItem.id);
+        if (photographDisposition === "RETAIN_1_YEAR") {
+            const storageFeeInvoiceItem = await stripe.invoiceItems.create({
+                customer: customer.id,
+                amount: 2500, // cents
+                description: "1 Year Photograph Retention",
+                invoice: invoice.id,
+            });
+        }
 
         const sentInvoice = await stripe.invoices.sendInvoice(invoice.id);
-
-        console.log("Invoice sent:", sentInvoice.id);
 
         return NextResponse.json({
             success: true,
@@ -58,7 +58,6 @@ export async function POST(request: NextRequest) {
             invoiceUrl: sentInvoice.hosted_invoice_url,
         });
     } catch (error) {
-        console.error("Error in Stripe invoice process:", error);
         return NextResponse.json(
             { success: false, error: "Internal Server Error" },
             { status: 500 }
