@@ -15,6 +15,14 @@ interface OrderDetailsProps {
 }
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({ formData, orderId }) => {
+    let storageChoice = "";
+    if ("photograph_disposition" in formData) {
+        storageChoice =
+            formData.photograph_disposition === "RETAIN_1_YEAR"
+                ? "accepted"
+                : "declined";
+    }
+
     return (
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
             <div className="text-center mb-8">
@@ -62,6 +70,14 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ formData, orderId }) => {
                         <p className="text-gray-600">Medium:</p>
                         <p className="font-semibold">{formData.medium}</p>
                     </div>
+                    {"photograph_disposition" in formData && (
+                        <div>
+                            <p className="font-semibold">
+                                You have <b>{storageChoice}</b> the optional $25
+                                storage fee to retian your photos for 1 year.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
 
