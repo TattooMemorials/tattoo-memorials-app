@@ -1,19 +1,42 @@
-# Documentation
+# Tattoo Memorials App
 
-TODO:
+## Table of Contents
 
--   .env.local
--   node, npm, nvm install
+-   [Documentation](#documentation)
+-   [Getting Started](#getting-started)
+    -   [Prerequisites](#prerequisites)
+    -   [Installation](#installation)
+    -   [Running the Application](#running-the-application)
+-   [Tech Stack](#tech-stack)
+    -   [Next.js (App Router)](#nextjs-app-router)
+    -   [TypeScript](#typescript)
+    -   [Supabase](#supabase)
+    -   [Refine](#refine)
+    -   [Tailwind CSS](#tailwind-css)
+-   [Authentication (Supabase + Refine.dev)](#authentication-supabase--refinedev)
+    -   [Overview](#overview)
+    -   [Key Components](#key-components)
+    -   [Authentication Flow](#authentication-flow)
+    -   [Implementation Details](#implementation-details)
+    -   [Troubleshooting](#troubleshooting)
 
--   Supabase storage upload limit size: https://supabase.com/docs/guides/storage/uploads/standard-uploads
-    -   6mb for standard upload
-    -   50mb for single image (set in Bucket settigns)
+## Documentation
 
-# Getting Started
+### TODO:
+
+-   [ ] .env.local
+-   [ ] node, npm, nvm install
+
+> **Note:** Supabase storage upload limit size: [Standard Uploads](https://supabase.com/docs/guides/storage/uploads/standard-uploads)
+>
+> -   6MB for standard upload
+> -   50MB for single image (set in Bucket settings)
+
+## Getting Started
 
 This guide will help you set up and run the Tattoo Memorials App on your local machine.
 
-## Prerequisites
+### Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -21,41 +44,50 @@ Before you begin, ensure you have the following installed:
 -   npm (usually comes with Node.js)
 -   Git
 
-## Installation
+### Installation
 
 1. Clone the repository:
-   `git clone https://github.com/dan-tinsman/tattoo-memorials-app.git cd tattoo-memorials-app`
+
+    ```bash
+    git clone https://github.com/dan-tinsman/tattoo-memorials-app.git
+    cd tattoo-memorials-app
+    ```
 
 2. Install dependencies:
-   `npm install`
+
+    ```bash
+    npm install
+    ```
 
 3. Set up environment variables:
+    - Copy the `.env.example` file to `.env.local`
+    - Fill in the necessary environment variables, including Supabase credentials
 
--   Copy the `.env.example` file to `.env.local`
--   Fill in the necessary environment variables, including Supabase credentials
-
-## Running the Application
+### Running the Application
 
 1. Start the development server:
-   `npm run dev`
+
+    ```bash
+    npm run dev
+    ```
 
 2. Open your browser and navigate to `http://localhost:3000`
 
 You should now see the Tattoo Memorials App running locally on your machine.
 
-## Additional Notes
-
--   For API development, check the `app/api` directory
--   To work on the admin panel, look in the `app/staff` directory
--   Refer to the Tech Stack section in the README for more details on the technologies used
+> **Additional Notes:**
+>
+> -   For API development, check the `app/api` directory
+> -   To work on the admin panel, look in the `app/staff` directory
+> -   Refer to the Tech Stack section for more details on the technologies used
 
 Happy coding!
 
-# Tech Stack
+## Tech Stack
 
 The Tattoo Memorials App is built using a modern web development stack, combining powerful and flexible technologies. Here's an overview of the main components:
 
-## Next.js (App Router)
+### Next.js (App Router)
 
 [Next.js](https://nextjs.org/) is the core framework used for building the application. We specifically use the new App Router feature, which provides an intuitive and efficient way to handle routing in our app.
 
@@ -64,7 +96,7 @@ The Tattoo Memorials App is built using a modern web development stack, combinin
 
 [Next.js Documentation](https://nextjs.org/docs)
 
-## TypeScript
+### TypeScript
 
 [TypeScript](https://www.typescriptlang.org/) is used throughout the project to add static typing to our JavaScript code.
 
@@ -73,7 +105,7 @@ The Tattoo Memorials App is built using a modern web development stack, combinin
 
 [TypeScript Documentation](https://www.typescriptlang.org/docs/)
 
-## Supabase
+### Supabase
 
 [Supabase](https://supabase.com/) serves as our backend-as-a-service (BaaS) solution, providing database, authentication, and real-time subscription features.
 
@@ -82,7 +114,7 @@ The Tattoo Memorials App is built using a modern web development stack, combinin
 
 [Supabase Documentation](https://supabase.com/docs)
 
-## Refine
+### Refine
 
 [Refine](https://refine.dev/) is used to build our admin panel, providing a powerful set of tools for creating data-driven applications.
 
@@ -91,7 +123,7 @@ The Tattoo Memorials App is built using a modern web development stack, combinin
 
 [Refine Documentation](https://refine.dev/docs/)
 
-## Tailwind CSS
+### Tailwind CSS
 
 [Tailwind CSS](https://tailwindcss.com/) is our utility-first CSS framework, used for styling the application.
 
@@ -102,15 +134,15 @@ The Tattoo Memorials App is built using a modern web development stack, combinin
 
 These technologies work together to create a robust, type-safe, and efficient web application. Next.js provides the overall structure and routing, TypeScript ensures type safety, Supabase handles our backend needs, Refine powers our admin interfaces, and Tailwind CSS allows for rapid and consistent styling.
 
-# Authentication (Supabase + Refine.dev)
+## Authentication (Supabase + Refine.dev)
 
 This section explains how authentication is implemented in our Refine-based application using Supabase Auth, including Multi-Factor Authentication (MFA) and middleware protection.
 
-## Overview
+### Overview
 
 Our authentication system combines Supabase Auth for user management and authentication, Refine for UI components and routing, and custom middleware for protecting routes. The system includes MFA as a required step for all users.
 
-## Key Components
+### Key Components
 
 1. **Supabase Auth**: Handles user registration, login, and MFA.
 2. **Auth Provider** (`/app/staff/auth-provider.ts`): Manages authentication state and methods.
@@ -119,7 +151,7 @@ Our authentication system combines Supabase Auth for user management and authent
 5. **MFA Verification Page** (`/app/staff/mfa/page.tsx`): Handles MFA code verification.
 6. **Refine**: Provides the UI components and routing system ([documentation](https://refine.dev/docs/))
 
-## Authentication Flow
+### Authentication Flow
 
 1. User logs in with email/password via Supabase Auth.
 2. If MFA is not set up, user is redirected to MFA setup page.
@@ -127,9 +159,9 @@ Our authentication system combines Supabase Auth for user management and authent
 4. On subsequent logins, user enters MFA code after password.
 5. Upon successful verification, user gains access to protected routes.
 
-## Implementation Details
+### Implementation Details
 
-### Auth Provider (`/app/staff/auth-provider.ts`)
+#### Auth Provider (`/app/staff/auth-provider.ts`)
 
 The Auth Provider interfaces between Refine and Supabase Auth, handling:
 
@@ -144,7 +176,7 @@ Key methods:
 -   `check()`: Verifies authentication status and MFA requirements
 -   `logout()`: Manages the logout process
 
-### Middleware (`/middleware.ts`)
+#### Middleware (`/middleware.ts`)
 
 The middleware runs on every request to protected routes and ensures:
 
@@ -154,7 +186,7 @@ The middleware runs on every request to protected routes and ensures:
 -   Users without MFA setup are redirected to the MFA setup page
 -   Users who haven't completed MFA for the current session are redirected to the MFA verification page
 
-### MFA Setup Page (`/app/staff/mfa-setup/page.tsx`)
+#### MFA Setup Page (`/app/staff/mfa-setup/page.tsx`)
 
 This page allows users to:
 
@@ -162,14 +194,14 @@ This page allows users to:
 -   Set up new MFA factors
 -   Handle the MFA enrollment process
 
-### MFA Verification Page (`/app/staff/mfa/page.tsx`)
+#### MFA Verification Page (`/app/staff/mfa/page.tsx`)
 
 This page is used for:
 
 -   Verifying MFA codes during login
 -   Re-authenticating users when required (e.g., for setting up additional MFA factors)
 
-### Refine Configuration
+#### Refine Configuration
 
 In the main Refine configuration, we set up:
 
@@ -177,7 +209,7 @@ In the main Refine configuration, we set up:
 -   Routing configuration
 -   Protected resources
 
-## Troubleshooting
+### Troubleshooting
 
 If you encounter authentication issues:
 
