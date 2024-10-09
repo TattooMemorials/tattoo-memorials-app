@@ -2,7 +2,6 @@
 
 ## Table of Contents
 
--   [Documentation](#documentation)
 -   [Getting Started](#getting-started)
     -   [Prerequisites](#prerequisites)
     -   [Installation](#installation)
@@ -19,18 +18,6 @@
     -   [Authentication Flow](#authentication-flow)
     -   [Implementation Details](#implementation-details)
     -   [Troubleshooting](#troubleshooting)
-
-## Documentation
-
-### TODO:
-
--   [ ] .env.local
--   [ ] node, npm, nvm install
-
-> **Note:** Supabase storage upload limit size: [Standard Uploads](https://supabase.com/docs/guides/storage/uploads/standard-uploads)
->
-> -   6MB for standard upload
-> -   50MB for single image (set in Bucket settings)
 
 ## Getting Started
 
@@ -219,3 +206,5 @@ If you encounter authentication issues:
 4. Review Auth Provider and middleware for any logic errors.
 
 For more details on Supabase Auth, refer to the [Supabase documentation](https://supabase.com/docs/guides/auth).
+
+random: 50MB for single image (set in Supabase Bucket settings)
