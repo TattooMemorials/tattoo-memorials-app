@@ -18,7 +18,7 @@
     -   [Authentication Flow](#authentication-flow)
     -   [Implementation Details](#implementation-details)
     -   [Troubleshooting](#troubleshooting)
--   [Stripe Invoicing](#stripe-invoice-creation)
+-   [Stripe Invoicing](#stripe-invoicing)
     -   [Overview](#overview)
     -   [Key Components](#key-components)
     -   [Invoice Creation Flow](#invoice-creation-flow)
@@ -26,6 +26,7 @@
     -   [Usage](#usage)
     -   [Error Handling](#error-handling)
     -   [Customization](#customization)
+-   [Email System](#email-system)
 
 ## Getting Started
 
@@ -286,3 +287,65 @@ The invoice creation process can be customized by modifying the Stripe Invoice A
 -   Adjusting the payment terms (e.g., changing `days_until_due`).
 -   Adding or modifying invoice items.
 -   Customizing the invoice metadata.
+
+## Email System
+
+This section explains how the email system is implemented, including Postmark integration, email templates, and the process for sending emails.
+
+### Overview
+
+Our email system uses Postmark as the email service provider and implements a custom solution for managing email templates and sending emails from the admin interface.
+
+### Key Components
+
+1. **Postmark Integration** (`/app/api/send-email/route.ts`): Handles the actual sending of emails using Postmark.
+2. **useOrderEmail Hook** (`/utils/hooks/order-email.ts`): Manages email-related operations in the admin interface.
+3. **Email Templates**: Implemented directly in the `useOrderEmail` hook.
+
+### Postmark Integration
+
+We use Postmark to send emails. The integration is set up in the `/app/api/send-email/route.ts` file:
+
+-   The Postmark client is initialized using the `POSTMARK_API_TOKEN` environment variable.
+-   Emails are sent using the `postmarkClient.sendEmail()` method.
+-   Different "From" addresses are used for development and production environments.
+
+### Email Templates
+
+Email templates are currently implemented directly in the `useOrderEmail` hook. There are two main types of email templates:
+
+1. **Memoriam Completion Request**: Sent to customers to request completion of their memoriam order.
+2. **Invoice and Payment Link**: Sent to customers with an invoice and payment link for their order.
+
+Templates are constructed using template literals in JavaScript, allowing for dynamic content insertion.
+
+### Sending Emails
+
+The process for sending emails is as follows:
+
+1. Admin selects an order and chooses to send an email.
+2. The `handleSendEmail` function is called, which fetches the email history for the order.
+3. Admin selects an email type from the available options.
+4. The `handleConfirmSendEmail` function is called, which:
+    - Checks if the email type has been sent before and asks for confirmation if needed.
+    - Constructs the email content based on the selected template.
+    - Calls the `sendEmail` function to send the email via the API.
+    - Records the sent email in the email history.
+
+### Adding New Email Templates
+
+To add a new email template:
+
+1. Add a new email type to the `emailTypes` array in the `useOrderEmail` hook.
+2. Add a new case in the `switch` statement in the `handleConfirmSendEmail` function.
+3. Implement the new template logic, including subject and message construction.
+
+### Staff Usage
+
+Staff members can send emails through the admin interface:
+
+1. Navigate to the order details page.
+2. Click on the "Send Email" button.
+3. Select the desired email type from the dropdown.
+4. (Optional) Add a custom note.
+5. Confirm and send the email.
