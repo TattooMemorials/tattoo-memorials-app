@@ -18,6 +18,14 @@
     -   [Authentication Flow](#authentication-flow)
     -   [Implementation Details](#implementation-details)
     -   [Troubleshooting](#troubleshooting)
+-   [Stripe Invoicing](#stripe-invoice-creation)
+    -   [Overview](#overview)
+    -   [Key Components](#key-components)
+    -   [Invoice Creation Flow](#invoice-creation-flow)
+    -   [Implementation Details](#implementation-details)
+    -   [Usage](#usage)
+    -   [Error Handling](#error-handling)
+    -   [Customization](#customization)
 
 ## Getting Started
 
@@ -206,3 +214,75 @@ If you encounter authentication issues:
 4. Review Auth Provider and middleware for any logic errors.
 
 For more details on Supabase Auth, refer to the [Supabase documentation](https://supabase.com/docs/guides/auth).
+
+## Stripe Invoicing
+
+This section explains how Stripe invoices are created and integrated into the memoriam and living order flows.
+
+### Overview
+
+Stripe invoices are generated when an admin sends an email to a customer, typically after an order has been processed and is ready for payment. The invoice creation process is the same for both memoriam and living orders.
+
+### Key Components
+
+1. **Stripe Invoice API** (`/app/api/stripe/invoice/route.ts`): Handles the creation and sending of Stripe invoices.
+2. **useStripeInvoice Hook** (`/utils/hooks/stripe-invoice.ts`): A custom hook that provides a function to create Stripe invoices.
+3. **Order Pages** (`/app/staff/memoriam-orders/page.tsx` and `/app/staff/living-orders/page.tsx`): Admin interfaces for managing orders and triggering invoice creation.
+
+### Invoice Creation Flow
+
+1. Admin selects an order and chooses to send an email (which triggers invoice creation).
+2. The `useStripeInvoice` hook is called with the order details.
+3. The hook sends a request to the Stripe Invoice API.
+4. The API creates a Stripe customer, invoice, and invoice items.
+5. The invoice is sent to the customer via Stripe.
+
+### Implementation Details
+
+#### Stripe Invoice API (`/app/api/stripe/invoice/route.ts`)
+
+This API endpoint handles the creation of Stripe invoices:
+
+1. Creates a Stripe customer with the order details.
+2. Creates a Stripe invoice for the customer.
+3. Adds invoice items based on the order (including the main item and any additional fees).
+4. Sends the invoice to the customer.
+
+Key features:
+
+-   Uses Stripe's `collection_method: "send_invoice"` for flexibility in payment collection.
+-   Sets `days_until_due: 7` for prompt payment (one week).
+-   Enables automatic tax calculation with `automatic_tax: { enabled: true }`.
+-   Adds a storage fee for photograph retention if applicable.
+
+#### useStripeInvoice Hook (`/utils/hooks/stripe-invoice.ts`)
+
+This custom hook provides a `createInvoice` function that:
+
+1. Prepares the invoice data from the order record.
+2. Sends a POST request to the Stripe Invoice API.
+3. Handles success and error states.
+
+#### Order Pages Integration
+
+Both memoriam and living order pages use the `useStripeInvoice` hook to create invoices when sending emails to customers. The process is triggered in the `onConfirmSendEmail` function, which is called when an admin confirms sending an email.
+
+### Usage
+
+1. Admin navigates to the memoriam or living orders page.
+2. Selects an order and chooses to send an email.
+3. Confirms sending the email, which triggers invoice creation.
+4. The invoice is created and sent to the customer via Stripe.
+
+### Error Handling
+
+-   If an error occurs during invoice creation, it's logged and displayed to the admin.
+-   The `useStripeInvoice` hook provides error state that can be used to show error messages in the UI.
+
+### Customization
+
+The invoice creation process can be customized by modifying the Stripe Invoice API endpoint. Common customizations include:
+
+-   Adjusting the payment terms (e.g., changing `days_until_due`).
+-   Adding or modifying invoice items.
+-   Customizing the invoice metadata.

@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         const invoice = await stripe.invoices.create({
             customer: customer.id,
             collection_method: "send_invoice",
-            days_until_due: 1,
+            days_until_due: 7,
             metadata: {
                 order_id: orderId,
             },
