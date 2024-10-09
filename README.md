@@ -206,5 +206,3 @@ If you encounter authentication issues:
 4. Review Auth Provider and middleware for any logic errors.
 
 For more details on Supabase Auth, refer to the [Supabase documentation](https://supabase.com/docs/guides/auth).
-
-random: 50MB for single image (set in Supabase Bucket settings)
