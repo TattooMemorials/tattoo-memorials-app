@@ -347,6 +347,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
             // Handle form submission logic here
             // This should update the existing order in Supabase instead of creating a new one
             try {
+                const datetime = new Date();
                 const { data, error } = await supabase
                     .from("memoriam_orders")
                     .update({
@@ -366,6 +367,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         medium: formData.medium,
                         is_complete: true,
                         photograph_disposition: formData.photograph_disposition,
+                        date_completed: datetime.toISOString(),
                     })
                     .eq("id", orderId);
 
