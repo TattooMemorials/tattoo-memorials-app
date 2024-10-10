@@ -295,6 +295,15 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
         e.target.value = formattedValue;
     };
 
+    const handlePhotoDispositionChange = (
+        value: "RETAIN_1_YEAR" | "DELETE_AFTER_ORDER"
+    ) => {
+        setPhotoDispositionConfirmation(
+            value === "RETAIN_1_YEAR" ? "accept" : "decline"
+        );
+        updateFormData("photograph_disposition", value);
+    };
+
     const submitForm = async () => {
         if (!validateCurrentStep()) {
             return; // Exit if validation fails
@@ -335,15 +344,6 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
         try {
             setIsModalOpen(true);
 
-            let tempPhotoDisposition = formData.photograph_disposition;
-            if (formData.photograph_disposition === "RETAIN_1_YEAR") {
-                if (photoDispositionConfirmation === "decline") {
-                    // User declined to retain the photo, so update the formData
-                    tempPhotoDisposition = "DELETE_AFTER_ORDER";
-                }
-                // If 'accept', we don't need to change anything as it's already set to "RETAIN_1_YEAR"
-            }
-
             // Handle form submission logic here
             // This should update the existing order in Supabase instead of creating a new one
             try {
@@ -365,7 +365,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                         inspiration_notes: formData.inspirationNotes,
                         medium: formData.medium,
                         is_complete: true,
-                        photograph_disposition: tempPhotoDisposition,
+                        photograph_disposition: formData.photograph_disposition,
                     })
                     .eq("id", orderId);
 
@@ -785,67 +785,64 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                             </div>
                         )}
                     </div>
-                    {formData.photograph_disposition === "RETAIN_1_YEAR" && (
-                        <div>
-                            <p>
-                                I previously consented that I wish for Tattoo
-                                Memorials to retain and store the photographs of
-                                my loved one for one year to create additional
-                                art at some future date. I understand the fee
-                                for this service is $25.
-                            </p>
-                            <div className="flex flex-col space-y-2">
-                                <div className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        id="acceptRetainPhoto"
-                                        name="photoDispositionConfirmation"
-                                        value="accept"
-                                        checked={
-                                            photoDispositionConfirmation ===
-                                            "accept"
-                                        }
-                                        onChange={() =>
-                                            setPhotoDispositionConfirmation(
-                                                "accept"
-                                            )
-                                        }
-                                        required
-                                    />
-                                    <label
-                                        htmlFor="acceptRetainPhoto"
-                                        className="ml-2 text-black"
-                                    >
-                                        Accept
-                                    </label>
-                                </div>
-                                <div className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        id="declineRetainPhoto"
-                                        name="photoDispositionConfirmation"
-                                        value="decline"
-                                        checked={
-                                            photoDispositionConfirmation ===
-                                            "decline"
-                                        }
-                                        onChange={() =>
-                                            setPhotoDispositionConfirmation(
-                                                "decline"
-                                            )
-                                        }
-                                        required
-                                    />
-                                    <label
-                                        htmlFor="declineRetainPhoto"
-                                        className="ml-2 text-black"
-                                    >
-                                        Decline
-                                    </label>
-                                </div>
+                    <div>
+                        <p>
+                            I wish for Tattoo Memorials to retain and store the
+                            photographs of my loved one for one year to create
+                            additional art at some future date. I understand the
+                            fee for this service is $25.
+                        </p>
+                        <div className="flex flex-col space-y-2">
+                            <div className="flex items-center">
+                                <input
+                                    type="radio"
+                                    id="acceptRetainPhoto"
+                                    name="photoDispositionConfirmation"
+                                    value="accept"
+                                    checked={
+                                        formData.photograph_disposition ===
+                                        "RETAIN_1_YEAR"
+                                    }
+                                    onChange={() =>
+                                        handlePhotoDispositionChange(
+                                            "RETAIN_1_YEAR"
+                                        )
+                                    }
+                                    required
+                                />
+                                <label
+                                    htmlFor="acceptRetainPhoto"
+                                    className="ml-2 text-black"
+                                >
+                                    Accept
+                                </label>
+                            </div>
+                            <div className="flex items-center">
+                                <input
+                                    type="radio"
+                                    id="declineRetainPhoto"
+                                    name="photoDispositionConfirmation"
+                                    value="decline"
+                                    checked={
+                                        formData.photograph_disposition ===
+                                        "DELETE_AFTER_ORDER"
+                                    }
+                                    onChange={() =>
+                                        handlePhotoDispositionChange(
+                                            "DELETE_AFTER_ORDER"
+                                        )
+                                    }
+                                    required
+                                />
+                                <label
+                                    htmlFor="declineRetainPhoto"
+                                    className="ml-2 text-black"
+                                >
+                                    Decline
+                                </label>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </>
             )}
 

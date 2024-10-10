@@ -195,8 +195,13 @@ export default function OrderShow() {
                     <Descriptions.Item label="Date Loaded">
                         {record?.date_loaded?.toString()}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Total Price">
+                    <Descriptions.Item label="Price">
                         ${record?.total_price}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Photograph Disposition">
+                        {record?.photograph_disposition === "RETAIN_1_YEAR"
+                            ? "Retain One Year"
+                            : "Delete after Order"}
                     </Descriptions.Item>
                     <Descriptions.Item label="First Name">
                         {record?.first_name}
