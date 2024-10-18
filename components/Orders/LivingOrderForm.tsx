@@ -55,6 +55,8 @@ const LivingOrderForm: React.FC = () => {
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [token, setToken] = useState<string | null>(null);
 
+    const phoneRegex = /^\+?1?\s*\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+
     const supabase = createClient();
 
     const initialFormState: LivingFormData = {
@@ -132,8 +134,6 @@ const LivingOrderForm: React.FC = () => {
             }
 
             // Add phone number validation
-            const phoneRegex =
-                /^\+?1?\s*\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
             if (!phoneRegex.test(formatPhoneNumber(formData.phone))) {
                 setPhoneError("Please enter a valid phone number.");
                 return false;
@@ -240,7 +240,6 @@ const LivingOrderForm: React.FC = () => {
         e.target.value = formattedValue;
 
         // Validate the phone number
-        const phoneRegex = /^\+?1?\s*\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
         if (rawValue.length === 10 && !phoneRegex.test(formattedValue)) {
             setPhoneError("Please enter a valid phone number.");
         } else {
