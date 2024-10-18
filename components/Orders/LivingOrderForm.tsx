@@ -87,6 +87,8 @@ const LivingOrderForm: React.FC = () => {
         FileUploadStatus[]
     >([]);
 
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+
     const resetForm = () => {
         setStep(1);
         setFiles([]);
@@ -110,7 +112,6 @@ const LivingOrderForm: React.FC = () => {
     };
 
     const validateCurrentStep = () => {
-        // Step 1: Continue using the existing HTML validation
         if (step === 1) {
             const currentDiv = document.querySelector(
                 `div[data-step="${step}"]`
@@ -127,6 +128,14 @@ const LivingOrderForm: React.FC = () => {
                         return false;
                     }
                 }
+            }
+
+            // Add phone number validation
+            const phoneRegex =
+                /^\+?1?\s*\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+            if (!phoneRegex.test(formatPhoneNumber(formData.phone))) {
+                setPhoneError("Please enter a valid phone number.");
+                return false;
             }
         }
 
@@ -176,23 +185,6 @@ const LivingOrderForm: React.FC = () => {
     const handleNext = () => {
         if (validateCurrentStep()) {
             setStep((prevStep) => prevStep + 1);
-        } else {
-            const currentDiv = document.querySelector(
-                `div[data-step="${step}"]`
-            );
-            if (currentDiv) {
-                const inputs = Array.from(
-                    currentDiv.querySelectorAll<
-                        HTMLInputElement | HTMLTextAreaElement
-                    >("input, textarea")
-                );
-                for (let input of inputs) {
-                    if (!input.checkValidity()) {
-                        input.reportValidity();
-                        break; // Stop at the first invalid input to show its error message.
-                    }
-                }
-            }
         }
     };
 
@@ -245,6 +237,14 @@ const LivingOrderForm: React.FC = () => {
 
         // Update the display value (formatted)
         e.target.value = formattedValue;
+
+        // Validate the phone number
+        const phoneRegex = /^\+?1?\s*\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+        if (rawValue.length === 10 && !phoneRegex.test(formattedValue)) {
+            setPhoneError("Please enter a valid phone number.");
+        } else {
+            setPhoneError(null);
+        }
     };
 
     const submitForm = async () => {
@@ -489,17 +489,26 @@ Tattoo Memorials Auto-Notification System
                     >
                         Phone
                     </label>
-                    <input
-                        className="rounded-md px-4 py-2 bg-tan-500 border border-black focus:outline-none focus:ring-2 focus:ring-navy-500 text-black"
-                        type="tel"
-                        name="phone"
-                        placeholder="123-456-7890"
-                        required
-                        autoComplete="off"
-                        data-lpignore="true"
-                        value={formatPhoneNumber(formData.phone)} // Display formatted value
-                        onChange={handlePhoneNumberChange} // Use new handler
-                    />
+                    <div className="relative">
+                        <input
+                            className={`rounded-md px-4 py-2 bg-tan-500 border ${
+                                phoneError ? "border-red-500" : "border-black"
+                            } focus:outline-none focus:ring-2 focus:ring-navy-500 text-black w-full`}
+                            type="tel"
+                            name="phone"
+                            placeholder="123-456-7890"
+                            required
+                            autoComplete="off"
+                            data-lpignore="true"
+                            value={formatPhoneNumber(formData.phone)}
+                            onChange={handlePhoneNumberChange}
+                        />
+                        {phoneError && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {phoneError}
+                            </p>
+                        )}
+                    </div>
                     <label
                         className="text-md mb-2 mt-4 text-black"
                         htmlFor="email"
