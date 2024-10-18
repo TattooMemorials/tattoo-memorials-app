@@ -112,6 +112,7 @@ const LivingOrderForm: React.FC = () => {
     };
 
     const validateCurrentStep = () => {
+        // Step 1: Form validation
         if (step === 1) {
             const currentDiv = document.querySelector(
                 `div[data-step="${step}"]`
