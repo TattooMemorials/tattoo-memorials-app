@@ -186,6 +186,23 @@ const LivingOrderForm: React.FC = () => {
     const handleNext = () => {
         if (validateCurrentStep()) {
             setStep((prevStep) => prevStep + 1);
+        } else {
+            const currentDiv = document.querySelector(
+                `div[data-step="${step}"]`
+            );
+            if (currentDiv) {
+                const inputs = Array.from(
+                    currentDiv.querySelectorAll<
+                        HTMLInputElement | HTMLTextAreaElement
+                    >("input, textarea")
+                );
+                for (let input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        break; // Stop at the first invalid input to show its error message.
+                    }
+                }
+            }
         }
     };
 
