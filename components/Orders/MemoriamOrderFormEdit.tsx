@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import LivingFormConfirmationModal from "./LivingFormConfirmationModal";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
 import { formatPhoneNumber } from "@/utils/common/format";
 import OrderDetails from "./OrderDetails";
 import SomethingWentWrong from "../Common/SomethingWentWrong";
 import React from "react";
+import FormConfirmationModal from "./FormConfirmationModal";
 
 export type Medium =
     | "Acrylic"
@@ -489,6 +489,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
     };
 
     const handleModalClose = () => {
+        //very similar to handleModalClose in LivingOrderForm
         setIsModalOpen(false);
         setIsOrderComplete(true);
     };
@@ -883,7 +884,7 @@ const MemoriamOrderFormEdit: React.FC<MemoriamOrderFormEditProps> = ({
                     Click here to view our pricing page.
                 </a>
             </div>
-            <LivingFormConfirmationModal
+            <FormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 formData={formData}

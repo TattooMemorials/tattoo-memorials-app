@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import DragDrop from "../DragDrop";
-import LivingFormConfirmationModal from "./LivingFormConfirmationModal";
 import { FileUploadStatus } from "./FileUploadProgress";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import ProgressBar from "./ProgressBar";
 import { formatPhoneNumber } from "@/utils/common/format";
+import FormConfirmationModal from "./FormConfirmationModal";
+import { useRouter } from "next/navigation";
 
 export type Medium =
     | "Acrylic"
@@ -56,6 +57,8 @@ const LivingOrderForm: React.FC = () => {
     const [token, setToken] = useState<string | null>(null);
 
     const phoneRegex = /^\+?1?\s*\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+
+    const router = useRouter();
 
     const supabase = createClient();
 
@@ -460,7 +463,7 @@ Tattoo Memorials Auto-Notification System
 
     const handleModalClose = () => {
         setIsModalOpen(false);
-        resetForm();
+        router.push(`/living-order/${orderId}`);
     };
 
     return (
@@ -810,7 +813,7 @@ Tattoo Memorials Auto-Notification System
                     Click here to view our pricing page.
                 </a>
             </div>
-            <LivingFormConfirmationModal
+            <FormConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 formData={formData}
