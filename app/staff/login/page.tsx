@@ -13,7 +13,11 @@ export default function Login() {
                     text="Tattoo Memorials Staff"
                 />
             }
-            forgotPasswordLink={"/staff/forgot-password"}
+            forgotPasswordLink={
+                <div>
+                    <a href="/staff/forgot-password">Forgot Password</a>
+                </div>
+            }
             registerLink={false}
             rememberMe={false}
         />
