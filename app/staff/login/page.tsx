@@ -13,7 +13,7 @@ export default function Login() {
                     text="Tattoo Memorials Staff"
                 />
             }
-            forgotPasswordLink={false}
+            forgotPasswordLink={"/staff/forgot-password"}
             registerLink={false}
             rememberMe={false}
         />
